@@ -258,7 +258,10 @@ dialog .wrap{padding:16px;max-width:none}
     <section class="wrap" id="v-log" hidden>
       <form id="log-form" class="stack" novalidate>
         <h2 id="log-heading">운동 기록하기</h2>
-        <fieldset><legend>운동 종류</legend><div class="types" id="types"></div></fieldset>
+        <fieldset><legend>운동 종류</legend>
+          <div class="reacts" id="quick-types"></div>
+          <select id="f-type" aria-label="전체 운동 종류"></select>
+        </fieldset>
         <label><span>제목</span><input type="text" id="f-title" maxlength="60" placeholder="예: 퇴근길 한강 런"></label>
         <div class="row">
           <label><span>언제</span><input type="datetime-local" id="f-when"></label>

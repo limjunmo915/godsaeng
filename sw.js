@@ -1,5 +1,5 @@
 // 앱 껍데기만 캐시(네트워크 우선). 데이터는 항상 서버에서.
-const CACHE = 'godsaeng-v1';
+const CACHE = 'godsaeng-v2';
 const SHELL = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))));

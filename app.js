@@ -4,19 +4,30 @@ const SUPABASE_URL = 'https://ghrjtbznjnvzwqthiahm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdocmp0Ynpuam52endxdGhpYWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4Mzc1NDAsImV4cCI6MjEwNzQxMzU0MH0.Q2M1w4dzgmfc28voCetOP4UyOjEwF6ZDqOnC5hC5FMc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// vmax: 이 속도(km/h)를 넘으면 차 타고 기록한 걸로 보고 거부
-const TYPES = {
-  run:  {label:'달리기', icon:'🏃', met:9.8, dist:true, pace:'km', vmax:25},
-  walk: {label:'걷기', icon:'🚶', met:3.5, dist:true, pace:'km', vmax:10},
-  ride: {label:'자전거', icon:'🚴', met:7.5, dist:true, pace:'kmh', vmax:80},
-  swim: {label:'수영', icon:'🏊', met:7.0, dist:true, pace:'100m', vmax:8},
-  hike: {label:'등산', icon:'🥾', met:6.5, dist:true, pace:'km', vmax:12},
-  gym:  {label:'웨이트', icon:'🏋️', met:5.0},
-  home: {label:'홈트', icon:'🤸', met:4.5},
-  yoga: {label:'요가·필라테스', icon:'🧘', met:3.0},
-  ball: {label:'구기종목', icon:'⚽', met:7.0},
-  etc:  {label:'기타', icon:'✨', met:4.0},
+// 스트라바 SportType 56종 + 기존 키(ball, etc). 키는 DB 에 저장되므로 바꾸지 말 것.
+// [키, 이름, 아이콘, MET(성인 운동량 개요 근사), 페이스 표시(km | kmh | 100m, 없으면 거리 없음), 최고속도 km/h(넘으면 차 탄 걸로 보고 거부)]
+const TYPE_GROUPS = {
+  '달리기·걷기': [['run','달리기','🏃',9.8,'km',25],['trail','트레일 러닝','⛰️',9.0,'km',25],['vrun','러닝머신','🏃‍♂️',9.0,'km',25],
+    ['walk','걷기','🚶',3.5,'km',10],['hike','등산','🥾',6.5,'km',12],['wheelchair','휠체어','♿',4.0,'kmh',30]],
+  '자전거': [['ride','자전거','🚴',7.5,'kmh',80],['mtb','산악자전거','🚵',8.5,'kmh',70],['gravel','그래블 라이드','🚴',7.5,'kmh',70],
+    ['ebike','전기자전거','🔋',4.0,'kmh',60],['emtb','전기 산악자전거','🔋',5.0,'kmh',60],['vride','실내 자전거','🚲',6.8,'kmh',80],
+    ['handcycle','핸드사이클','🦾',6.0,'kmh',50],['velomobile','벨로모빌','🛺',6.0,'kmh',90]],
+  '수상': [['swim','수영','🏊',7.0,'100m',8],['rowing','조정','🚣',7.0,'kmh',25],['vrow','실내 로잉','🚣',6.0,'kmh',25],
+    ['kayak','카약','🛶',5.0,'kmh',20],['canoe','카누','🛶',4.0,'kmh',20],['sup','패들보드(SUP)','🏄',6.0,'kmh',15],
+    ['surf','서핑','🏄',3.0],['kitesurf','카이트서핑','🪁',6.0,'kmh',80],['windsurf','윈드서핑','🏄',5.0,'kmh',70],['sail','요트','⛵',3.0,'kmh',50]],
+  '겨울·스케이트': [['alpine','알파인 스키','⛷️',5.3,'kmh',130],['backcountry','백컨트리 스키','⛷️',8.0,'kmh',60],['nordic','크로스컨트리 스키','⛷️',9.0,'kmh',40],
+    ['snowboard','스노보드','🏂',5.3,'kmh',130],['snowshoe','스노슈잉','❄️',7.0,'km',10],['iceskate','아이스 스케이트','⛸️',7.0,'kmh',50],
+    ['rollerski','롤러스키','🎿',8.0,'kmh',40],['inline','인라인 스케이트','🛼',7.5,'kmh',50],['skateboard','스케이트보드','🛹',5.0,'kmh',40]],
+  '피트니스': [['gym','웨이트 트레이닝','🏋️',5.0],['crossfit','크로스핏','🏋️',8.0],['hiit','HIIT','🔥',8.0],['home','홈트·기타 운동','🤸',4.5],
+    ['elliptical','일립티컬','🏃',5.0],['stair','스텝퍼(천국의 계단)','🪜',9.0],['yoga','요가','🧘',3.0],['pilates','필라테스','🧘‍♀️',3.0],
+    ['dance','댄스','💃',5.5],['climbing','클라이밍','🧗',8.0],['physio','재활 운동','🩹',3.0]],
+  '라켓·구기': [['tennis','테니스','🎾',7.3],['badminton','배드민턴','🏸',5.5],['tabletennis','탁구','🏓',4.0],['squash','스쿼시','🎾',7.3],
+    ['racquetball','라켓볼','🎾',7.0],['padel','파델','🎾',6.0],['pickleball','피클볼','🏓',4.1],['soccer','축구·풋살','⚽',7.0],
+    ['basketball','농구','🏀',6.5],['volleyball','배구','🏐',4.0],['cricket','크리켓','🏏',4.8],['golf','골프','⛳',4.8],['ball','기타 구기','🥎',7.0]],
+  '기타': [['etc','기타','✨',4.0]],
 };
+const TYPES = Object.fromEntries(Object.values(TYPE_GROUPS).flat().map(([k, label, icon, met, pace, vmax]) => [k, {label, icon, met, pace, vmax, dist: !!pace}]));
+const QUICK_DEFAULT = ['run','walk','ride','swim','gym','tennis'];
 const REACTS = {fire:'🔥 인정', mad:'😤 질 수 없다', meh:'🙄 그게 다야?', sofa:'🛋️ 난 누워있음'};
 const BRAGS = ['나 이만큼 했지롱 😝','너넨 오늘 뭐 했냐?','부럽지? 부러우면 뛰어','갓생 1일 추가요','이 정도는 몸풀기지'];
 const POKES = ['오늘도 누워있니? 🛋️','소파랑 결혼했어? 💍','나 벌써 끝냈는데~ 😏','운동화 먼지 쌓였겠다 👟','이번 주 꼴찌 예약이요 🐢','숨쉬기 운동은 기록 안 돼요 🫁'];
@@ -169,7 +180,7 @@ async function boot(){
     initForm();
     show(S.crews.length ? S.tab : 'crew');
     await Promise.all([loadFeed(true), loadMine(), loadBody()]);
-    refresh(); syncForm();
+    refresh(); if (!S.editing) resetForm();
     loadNotifs();
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
 }
@@ -436,7 +447,18 @@ document.addEventListener('submit', async e => {
 });
 
 /* ───────── 기록 폼 ───────── */
-const typeVal = () => document.querySelector('input[name=type]:checked').value;
+const typeVal = () => $('#f-type').value;
+// 빠른 선택: 내가 많이 한 종목 6개 (기록이 적으면 기본 종목으로 채움)
+function drawQuickTypes(){
+  const n = {}; for (const w of S.mine) n[w.type] = (n[w.type]||0) + 1;
+  const top = [...new Set([...Object.keys(n).filter(k => TYPES[k]).sort((a,b) => n[b]-n[a]), ...QUICK_DEFAULT])].slice(0, 6);
+  $('#quick-types').innerHTML = top.map(k => `<button type="button" class="chip" data-type="${k}" aria-pressed="${k === typeVal()}">${TYPES[k].icon} ${TYPES[k].label}</button>`).join('');
+}
+function setType(k){
+  $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km');
+  document.querySelectorAll('#quick-types [data-type]').forEach(b => b.setAttribute('aria-pressed', b.dataset.type === k));
+  syncForm();
+}
 const minutesVal = () => parseDur($('#f-dur').value);
 // 수영은 m, 나머지는 km 가 기본 단위
 const setUnit = u => { $('#f-unit').value = u; $('#f-dist').placeholder = u === 'm' ? '1500' : '5.00'; };
@@ -445,11 +467,12 @@ let formReady = false;
 function initForm(){
   initGearSelect();
   if (formReady) return; formReady = true;
-  $('#types').innerHTML = Object.entries(TYPES).map(([k,t], i) => `<label><input type="radio" name="type" id="t-${k}" value="${k}" ${i?'':'checked'}><span>${t.icon} ${t.label}</span></label>`).join('');
+  $('#f-type').innerHTML = Object.entries(TYPE_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(([k, label, icon]) => `<option value="${k}">${icon} ${label}</option>`).join('')}</optgroup>`).join('');
+  $('#f-type').onchange = () => setType(typeVal());
+  $('#quick-types').onclick = e => { const b = e.target.closest('[data-type]'); if (b) setType(b.dataset.type); };
   $('#brag-presets').innerHTML = BRAGS.map(s => `<button type="button" class="chip" data-brag="${esc(s)}">${esc(s)}</button>`).join('');
   $('#brag-presets').onclick = e => { const b = e.target.closest('[data-brag]'); if (b) $('#f-brag').value = b.dataset.brag; };
   $('#log-form').addEventListener('input', syncForm);
-  $('#types').addEventListener('change', () => setUnit(typeVal() === 'swim' ? 'm' : 'km'));
   $('#f-unit').onchange = () => setUnit($('#f-unit').value);
   $('#f-rpe').oninput = () => $('#rpe-out').textContent = $('#f-rpe').value;
   $('#f-photo').onchange = addPhotos;
@@ -501,13 +524,14 @@ function resetForm(){
   S.editing = null;
   $('#log-form').reset();
   S.newPhotos.forEach(p => URL.revokeObjectURL(p.url)); S.newPhotos = []; S.keptPhotos = [];
-  $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5; setUnit('km');
+  $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5;
+  drawQuickTypes(); setType($('#quick-types [data-type]').dataset.type);
   $('#log-heading').textContent = '운동 기록하기'; $('#f-submit').textContent = '올리고 약올리기'; $('#f-cancel').hidden = true;
   initGearSelect(); drawThumbs(); syncForm();
 }
 function editWorkout(w){
   resetForm(); S.editing = w;
-  $('#t-'+(TYPES[w.type] ? w.type : 'etc')).checked = true;
+  setType(TYPES[w.type] ? w.type : 'etc');
   $('#f-title').value = w.title || ''; $('#f-when').value = toLocalInput(w.started_at);
   $('#f-dur').value = fmtClock(w.duration_min);
   setUnit(w.type === 'swim' ? 'm' : 'km');
