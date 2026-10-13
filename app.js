@@ -126,7 +126,7 @@ function toast(msg){ const t = document.createElement('div'); t.className = 'toa
 function fail(err, fallback='실패했어요. 잠시 후 다시 시도해 주세요.'){
   console.error(err);
   const m = err?.message || '';
-  toast(/초대코드/.test(m) ? m : /Invalid login/.test(m) ? '이메일 또는 비밀번호가 맞지 않아요.' : /already registered/.test(m) ? '이미 가입된 이메일이에요. 로그인해 주세요.' : /Email not confirmed/.test(m) ? '메일함에서 가입 확인 링크를 먼저 눌러 주세요.' : /provider is not enabled/.test(m) ? '구글 로그인은 아직 준비 중이에요. 이메일로 가입해 주세요.' : fallback);
+  toast(/초대코드|1분에 한 번/.test(m) ? m : /Invalid login/.test(m) ? '이메일 또는 비밀번호가 맞지 않아요.' : /already registered/.test(m) ? '이미 가입된 이메일이에요. 로그인해 주세요.' : /Email not confirmed/.test(m) ? '메일함에서 가입 확인 링크를 먼저 눌러 주세요.' : /provider is not enabled/.test(m) ? '구글 로그인은 아직 준비 중이에요. 이메일로 가입해 주세요.' : fallback);
 }
 
 /* ───────── 로그인 ───────── */
