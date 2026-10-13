@@ -215,7 +215,7 @@ async function loadFeed(reset){
 // ponytail: 내 기록 전체를 한 번에 가져옴(기본 상한 1000건). 수년치 쌓이면 기간별 조회로 변경
 async function loadMine(){
   const [mine, notes] = await Promise.all([
-    sb.from('workouts').select('id,type,title,started_at,duration_min,distance_km,elev_m,kcal,avg_hr,gear_id,photos').eq('user_id', S.uid).order('started_at', {ascending:false}).then(ok),
+    sb.from('workouts').select('id,type,title,memo,brag,started_at,duration_min,distance_km,elev_m,kcal,avg_hr,gear_id,photos').eq('user_id', S.uid).order('started_at', {ascending:false}).then(ok),
     sb.from('private_notes').select('workout_id,note').then(ok),
   ]);
   S.mine = mine; S.notes = Object.fromEntries(notes.map(n => [n.workout_id, n.note]));
@@ -238,12 +238,12 @@ async function crewTotals(from, to = Date.now() + DAY, crewId = S.crewId){
 }
 
 /* ───────── 탭 ───────── */
-function show(tab){
+function show(tab, noRender){
   S.tab = tab;
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   for (const v of ['feed','rank','log','crew','me']) $('#v-'+v).hidden = v !== tab;
   scrollTo({top:0});
-  if (tab !== 'log') refresh();
+  if (tab !== 'log' && !noRender) refresh();
 }
 function refresh(){
   const r = {feed:renderFeed, rank:renderRank, crew:renderCrew, me:renderMe}[S.tab];
@@ -382,6 +382,13 @@ document.addEventListener('click', async e => {
       ok(await sb.from('gear').update({retired: !g.retired}).eq('id', g.id)); g.retired = !g.retired; initGearSelect(); return refresh();
     }
     if (act === 'recap') return shareRecap();
+    if (act === 'goto') return goToWorkout(b.dataset.id);
+    if (act === 'day') {
+      const ws = S.mine.filter(w => dayKey(w.started_at) === b.dataset.day);
+      if (ws.length === 1) return goToWorkout(ws[0].id);
+      S.qDay = b.dataset.day; $('#me-results').innerHTML = searchResults(); return $('#me-results').scrollIntoView({block: 'center'});
+    }
+    if (act === 'clear-q') { S.qDay = null; $('#me-results').innerHTML = searchResults(); return; }
     if (act === 'del-log') {
       if (!confirm('이 측정 기록을 삭제할까요?')) return;
       ok(await sb.from('body_logs').delete().eq('id', b.dataset.id)); await loadBody(); syncForm(); return refresh();
@@ -696,6 +703,36 @@ function badges(list, st){
     ['⏱️','누적 50시간', all.minutes >= 3000], ['⛰️','누적 상승 1000m', all.elev >= 1000], ['🎨','팔방미인 5종목', new Set(list.map(w => w.type)).size >= 5],
   ];
 }
+// 내 기록 검색: 공백으로 나눈 단어가 모두 들어있는 기록 (날짜는 2026-10-13 / 10/13 / 10월 13일 모두 매칭)
+function haystack(w){
+  const d = new Date(w.started_at), y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate(), t = TYPES[w.type];
+  return [`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`, `${m}/${day}`, `${m}월`, `${day}일`, `${y}년`, t?.label, w.type, w.title, w.memo, w.brag].join(' ').toLowerCase();
+}
+function searchResults(){
+  const words = (S.q || '').toLowerCase().split(/\s+/).filter(Boolean);
+  let list;
+  if (S.qDay) list = S.mine.filter(w => dayKey(w.started_at) === S.qDay);
+  else if (words.length) list = S.mine.filter(w => { const h = haystack(w); return words.every(x => h.includes(x)); });
+  else return '';
+  const head = S.qDay ? `<p class="hint">${fmtDate(list[0]?.started_at || Date.now())} 기록 ${list.length}개 · <button class="linkbtn" data-act="clear-q">닫기</button></p>` : `<p class="hint">${list.length}개 찾음${list.length > 30 ? ' (최근 30개만 표시)' : ''}</p>`;
+  return head + list.slice(0, 30).map(w => `<button type="button" class="res" data-act="goto" data-id="${w.id}">
+    <span>${TYPES[w.type]?.icon || '✨'}</span><span><b>${esc(w.title || TYPES[w.type]?.label || '운동')}</b><small>${fmtDate(w.started_at)} · ${esc(TYPES[w.type]?.label || '')} · ${fmtDurS(w.duration_min)}${+w.distance_km ? ' · ' + fmtDist(w) : ''}</small></span><span aria-hidden="true">›</span></button>`).join('');
+}
+document.addEventListener('input', e => {
+  if (e.target.id !== 'me-search') return;
+  S.q = e.target.value; S.qDay = null; $('#me-results').innerHTML = searchResults();
+});
+// 피드에서 해당 기록으로 이동 (아직 안 불러온 기록이면 페이지를 더 불러옴)
+async function goToWorkout(id){
+  toast('기록 찾는 중…');
+  for (let i = 0; i < 50 && !S.feed.some(w => w.id === id) && !S.feedEnd; i++) await loadFeed();
+  if (!S.feed.some(w => w.id === id)) return toast('피드에서 이 기록을 찾지 못했어요.');
+  show('feed', true); await renderFeed();
+  const el = document.querySelector(`[data-wid="${id}"]`);
+  el.scrollIntoView({block: 'start'}); el.classList.add('flash');
+  setTimeout(() => { el.scrollIntoView({block: 'start'}); }, 500); // 위쪽 사진 로딩으로 밀린 경우 재정렬
+  setTimeout(() => el.classList.remove('flash'), 2500);
+}
 const meTabs = () => `<div class="seg" data-seg="meTab"><button data-v="stats" aria-pressed="${S.meTab==='stats'}">운동 기록</button><button data-v="body" aria-pressed="${S.meTab==='body'}">🔒 내 몸</button></div>`;
 async function renderMe(){
   if (S.meTab === 'body') return renderBody();
@@ -715,7 +752,8 @@ async function renderMe(){
   const cells = Array.from({length: lead}, () => '<div></div>').join('') + Array.from({length: dim}, (_,i) => {
     const d = new Date(cm.getFullYear(), cm.getMonth(), i+1), ws = byDay[dayKey(d)] || [];
     const tip = ws.map(w => `${TYPES[w.type]?.label} ${fmtDur(w.duration_min)}`).join(', ');
-    return `<div class="d ${ws.length?'on':''} ${dayKey(d)===dayKey(Date.now())?'today':''}" ${tip ? `title="${esc(tip)}"` : ''}><span>${i+1}</span><i>${ws.slice(0,2).map(w => TYPES[w.type]?.icon || '✨').join('')}</i></div>`;
+    const inner = `<span>${i+1}</span><i>${ws.slice(0,2).map(w => TYPES[w.type]?.icon || '✨').join('')}</i>`, cls = `d ${ws.length?'on':''} ${dayKey(d)===dayKey(Date.now())?'today':''}`;
+    return ws.length ? `<button type="button" class="${cls}" data-act="day" data-day="${dayKey(d)}" title="${esc(tip)}" aria-label="${cm.getMonth()+1}월 ${i+1}일 기록 보기">${inner}</button>` : `<div class="${cls}">${inner}</div>`;
   }).join('');
   // 종목별, 최고기록
   const byType = {}; for (const w of mine) byType[w.type] = (byType[w.type]||0) + +w.duration_min;
@@ -746,6 +784,9 @@ async function renderMe(){
     <div><div class="chart">${weeks.map(w => `<div><span>${w.v ? Math.round(w.v) : ''}</span><i style="height:${w.v/wmax*100}%"></i></div>`).join('')}</div>
       <div class="axis">${weeks.map((w,i) => `<span>${i%3===2 || i===11 ? (new Date(w.s).getMonth()+1)+'/'+new Date(w.s).getDate() : ''}</span>`).join('')}</div>
       <p class="hint">막대 위 숫자는 분, 아래는 그 주 월요일 날짜.</p></div>
+    <h2>내 기록 찾기</h2>
+    <input type="search" id="me-search" placeholder="날짜(10/13, 10월 13일), 종목, 제목·메모 일부" aria-label="내 기록 검색" value="${esc(S.q || '')}" autocomplete="off">
+    <div class="results" id="me-results">${searchResults()}</div>
     <div class="calhead"><h2>${cm.getFullYear()}년 ${cm.getMonth()+1}월</h2><div class="inline"><button class="ghost" data-act="cal" data-d="-1" aria-label="이전 달">‹</button><button class="ghost" data-act="cal" data-d="1" aria-label="다음 달">›</button></div></div>
     <div class="cal">${['월','화','수','목','금','토','일'].map(d => `<div class="h">${d}</div>`).join('')}${cells}</div>
     ${types.length ? `<h2>종목별 비중</h2><div class="typebars">${types.map(([k,val]) => `<div class="tb"><span>${TYPES[k]?.icon||''} ${esc(TYPES[k]?.label||k)}</span><div class="bar"><i style="width:${val/tmax*100}%"></i></div><span class="val">${fmtDur(val)}</span></div>`).join('')}</div>` : ''}

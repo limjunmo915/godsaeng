@@ -131,7 +131,7 @@ details[open]>summary{margin-bottom:12px}
 .stat small{display:block;color:var(--muted);font-size:11px;letter-spacing:.05em}
 .stat b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;font-weight:600}
 .photos{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:10px}
-.photos img{flex:0 0 100%;width:100%;max-height:460px;object-fit:cover;border-radius:10px;scroll-snap-align:start;background:var(--sunk)}
+.photos img{flex:0 0 100%;width:100%;aspect-ratio:4/5;max-height:460px;object-fit:cover;border-radius:10px;scroll-snap-align:start;background:var(--sunk)}
 .photos.multi img{flex-basis:88%}
 .brag{justify-self:start;background:var(--pop);color:var(--pop-ink);font-weight:700;padding:8px 12px;border-radius:4px 14px 14px 14px;overflow-wrap:anywhere;max-width:100%}
 .memo{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -195,6 +195,16 @@ details[open]>summary{margin-bottom:12px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal .h{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
 .cal .d{aspect-ratio:1;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;display:grid;align-content:space-between;font-size:11px;min-width:0;overflow:hidden}
+button.d{font:inherit;color:inherit;text-align:left;cursor:pointer}
+input[type=search]{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.results{display:grid;gap:6px}
+.results:empty{display:none}
+.res{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.res>span:nth-child(2){min-width:0}
+.res b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res small{color:var(--muted);font-size:12px}
+.card{scroll-margin-top:72px}
+.card.flash{outline:3px solid var(--pop);outline-offset:2px}
 .cal .d.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .cal .d.today{outline:2px solid var(--pop);outline-offset:-2px}
 .cal .d i{font-style:normal;font-size:13px;line-height:1;text-align:right}
@@ -320,6 +330,7 @@ dialog .wrap{padding:16px;max-width:none}
 </div></dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="app.js"></script>
+<!-- 배포할 때마다 v 숫자를 올려야 휴대폰이 옛 app.js 를 쓰지 않음 -->
+<script src="app.js?v=5"></script>
 </body>
 </html>
