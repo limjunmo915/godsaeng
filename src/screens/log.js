@@ -11,7 +11,6 @@ const typeVal = () => $('#f-type').value;
 const minutesVal = () => parseDur($('#f-dur').value);
 // 수영은 m, 나머지는 km 가 기본 단위
 const setUnit = u => { $('#f-unit').value = u; $('#f-dist').placeholder = u === 'm' ? '1500' : '5.00'; };
-const gearIcon = k => ic(k === 'bike' ? 'bike' : k === 'shoes' ? 'shoe' : 'activity');
 
 // 빠른 선택: 내가 많이 한 종목 6개 (기록이 적으면 기본 종목으로 채움)
 function drawQuickTypes() {

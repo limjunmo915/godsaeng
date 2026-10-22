@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>갓생살기 프로젝트</title>
+<meta name="description" content="운동 기록하고 친구들 약올리는 앱 — 질 수 없다!">
+<meta name="theme-color" content="#3D2EFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<section class="login" id="login" hidden>
+  <form class="login-box" id="login-form" novalidate>
+    <div class="wordmark lg">갓생살기<i></i></div>
+    <p class="slogan">질 수 없다</p>
+    <p class="lead">운동하고, 올리고, 친구들 약올리기. 크루끼리만 보여요.</p>
+    <label class="field"><span>이메일</span><input type="email" id="l-email" autocomplete="email" required></label>
+    <label class="field"><span>비밀번호 (6자 이상)</span><input type="password" id="l-pw" autocomplete="current-password" minlength="6" required></label>
+    <label class="field" id="l-nick-wrap" hidden><span>닉네임</span><input type="text" id="l-nick" maxlength="20" placeholder="크루에 보일 이름"></label>
+    <button class="btn primary wide" id="l-submit">로그인</button>
+    <button type="button" class="linkbtn center" id="l-toggle">처음이에요 · 회원가입</button>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="topbar"><div class="wrap">
+    <div class="wordmark">갓생살기<i></i></div>
+    <button class="icbtn" data-act="notif" aria-label="알림"><i data-ic="bell"></i><span class="dot" id="notif-dot" hidden></span></button>
+  </div></header>
+
+  <main>
+    <section class="view feed" id="v-feed"></section>
+    <section class="view wrap" id="v-rank" hidden></section>
+    <section class="view wrap" id="v-log" hidden>
+      <form id="log-form" class="stack" novalidate>
+        <h2 class="page-title" id="log-heading">운동 기록</h2>
+
+        <fieldset class="group">
+          <legend>운동 종류</legend>
+          <div class="chips" id="quick-types"></div>
+          <label class="field"><span>전체 종목</span><select id="f-type"></select></label>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>기록</legend>
+          <label class="field"><span>제목</span><input type="text" id="f-title" maxlength="60" placeholder="퇴근길 한강 런"></label>
+          <div class="row">
+            <label class="field"><span>언제</span><input type="datetime-local" id="f-when"></label>
+            <label class="field"><span>운동 시간</span><input type="text" id="f-dur" autocomplete="off" inputmode="text" placeholder="29:44"><small class="hint" id="dur-out"></small></label>
+          </div>
+          <div class="row" id="dist-row">
+            <label class="field"><span>거리</span><span class="unit"><input type="number" id="f-dist" min="0" step="any" inputmode="decimal"><select id="f-unit" aria-label="거리 단위"><option value="km">km</option><option value="m">m</option></select></span></label>
+            <label class="field"><span>상승고도 (m)</span><input type="number" id="f-elev" min="0" inputmode="numeric" placeholder="선택"></label>
+          </div>
+          <div class="row">
+            <label class="field"><span>칼로리 (kcal)</span><input type="number" id="f-kcal" min="0" inputmode="numeric"></label>
+            <label class="field"><span>평균 심박 (bpm)</span><input type="number" id="f-hr" min="30" max="230" inputmode="numeric" placeholder="선택"></label>
+          </div>
+          <p class="hint" id="kcal-basis"></p>
+          <label class="field"><span>체감 강도 <output id="rpe-out" class="num">5</output> / 10</span><input type="range" id="f-rpe" min="1" max="10" value="5"></label>
+          <label class="field" id="gear-field"><span>장비</span><select id="f-gear"></select></label>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>사진과 약올리기</legend>
+          <label class="upload"><i data-ic="camera"></i><span>사진 추가 (최대 10장)</span><input type="file" id="f-photo" accept="image/*" multiple></label>
+          <div class="thumbs" id="thumbs"></div>
+          <label class="field"><span>약올리기 한마디</span><input type="text" id="f-brag" maxlength="80" placeholder="나 이만큼 했지롱"></label>
+          <div class="chips" id="brag-presets"></div>
+          <label class="field"><span>메모 (크루에게 보임)</span><textarea id="f-memo" maxlength="1000" placeholder="코스, 컨디션, 세트 기록"></textarea></label>
+          <label class="field"><span>비공개 메모 (나만 보임)</span><textarea id="f-note" maxlength="1000" placeholder="부상, 혼자 볼 기록"></textarea></label>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>공개 설정</legend>
+          <div class="checks">
+            <label class="check"><input type="radio" name="vis" id="vis-crew" value="crew" checked>크루 공개</label>
+            <label class="check"><input type="radio" name="vis" id="vis-private" value="private">나만 보기</label>
+            <label class="check"><input type="checkbox" id="f-commute">출퇴근</label>
+          </div>
+          <p class="hint">크루에게 숨길 항목</p>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="hide-pace">페이스</label>
+            <label class="check"><input type="checkbox" id="hide-hr">심박</label>
+            <label class="check"><input type="checkbox" id="hide-kcal">칼로리</label>
+          </div>
+        </fieldset>
+
+        <button class="btn primary wide" id="f-submit">올리고 약올리기</button>
+        <button type="button" class="btn wide" id="f-cancel" hidden>수정 취소</button>
+      </form>
+    </section>
+    <section class="view wrap" id="v-crew" hidden></section>
+    <section class="view wrap" id="v-me" hidden></section>
+  </main>
+
+  <nav class="tabs" aria-label="메뉴"><div class="wrap">
+    <button data-tab="feed" aria-selected="true"><i data-ic="home"></i><span>피드</span></button>
+    <button data-tab="rank" aria-selected="false"><i data-ic="trophy"></i><span>랭킹</span></button>
+    <button data-tab="log" aria-selected="false" class="plus" aria-label="운동 기록"><b><i data-ic="plus"></i></b></button>
+    <button data-tab="crew" aria-selected="false"><i data-ic="users"></i><span>크루</span></button>
+    <button data-tab="me" aria-selected="false"><i data-ic="user"></i><span>나</span></button>
+  </div></nav>
+</div>
+
+<dialog id="notif" aria-labelledby="notif-title">
+  <div class="sheet-head"><h2 id="notif-title">알림</h2><button class="icbtn" data-act="close-notif" aria-label="닫기"><i data-ic="x"></i></button></div>
+  <div id="notif-list"></div>
+</dialog>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
