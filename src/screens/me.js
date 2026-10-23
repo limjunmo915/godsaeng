@@ -1,10 +1,10 @@
 // 나: 운동 통계·캘린더·검색·배지·장비·설정 (내 몸 탭은 body.js)
 import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
-import { DAY, esc, fmtNum, fmtDur, fmtDurS, fmtDist, fmtDate, startOf, dayKey, toast } from '../lib/util.js';
+import { DAY, esc, fmtNum, fmtDur, fmtDurS, fmtDist, fmtDate, startOf, dayKey, toast, fail, compress } from '../lib/util.js';
 import { typeOf } from '../lib/types.js';
 import { sum, pace, effort, streaks, badges, avatar } from '../lib/calc.js';
-import { loadGear } from '../lib/data.js';
+import { loadGear, signAvatars } from '../lib/data.js';
 import { refresh } from '../nav.js';
 import { seg } from './rank.js';
 import { goToWorkout } from './feed.js';
@@ -115,6 +115,9 @@ export async function renderMe() {
       </div><button class="btn">추가</button></form></details>
     <button class="btn wide" data-act="feedback">${ic('bulb')}건의·버그 제보</button>
     <details class="panel"><summary>설정</summary>
+      <div class="avatar-row">${avatar(S.uid, 'lg')}
+        <label class="btn">${ic('camera')}사진 바꾸기<input type="file" id="avatar-file" accept="image/*" hidden></label>
+        ${me.avatar_url ? '<button class="btn" data-act="avatar-del">사진 빼기</button>' : ''}</div>
       <form class="stack" data-form="settings"><div class="row">
         <label class="field"><span>닉네임</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>
         <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
@@ -123,7 +126,25 @@ export async function renderMe() {
       <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button></details>`;
 }
 
+// 프로필 사진: 가운데 정사각형 160px(약 7KB)로 줄여 <내 id>/avatar-시각.jpg 에 저장, 예전 파일은 지움
+async function setAvatar(path) {
+  const old = S.me.avatar_url;
+  S.me = ok(await sb.from('profiles').update({ avatar_url: path }).eq('id', S.uid).select().single()); S.people[S.uid] = S.me;
+  if (old) await sb.storage.from('photos').remove([old]);
+  await signAvatars(); return refresh();
+}
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'avatar-file' || !e.target.files[0]) return;
+  const file = e.target.files[0]; e.target.value = '';
+  try {
+    const blob = await compress(file, 160, true), path = `${S.uid}/avatar-${Date.now()}.jpg`;
+    ok(await sb.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '604800' }));
+    await setAvatar(path); toast('프로필 사진을 바꿨어요');
+  } catch (err) { fail(err, '사진을 올리지 못했어요. 다른 사진으로 해 보세요.'); }
+});
+
 export const actions = {
+  'avatar-del': async () => { await setAvatar(null); toast('프로필 사진을 뺐어요'); },
   cal: b => { S.calMonth.setMonth(S.calMonth.getMonth() + +b.dataset.d); return refresh(); },
   day: b => {
     const ws = S.mine.filter(w => dayKey(w.started_at) === b.dataset.day);

@@ -1,6 +1,6 @@
 // 서버에서 데이터 불러오기
 import { S, sb, ok } from '../state.js';
-import { DAY, lsGet } from './util.js';
+import { DAY, lsGet, lsSet } from './util.js';
 
 export async function loadCore() {
   let me = ok(await sb.from('profiles').select('*').eq('id', S.uid).maybeSingle());
@@ -13,7 +13,19 @@ export async function loadCore() {
     if (r.crews && !S.crews.some(c => c.id === r.crew_id)) S.crews.push(r.crews);
   }
   S.crewId = S.crews.find(c => c.id === lsGet('crew'))?.id || S.crews[0]?.id || null;
-  await loadGear();
+  await Promise.all([loadGear(), signAvatars().catch(console.error)]);
+}
+// 프로필 사진: 서명 주소를 7일 동안 폰에 저장 → 주소가 같으니 브라우저 캐시를 써서 매번 다시 받지 않음
+const AV_TTL = 7 * DAY;
+export async function signAvatars() {
+  let cache; try { cache = JSON.parse(lsGet('av')) || {}; } catch { cache = {}; }
+  const now = Date.now(), paths = Object.values(S.people).map(p => p.avatar_url).filter(Boolean);
+  const need = paths.filter(p => !(cache[p]?.exp > now + DAY));
+  if (need.length) for (const r of ok(await sb.storage.from('photos').createSignedUrls(need, AV_TTL / 1000)))
+    if (r.signedUrl) cache[r.path] = { url: r.signedUrl, exp: now + AV_TTL };
+  for (const k in cache) if (!paths.includes(k)) delete cache[k];
+  lsSet('av', JSON.stringify(cache));
+  for (const p of paths) if (cache[p]) S.urls[p] = cache[p].url;
 }
 export async function loadGear() {
   S.gear = ok(await sb.from('gear').select('*').eq('user_id', S.uid).order('created_at'));

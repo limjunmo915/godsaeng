@@ -58,3 +58,15 @@ export function fail(err, fallback = '실패했어요. 잠시 후 다시 시도�
     : /Email not confirmed/.test(m) ? '메일함에서 가입 확인 링크를 먼저 눌러 주세요.'
     : fallback);
 }
+
+// 사진 줄이기(JPEG). 다시 그려 저장하므로 사진 속 촬영 위치(EXIF GPS)도 함께 지워짐
+// square: 가운데를 정사각형으로 잘라 max×max (프로필 사진)
+export async function compress(file, max = 1600, square = false) {
+  const img = await createImageBitmap(file), c = document.createElement('canvas');
+  const side = Math.min(img.width, img.height);
+  const [sx, sy, sw, sh] = square ? [(img.width - side) / 2, (img.height - side) / 2, side, side] : [0, 0, img.width, img.height];
+  const s = Math.min(1, max / Math.max(sw, sh));
+  c.width = Math.round(sw * s); c.height = Math.round(sh * s);
+  c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', .8));
+}

@@ -1,7 +1,7 @@
 // 기록하기 / 기록 수정 폼
 import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
-import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail } from '../lib/util.js';
+import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress } from '../lib/util.js';
 import { TYPE_GROUPS, TYPES, QUICK_DEFAULT, BRAGS } from '../lib/types.js';
 import { estKcal, latest, age } from '../lib/calc.js';
 import { loadFeed, loadMine } from '../lib/data.js';
@@ -67,14 +67,6 @@ export function syncForm() {
 function drawThumbs() {
   $('#thumbs').innerHTML = S.keptPhotos.map((p, i) => `<div><img alt="" src="${esc(S.urls[p] || '')}"><button type="button" data-rm="k:${i}" aria-label="사진 빼기">${ic('x')}</button></div>`).join('')
     + S.newPhotos.map((p, i) => `<div><img alt="" src="${p.url}"><button type="button" data-rm="n:${i}" aria-label="사진 빼기">${ic('x')}</button></div>`).join('');
-}
-// 다시 그려 저장하므로 사진 속 촬영 위치(EXIF GPS)도 함께 지워짐
-async function compress(file) {
-  const img = await createImageBitmap(file);
-  const s = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
-  c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  return new Promise(r => c.toBlob(r, 'image/jpeg', .8));
 }
 async function addPhotos(e) {
   const files = [...e.target.files]; e.target.value = '';

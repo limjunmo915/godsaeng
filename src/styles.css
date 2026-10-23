@@ -248,6 +248,7 @@ dd { margin: 0; }
 .inline input { flex: 1; }
 
 /* 나 */
+.avatar-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .profile { display: flex; align-items: center; gap: 14px; }
 .profile div { display: grid; }
 .profile b { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
