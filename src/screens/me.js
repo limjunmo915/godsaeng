@@ -123,7 +123,8 @@ export async function renderMe() {
         <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
       </div><button class="btn">저장</button></form>
       <p class="hint">닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
-      <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button></details>`;
+      <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button>
+      <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button></details>`;
 }
 
 // 프로필 사진: 가운데 정사각형 160px(약 7KB)로 줄여 <내 id>/avatar-시각.jpg 에 저장, 예전 파일은 지움
@@ -158,6 +159,20 @@ export const actions = {
   },
   recap: () => shareRecap(),
   logout: async () => { await sb.auth.signOut(); location.reload(); },
+  // 탈퇴: 사진 파일 먼저(저장소 API로만 지울 수 있음) → 계정과 모든 기록(supabase/006 delete_me)
+  'delete-me': async b => {
+    if (prompt('탈퇴하면 운동 기록·사진·신체 기록·댓글·반응이 모두 바로 지워지고 되돌릴 수 없어요.\n내가 만든 크루는 남은 크루원에게 넘어가요.\n\n계속하려면 "탈퇴"라고 입력해 주세요.')?.trim() !== '탈퇴') return toast('탈퇴를 취소했어요');
+    b.disabled = true; toast('지우는 중이에요…');
+    for (let i = 0; i < 100; i++) {
+      const files = ok(await sb.storage.from('photos').list(S.uid, { limit: 100 }));
+      if (!files.length) break;
+      if (!ok(await sb.storage.from('photos').remove(files.map(f => `${S.uid}/${f.name}`))).length) throw new Error('사진을 지우지 못했어요. 잠시 후 다시 시도해 주세요.');
+    }
+    ok(await sb.rpc('delete_me'));
+    try { localStorage.clear(); } catch {}
+    await sb.auth.signOut().catch(() => {});
+    alert('탈퇴가 끝났어요. 그동안 함께해 줘서 고마워요.'); location.reload();
+  },
 };
 
 export const forms = {
