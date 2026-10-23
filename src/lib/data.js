@@ -27,7 +27,8 @@ export async function signPhotos(paths) {
 const FEED_SEL = '*, reactions(user_id,kind), comments(id,user_id,body,created_at)';
 export async function loadFeed(reset) {
   if (reset) { S.feed = []; S.feedEnd = false; }
-  const rows = ok(await sb.from('workouts').select(FEED_SEL)
+  // 남의 기록은 crew_workouts(서버가 숨긴 심박·칼로리를 빈칸으로 보냄)로만 읽음 → supabase/004
+  const rows = ok(await sb.rpc('crew_workouts').select(FEED_SEL)
     .order('started_at', { ascending: false }).order('created_at', { referencedTable: 'comments' })
     .range(S.feed.length, S.feed.length + 19));
   S.feed.push(...rows); S.feedEnd = rows.length < 20;
@@ -52,7 +53,7 @@ export async function loadBody() {
 // ponytail: 폰에서 합산. 크루가 커지면 서버 함수(RPC)로 집계
 export async function crewTotals(from, to = Date.now() + DAY, crewId = S.crewId) {
   const ids = S.members[crewId] || [];
-  const rows = ids.length ? ok(await sb.from('workouts').select('user_id,type,duration_min,distance_km,kcal,started_at')
+  const rows = ids.length ? ok(await sb.rpc('crew_workouts').select('user_id,type,duration_min,distance_km,kcal,started_at')
     .eq('visibility', 'crew').in('user_id', ids).gte('started_at', new Date(from).toISOString()).lt('started_at', new Date(to).toISOString())) : [];
   const by = Object.fromEntries(ids.map(id => [id, []]));
   for (const w of rows) by[w.user_id]?.push(w);
