@@ -248,6 +248,8 @@ dd { margin: 0; }
 .inline input { flex: 1; }
 
 /* 나 */
+.blk { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.blk span { flex: 1; }
 .avatar-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .profile { display: flex; align-items: center; gap: 14px; }
 .profile div { display: grid; }

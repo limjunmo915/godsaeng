@@ -26,7 +26,7 @@ export async function renderRank() {
       return `<li class="rk ${id === S.uid ? 'me' : ''}"><span class="pos">${i === 0 && val > 0 ? ic('crown') : i + 1}</span>${avatar(id)}
         <div class="mid"><b>${esc(nameOf(id))}</b>${tag}<div class="bar"><i style="width:${val / max * 100}%"></i></div></div>
         <span class="val">${M.fmt(val)}</span>
-        ${id !== S.uid ? `<button class="taunt-btn sm" data-act="poke" data-to="${id}" data-crew="${S.crewId}">${i === 0 ? '견제' : '약올리기'}</button>` : '<span></span>'}</li>`;
+        ${id !== S.uid && !S.blocked.includes(id) && !S.people[id]?.poke_off ? `<button class="taunt-btn sm" data-act="poke" data-to="${id}" data-crew="${S.crewId}">${i === 0 ? '견제' : '약올리기'}</button>` : '<span></span>'}</li>`;
     }).join('')}</ol>
     <p class="hint">크루 공개 기록만 집계돼요.${S.rMetric === 'points' ? ' 갓생 포인트는 운동 강도 × 시간이라, 산책 1시간(21P)보다 테니스 1시간(44P)이 더 높아요.' : ''}</p>`;
 }

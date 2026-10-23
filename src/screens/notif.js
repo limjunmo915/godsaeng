@@ -18,7 +18,7 @@ async function fetchNotifs() {
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
     ...cm.map(c => ({ ts: c.created_at, id: c.user_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(c.body)}` })),
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
-  ].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  ].filter(n => !S.blocked.includes(n.id)).sort((a, b) => new Date(b.ts) - new Date(a.ts));
 }
 const newNotice = () => NOTICES.length > 0 && NOTICES[0].id !== lsGet('notice');
 export async function loadNotifs() {

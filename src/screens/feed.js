@@ -33,7 +33,7 @@ function card(w) {
     gear ? `<span class="tag">${ic('shoe')}${esc(gear.name)}</span>` : '',
     mine && w.hide_stats?.length ? `<span class="tag">${ic('eye-off')}일부 항목 크루에 숨김</span>` : '',
   ].join('');
-  const cms = w.comments || [], open = w._open || cms.length <= 2, shown = open ? cms : cms.slice(-2);
+  const cms = (w.comments || []).filter(c => !S.blocked.includes(c.user_id)), open = w._open || cms.length <= 2, shown = open ? cms : cms.slice(-2);
 
   return `<article class="card" data-wid="${w.id}">
     <header class="who">${avatar(w.user_id)}
@@ -78,14 +78,16 @@ export async function renderFeed() {
         <em>${i === 0 ? `2위보다 ${P(mine - board[1][1])} 앞섬` : `${esc(nameOf(board[i - 1][0]))}까지 ${P(board[i - 1][1] - mine)}`}</em>
       </section>`);
     }
-    const pokes = ok(await sb.from('pokes').select('*').eq('crew_id', S.crewId).order('created_at', { ascending: false }).limit(5));
+    const pokes = ok(await sb.from('pokes').select('*').eq('crew_id', S.crewId).order('created_at', { ascending: false }).limit(10))
+      .filter(p => !S.blocked.includes(p.from_id) && !S.blocked.includes(p.to_id)).slice(0, 5);
     if (pokes.length) head.push(`<section class="ticker" aria-label="최근 약올리기">${pokes.map(p => `<p class="${p.to_id === S.uid ? 'mine' : ''}"><span>${esc(nameOf(p.from_id))} → ${esc(nameOf(p.to_id))}</span><mark>${esc(p.text)}</mark><small>${ago(p.created_at)}</small></p>`).join('')}</section>`);
   }
   const wk = sum(S.mine.filter(w => new Date(w.started_at) >= startOf('week'))).minutes, goal = S.me.weekly_goal_min;
   if (goal) head.push(`<section class="goal"><div><span>이번 주 목표</span><b class="num">${Math.round(wk)} / ${goal}분</b></div><div class="bar"><i style="width:${Math.min(100, wk / goal * 100)}%"></i></div></section>`);
 
-  $('#v-feed').innerHTML = `<div class="feed-head">${head.join('')}</div>` + (S.feed.length
-    ? S.feed.map(card).join('') + (S.feedEnd ? '<p class="end">여기까지예요</p>' : '<button class="btn ghost wide" data-act="more-feed">더 보기</button>')
+  const list = S.feed.filter(w => !S.blocked.includes(w.user_id));
+  $('#v-feed').innerHTML = `<div class="feed-head">${head.join('')}</div>` + (list.length
+    ? list.map(card).join('') + (S.feedEnd ? '<p class="end">여기까지예요</p>' : '<button class="btn ghost wide" data-act="more-feed">더 보기</button>')
     : `<div class="empty">${ic(S.crews.length ? 'run' : 'users', 'big')}<b>${S.crews.length ? '아직 아무도 운동 안 함' : '먼저 크루에 들어가세요'}</b>
       <p>${S.crews.length ? '지금 기록하면 자동으로 1등이에요.' : '크루를 만들거나 초대코드로 들어가면 친구들 기록이 여기 떠요.'}</p>
       <button class="btn primary" data-act="go" data-tab="${S.crews.length ? 'log' : 'crew'}">${S.crews.length ? '첫 기록 올리기' : '크루로 가기'}</button></div>`);

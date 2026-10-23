@@ -124,7 +124,9 @@
     <label class="field" id="fb-reason" hidden><span>신고 사유</span><select name="reason"><option>욕설·괴롭힘</option><option>부적절한 사진</option><option>가짜·조작 기록</option><option>스팸·광고</option><option>기타</option></select></label>
     <label class="field"><span>내용</span><textarea name="body" maxlength="1000"></textarea></label>
     <p class="hint">운영자만 볼 수 있어요. 신고해도 상대에게 누가 신고했는지 알리지 않아요.</p>
+    <label class="check" id="fb-block"><input type="checkbox" name="block">이 사람도 차단하기</label>
     <button class="btn primary wide">보내기</button>
+    <button type="button" class="linkbtn center" id="fb-block-only" data-act="block">신고 없이 차단만 하기</button>
   </form>
 </dialog>
 

@@ -13,7 +13,11 @@ export async function loadCore() {
     if (r.crews && !S.crews.some(c => c.id === r.crew_id)) S.crews.push(r.crews);
   }
   S.crewId = S.crews.find(c => c.id === lsGet('crew'))?.id || S.crews[0]?.id || null;
-  await Promise.all([loadGear(), signAvatars().catch(console.error)]);
+  await Promise.all([loadGear(), loadBlocks(), signAvatars().catch(console.error)]);
+}
+// 내가 차단한 사람(supabase/007). 이 사람들의 기록·댓글·약올리기는 화면에서 숨김
+export async function loadBlocks() {
+  S.blocked = ok(await sb.from('blocks').select('blocked')).map(r => r.blocked);
 }
 // 프로필 사진: 서명 주소를 7일 동안 폰에 저장 → 주소가 같으니 브라우저 캐시를 써서 매번 다시 받지 않음
 const AV_TTL = 7 * DAY;
