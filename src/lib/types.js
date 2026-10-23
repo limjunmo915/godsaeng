@@ -28,7 +28,8 @@ export const typeOf = k => TYPES[k] || TYPES.etc;
 export const QUICK_DEFAULT = ['run', 'walk', 'ride', 'swim', 'gym', 'tennis'];
 
 // 반응: [아이콘, 이름]
-export const REACTS = { fire: ['flame', '인정'], mad: ['mood-angry', '질 수 없다'], meh: ['mood-annoyed', '그게 다야?'], sofa: ['sofa', '누워있음'] };
+// 반응: [이모티콘, 이름] — 반응은 사용자가 하는 한마디라 이모티콘 허용(디자인 규칙 예외)
+export const REACTS = { fire: ['🔥', '인정'], mad: ['😤', '질 수 없다'], meh: ['🙄', '그게 다야?'], sofa: ['🛋️', '누워있음'] };
 export const BRAGS = ['나 이만큼 했지롱 😝', '너넨 오늘 뭐 했냐?', '부럽지? 부러우면 뛰어', '갓생 1일 추가요', '이 정도는 몸풀기지'];
 export const POKES = ['오늘도 누워있니? 🛋️', '소파랑 결혼했어? 💍', '나 벌써 끝냈는데~ 😏', '운동화 먼지 쌓였겠다 👟', '이번 주 꼴찌 예약이요 🐢', '숨쉬기 운동은 기록 안 돼요 🫁'];
 

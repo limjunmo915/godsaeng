@@ -11,8 +11,6 @@ import { shareWorkout } from './share.js';
 
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
-// 이 사람과 같이 있는 크루 (약올리기는 같은 크루 안에서만 가능)
-const sharedCrew = id => (S.members[S.crewId]?.includes(id) ? S.crewId : S.crews.find(c => S.members[c.id]?.includes(id))?.id);
 
 function card(w) {
   const t = typeOf(w.type), mine = w.user_id === S.uid, hide = mine ? [] : (w.hide_stats || []);
@@ -36,12 +34,11 @@ function card(w) {
     mine && w.hide_stats?.length ? `<span class="tag">${ic('eye-off')}일부 항목 크루에 숨김</span>` : '',
   ].join('');
   const cms = w.comments || [], open = w._open || cms.length <= 2, shown = open ? cms : cms.slice(-2);
-  const crewId = !mine && sharedCrew(w.user_id);
 
   return `<article class="card" data-wid="${w.id}">
     <header class="who">${avatar(w.user_id)}
       <div class="who-t"><b>${esc(nameOf(w.user_id))}</b><span>${ic(t.icon)}${esc(t.label)} · ${fmtDate(w.started_at)} ${fmtTime(w.started_at)}</span></div>
-      ${mine ? `<button class="icbtn" data-act="edit" aria-label="기록 수정">${ic('pencil')}</button><button class="icbtn" data-act="del" aria-label="기록 삭제">${ic('trash')}</button>` : ''}
+      ${mine ? `<button class="icbtn" data-act="share" aria-label="공유 카드 만들기">${ic('share-2')}</button><button class="icbtn" data-act="edit" aria-label="기록 수정">${ic('pencil')}</button><button class="icbtn" data-act="del" aria-label="기록 삭제">${ic('trash')}</button>` : ''}
     </header>
     ${w.title ? `<h3 class="title">${esc(w.title)}</h3>` : ''}
     <dl class="stats">${main.map(([k, v]) => `<div><dt>${k}</dt><dd>${big(v)}</dd></div>`).join('')}</dl>
@@ -52,19 +49,16 @@ function card(w) {
     ${w.memo ? `<p class="memo">${esc(w.memo)}</p>` : ''}
     ${mine && S.notes[w.id] ? `<p class="note">${ic('lock')}${esc(S.notes[w.id])}</p>` : ''}
     <div class="actbar">
-      ${Object.entries(REACTS).map(([k, [icon, label]]) => {
+      ${Object.entries(REACTS).map(([k, [emoji, label]]) => {
         const n = w.reactions.filter(r => r.kind === k).length;
-        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}">${ic(icon)}<span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
+        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}"><i aria-hidden="true">${emoji}</i><span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
       }).join('')}
-      <span class="grow"></span>
-      ${mine ? `<button class="icbtn" data-act="share" aria-label="공유 카드 만들기">${ic('share-2')}</button>`
-        : crewId ? `<button class="taunt-btn" data-act="poke" data-to="${w.user_id}" data-crew="${crewId}">약올리기</button>` : ''}
     </div>
     <div class="comments">
       ${!open ? `<button class="linkbtn" data-act="more-cm">댓글 ${cms.length}개 모두 보기</button>` : ''}
       ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${esc(c.body)}<small>${ago(c.created_at)}</small></p>
         ${c.user_id === S.uid || mine ? `<button class="icbtn sm" data-act="del-cm" data-cid="${c.id}" aria-label="댓글 삭제">${ic('x')}</button>` : ''}</div>`).join('')}
-      <form class="cform" data-form="comment"><input type="text" maxlength="300" placeholder="댓글로 약올리기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
+      <form class="cform" data-form="comment"><input type="text" maxlength="300" placeholder="댓글 달기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
     </div>
   </article>`;
 }
