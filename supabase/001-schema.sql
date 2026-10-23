@@ -242,4 +242,4 @@ create policy ph_del on storage.objects for delete to authenticated
 
 grant execute on function create_crew(text), join_crew(text) to authenticated;
 
--- 신체 기록(본인 전용)은 migrate-002-body.sql 에 있음. 새로 설치할 때도 이어서 실행.
+-- 신체 기록(본인 전용)은 002-body.sql 에 있음. 새로 설치할 때도 이어서 실행.
