@@ -183,7 +183,8 @@ dd { margin: 0; }
 .rx[aria-pressed="true"] { color: var(--brand-text); background: var(--brand-soft); }
 .rx:disabled { cursor: default; }
 .grow { flex: 1; }
-@media (max-width: 420px) { .rx span { display: none; } .rx { padding: 0 10px; } }
+/* 좁은 화면: 아이콘만 있으면 뜻을 몰라서, 아이콘 대신 이름(인정·질 수 없다…)을 보여 줌 */
+@media (max-width: 420px) { .rx .ic { display: none; } .rx { padding: 0 5px; } }
 .comments { display: grid; gap: 8px; padding-bottom: 12px; }
 .cm { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; min-width: 0; }
 .cm p { margin: 0; flex: 1; min-width: 0; overflow-wrap: anywhere; }
