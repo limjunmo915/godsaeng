@@ -116,6 +116,18 @@
   <div id="notif-list"></div>
 </dialog>
 
+<dialog id="fb" aria-labelledby="fb-title">
+  <div class="sheet-head"><h2 id="fb-title">건의·버그 제보</h2><button class="icbtn" data-act="close-fb" aria-label="닫기"><i data-ic="x"></i></button></div>
+  <form class="stack sheet-body" id="fb-form" data-form="feedback">
+    <input type="hidden" name="mode"><input type="hidden" name="workout_id"><input type="hidden" name="comment_id"><input type="hidden" name="target_user"><input type="hidden" name="snapshot">
+    <label class="field" id="fb-kind"><span>종류</span><select name="kind"><option value="idea">건의·바라는 기능</option><option value="bug">버그·오류</option><option value="etc">기타 문의</option></select></label>
+    <label class="field" id="fb-reason" hidden><span>신고 사유</span><select name="reason"><option>욕설·괴롭힘</option><option>부적절한 사진</option><option>가짜·조작 기록</option><option>스팸·광고</option><option>기타</option></select></label>
+    <label class="field"><span>내용</span><textarea name="body" maxlength="1000"></textarea></label>
+    <p class="hint">운영자만 볼 수 있어요. 신고해도 상대에게 누가 신고했는지 알리지 않아요.</p>
+    <button class="btn primary wide">보내기</button>
+  </form>
+</dialog>
+
 <script type="module" src="./main.js"></script>
 </body>
 </html>

@@ -38,7 +38,8 @@ function card(w) {
   return `<article class="card" data-wid="${w.id}">
     <header class="who">${avatar(w.user_id)}
       <div class="who-t"><b>${esc(nameOf(w.user_id))}</b><span>${ic(t.icon)}${esc(t.label)} · ${fmtDate(w.started_at)} ${fmtTime(w.started_at)}</span></div>
-      ${mine ? `<button class="icbtn" data-act="share" aria-label="공유 카드 만들기">${ic('share-2')}</button><button class="icbtn" data-act="edit" aria-label="기록 수정">${ic('pencil')}</button><button class="icbtn" data-act="del" aria-label="기록 삭제">${ic('trash')}</button>` : ''}
+      ${mine ? `<button class="icbtn" data-act="share" aria-label="공유 카드 만들기">${ic('share-2')}</button><button class="icbtn" data-act="edit" aria-label="기록 수정">${ic('pencil')}</button><button class="icbtn" data-act="del" aria-label="기록 삭제">${ic('trash')}</button>`
+        : `<button class="icbtn" data-act="report" aria-label="기록 신고">${ic('flag')}</button>`}
     </header>
     ${w.title ? `<h3 class="title">${esc(w.title)}</h3>` : ''}
     <dl class="stats">${main.map(([k, v]) => `<div><dt>${k}</dt><dd>${big(v)}</dd></div>`).join('')}</dl>
@@ -57,6 +58,7 @@ function card(w) {
     <div class="comments">
       ${!open ? `<button class="linkbtn" data-act="more-cm">댓글 ${cms.length}개 모두 보기</button>` : ''}
       ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${esc(c.body)}<small>${ago(c.created_at)}</small></p>
+        ${c.user_id !== S.uid ? `<button class="icbtn sm" data-act="report-cm" data-cid="${c.id}" aria-label="댓글 신고">${ic('flag')}</button>` : ''}
         ${c.user_id === S.uid || mine ? `<button class="icbtn sm" data-act="del-cm" data-cid="${c.id}" aria-label="댓글 삭제">${ic('x')}</button>` : ''}</div>`).join('')}
       <form class="cform" data-form="comment"><input type="text" maxlength="300" placeholder="댓글 달기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
     </div>

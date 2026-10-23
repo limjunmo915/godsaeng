@@ -12,11 +12,12 @@ import * as crew from './screens/crew.js';
 import * as me from './screens/me.js';
 import * as body from './screens/body.js';
 import * as notif from './screens/notif.js';
+import * as report from './screens/report.js';
 import { initForm, resetForm } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
-const forms = { ...feed.forms, ...crew.forms, ...me.forms, ...body.forms };
+const forms = { ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms };
 
 fillIcons();
 

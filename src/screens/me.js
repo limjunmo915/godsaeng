@@ -113,6 +113,7 @@ export async function renderMe() {
         <label class="field"><span>종류</span><select name="kind"><option value="shoes">신발</option><option value="bike">자전거</option><option value="etc">기타</option></select></label>
         <label class="field"><span>교체 알림 (km)</span><input type="number" name="km" min="1" inputmode="numeric" placeholder="700"></label>
       </div><button class="btn">추가</button></form></details>
+    <button class="btn wide" data-act="feedback">${ic('bulb')}건의·버그 제보</button>
     <details class="panel"><summary>설정</summary>
       <form class="stack" data-form="settings"><div class="row">
         <label class="field"><span>닉네임</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>
