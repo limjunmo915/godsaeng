@@ -4,6 +4,7 @@ import { S, sb, ok, $ } from '../state.js';
 import { DAY, esc, ago, lsGet, lsSet } from '../lib/util.js';
 import { REACTS, typeOf } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
+import { NOTICES } from '../lib/notices.js';
 
 async function fetchNotifs() {
   const since = new Date(Date.now() - 14 * DAY).toISOString();
@@ -19,16 +20,24 @@ async function fetchNotifs() {
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
   ].sort((a, b) => new Date(b.ts) - new Date(a.ts));
 }
+const newNotice = () => NOTICES.length > 0 && NOTICES[0].id !== lsGet('notice');
 export async function loadNotifs() {
-  try { const list = await fetchNotifs(); $('#notif-dot').hidden = !list.some(n => new Date(n.ts) > new Date(lsGet('seen') || 0)); }
+  $('#notif-dot').hidden = !newNotice();
+  try { const list = await fetchNotifs(); if (list.some(n => new Date(n.ts) > new Date(lsGet('seen') || 0))) $('#notif-dot').hidden = false; }
   catch (err) { console.error(err); }
 }
+// 공지: 최근 3개, 안 읽은 맨 위 공지는 펼쳐서
+const noticesHtml = () => NOTICES.length ? `<section class="notices"><h3>공지</h3>${NOTICES.slice(0, 3).map((n, i) => `<details ${i === 0 && newNotice() ? 'open' : ''}>
+  <summary><b>${esc(n.title)}</b><small>${esc(n.id.slice(5, 10).replace('-', '/'))}</small></summary>
+  <ul>${n.items.map(s => `<li>${esc(s)}</li>`).join('')}</ul></details>`).join('')}</section>` : '';
 async function openNotifs() {
-  $('#notif-list').innerHTML = '<p class="hint">불러오는 중…</p>';
+  const head = noticesHtml();
+  $('#notif-list').innerHTML = head + '<p class="hint">불러오는 중…</p>';
   $('#notif').showModal();
+  if (NOTICES.length) lsSet('notice', NOTICES[0].id);
   const list = await fetchNotifs();
   lsSet('seen', new Date().toISOString()); $('#notif-dot').hidden = true;
-  $('#notif-list').innerHTML = list.map(n => `<div class="nt">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></div>`).join('') || '<p class="hint">최근 2주간 알림이 없어요. 먼저 약올려 보세요.</p>';
+  $('#notif-list').innerHTML = head + (list.map(n => `<div class="nt">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></div>`).join('') || '<p class="hint">최근 2주간 알림이 없어요. 먼저 약올려 보세요.</p>');
 }
 
 export const actions = {
