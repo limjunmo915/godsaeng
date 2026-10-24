@@ -9,6 +9,7 @@ import { refresh } from '../nav.js';
 import { meHead } from './me.js';
 import { seg } from './rank.js';
 import { syncForm } from './log.js';
+import { HEALTH_TEXT } from './consent.js';
 
 function lineChart(pts, unit, d) {
   if (pts.length < 2) return '<p class="hint">측정 기록이 2개 이상 쌓이면 추이 그래프가 그려져요.</p>';
@@ -28,6 +29,10 @@ function lineChart(pts, unit, d) {
 }
 
 export async function renderBody() {
+  if (!S.consents.health) return $('#v-me').innerHTML = meHead('건강정보 동의 필요') + `<section class="panel consent">
+    <h3>${ic('lock')}내 몸 기록은 건강정보 동의가 필요해요</h3>
+    <p>${esc(HEALTH_TEXT)}</p>
+    <button class="btn primary wide" data-act="health-agree" data-noask="1">동의하고 시작하기</button></section>`;
   const p = S.body.p || {}, logs = S.body.logs, a = age(), h = p.height_cm, w = latest('weight_kg'), fat = latest('body_fat_pct');
   const bmi = w && h ? w / (h / 100) ** 2 : null;
   // 대한비만학회 기준

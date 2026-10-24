@@ -126,6 +126,9 @@ export async function renderMe() {
       <button class="btn">저장</button></form>
       ${S.blocked.length ? `<h4 class="sec">차단한 사람</h4>${S.blocked.map(id => `<div class="blk">${avatar(id, 'sm')}<span>${esc(nameOf(id))}</span><button class="linkbtn" data-act="unblock" data-id="${id}">차단 풀기</button></div>`).join('')}` : ''}
       <p class="hint">닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
+      <div class="consent-row"><span>건강정보 동의 ${S.consents.health ? '함' : '안 함'}</span>${S.consents.health
+        ? '<button class="linkbtn danger" data-act="health-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="health-agree">동의하기</button>'}</div>
+      <p class="legal left"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · 문의 ijm09@naver.com</p>
       <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button>
       <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button></details>`;
 }

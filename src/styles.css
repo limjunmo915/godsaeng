@@ -248,6 +248,15 @@ dd { margin: 0; }
 .inline input { flex: 1; }
 
 /* 나 */
+/* 동의 안내 */
+.consent { padding: 16px; }
+.consent h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 16px; }
+.consent p { white-space: pre-line; color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+.consent-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+.legal { text-align: center; font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.legal.left { text-align: left; }
+.legal a { color: inherit; }
+.check a { color: var(--brand-text); }
 .blk { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
 .blk span { flex: 1; }
 .avatar-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }

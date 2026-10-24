@@ -13,20 +13,22 @@ import * as me from './screens/me.js';
 import * as body from './screens/body.js';
 import * as notif from './screens/notif.js';
 import * as report from './screens/report.js';
+import * as consent from './screens/consent.js';
 import { initForm, resetForm } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
-const forms = { ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms };
+const forms = { ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms };
 
 fillIcons();
+$('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
 const showLogin = () => { $('#app').hidden = true; $('#login').hidden = false; };
 $('#l-toggle').onclick = () => {
   S.loginMode = S.loginMode === 'in' ? 'up' : 'in';
   const up = S.loginMode === 'up';
-  $('#l-nick-wrap').hidden = !up;
+  document.querySelectorAll('.up-only').forEach(el => { el.hidden = !up; });
   $('#l-submit').textContent = up ? '가입하기' : '로그인';
   $('#l-toggle').textContent = up ? '이미 계정이 있어요 · 로그인' : '처음이에요 · 회원가입';
   $('#l-pw').autocomplete = up ? 'new-password' : 'current-password';
@@ -38,8 +40,11 @@ $('#login-form').onsubmit = async e => {
   $('#l-submit').disabled = true;
   try {
     if (S.loginMode === 'up') {
-      const nickname = $('#l-nick').value.trim() || email.split('@')[0];
-      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname }, emailRedirectTo: location.origin + location.pathname } }));
+      const nickname = $('#l-nick').value.trim() || email.split('@')[0], birthdate = $('#l-bd').value;
+      if (!consent.over14(birthdate)) return toast('만 14세 이상만 가입할 수 있어요. 생년월일을 확인해 주세요.');
+      if (!$('#l-agree').checked) return toast('이용약관과 개인정보처리방침에 동의해 주세요.');
+      // 생년월일은 서버가 나이만 확인하고 지움(supabase/008)
+      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname, birthdate, terms_version: consent.TERMS_VER }, emailRedirectTo: location.origin + location.pathname } }));
       if (!data.session) toast('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.');
     } else ok(await sb.auth.signInWithPassword({ email, password }));
   } catch (err) { fail(err); }
@@ -57,6 +62,7 @@ async function boot() {
   $('#login').hidden = true; $('#app').hidden = false;
   try {
     await loadCore();
+    await consent.loadConsents(); await consent.termsGate();
     initForm();
     show(S.crews.length ? S.tab : 'crew');
     await Promise.all([loadFeed(true), loadMine(), loadBody()]);

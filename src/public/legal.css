@@ -1,0 +1,15 @@
+/* 약관·방침 페이지 공통 (앱 디자인 토큰과 같은 색) */
+:root { --ink: #10121F; --muted: #5B5F73; --bg: #F5F6FA; --surface: #FFFFFF; --line: #E3E5EE; --brand: #3D2EFF; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --ink: #ECEDF7; --muted: #A3A7BC; --bg: #0D0F1A; --surface: #161929; --line: #262A40; --brand: #8C82FF; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.7 -apple-system, BlinkMacSystemFont, 'Pretendard Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; word-break: keep-all; }
+main { max-width: 720px; margin: 0 auto; padding: 16px 16px 48px; background: var(--surface); min-height: 100vh; }
+h1 { font-size: 24px; margin: 8px 0 4px; letter-spacing: -0.02em; }
+h2 { font-size: 17px; margin: 28px 0 8px; }
+.meta, .note { color: var(--muted); font-size: 13px; }
+a { color: var(--brand); }
+.back { margin: 0; font-size: 14px; }
+ul { padding-left: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; min-width: 90px; }
+th { background: var(--bg); }

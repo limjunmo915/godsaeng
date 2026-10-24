@@ -3,6 +3,7 @@ import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress } from '../lib/util.js';
 import { TYPE_GROUPS, TYPES, QUICK_DEFAULT, BRAGS } from '../lib/types.js';
+import { agreeHealth } from './consent.js';
 import { estKcal, latest, age } from '../lib/calc.js';
 import { loadFeed, loadMine } from '../lib/data.js';
 import { show } from '../nav.js';
@@ -36,6 +37,8 @@ export function initForm() {
   $('#log-form').addEventListener('input', syncForm);
   $('#f-unit').onchange = () => setUnit($('#f-unit').value);
   $('#f-rpe').oninput = () => { $('#rpe-out').textContent = $('#f-rpe').value; };
+  // 심박은 건강정보 → 동의 전엔 입력 못 함
+  $('#f-hr').onfocus = async e => { if (S.consents.health) return; e.target.blur(); if (await agreeHealth()) $('#f-hr').focus(); };
   $('#f-photo').onchange = addPhotos;
   $('#thumbs').onclick = e => {
     const b = e.target.closest('[data-rm]'); if (!b) return;
