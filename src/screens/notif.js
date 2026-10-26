@@ -5,16 +5,20 @@ import { DAY, esc, ago, lsGet, lsSet } from '../lib/util.js';
 import { REACTS, typeOf } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
 import { NOTICES } from '../lib/notices.js';
+import { loadFollows } from '../lib/data.js';
 
 async function fetchNotifs() {
   const since = new Date(Date.now() - 14 * DAY).toISOString();
-  const [pk, cm, rx] = await Promise.all([
+  const [, pk, cm, rx] = await Promise.all([
+    loadFollows(),
     sb.from('pokes').select('from_id,text,created_at').eq('to_id', S.uid).gte('created_at', since).order('created_at', { ascending: false }).limit(30).then(ok),
     sb.from('comments').select('user_id,body,created_at,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
     sb.from('reactions').select('user_id,kind,created_at,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
   ]);
   const what = w => esc(w.title || typeOf(w.type).label);
   return [
+    ...Object.entries(S.followedAt || {}).filter(([, t]) => new Date(t) >= new Date(since)).map(([id, t]) => ({ ts: t, id,
+      html: `<b>${esc(nameOf(id))}</b>님이 ${S.following.includes(id) ? '맞팔로우해서 친구가 됐어요' : '팔로우했어요. 크루 → 친구에서 맞팔로우하면 친구가 돼요'}` })),
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
     ...cm.map(c => ({ ts: c.created_at, id: c.user_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(c.body)}` })),
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),

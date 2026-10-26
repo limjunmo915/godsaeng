@@ -8,7 +8,7 @@ export const sb = createClient(
 );
 
 export const S = {
-  uid: undefined, me: null, crews: [], crewId: null, people: {}, members: {}, blocked: [], consents: {},
+  uid: undefined, me: null, crews: [], crewId: null, people: {}, members: {}, blocked: [], consents: {}, following: [], followers: [], crewTab: 'crew',
   feed: [], feedEnd: false, mine: [], notes: {}, gear: [], urls: {},
   tab: 'feed', rPeriod: 'week', rMetric: 'points', calMonth: null,
   editing: null, newPhotos: [], keptPhotos: [], loginMode: 'in',

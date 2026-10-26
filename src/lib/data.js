@@ -13,7 +13,16 @@ export async function loadCore() {
     if (r.crews && !S.crews.some(c => c.id === r.crew_id)) S.crews.push(r.crews);
   }
   S.crewId = S.crews.find(c => c.id === lsGet('crew'))?.id || S.crews[0]?.id || null;
-  await Promise.all([loadGear(), loadBlocks(), signAvatars().catch(console.error)]);
+  await Promise.all([loadGear(), loadBlocks(), loadFollows().then(() => signAvatars()).catch(console.error)]);
+}
+// 팔로우(supabase/009): 내가 팔로우한 사람 / 나를 팔로우한 사람. 서로면 친구
+export async function loadFollows() {
+  const rows = ok(await sb.from('follows').select('follower,followee,created_at'));
+  S.following = rows.filter(r => r.follower === S.uid).map(r => r.followee);
+  S.followers = rows.filter(r => r.followee === S.uid).map(r => r.follower);
+  S.followedAt = Object.fromEntries(rows.filter(r => r.followee === S.uid).map(r => [r.follower, r.created_at]));
+  const need = [...new Set([...S.following, ...S.followers])].filter(id => !S.people[id]);
+  if (need.length) for (const p of ok(await sb.from('profiles').select('*').in('id', need))) S.people[p.id] = p;
 }
 // 내가 차단한 사람(supabase/007). 이 사람들의 기록·댓글·약올리기는 화면에서 숨김
 export async function loadBlocks() {
@@ -75,3 +84,4 @@ export async function crewTotals(from, to = Date.now() + DAY, crewId = S.crewId)
   for (const w of rows) by[w.user_id]?.push(w);
   return by;
 }
+export const isFriend = id => S.following.includes(id) && S.followers.includes(id);

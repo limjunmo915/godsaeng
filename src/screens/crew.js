@@ -7,6 +7,7 @@ import { nameOf, crew, avatar } from '../lib/calc.js';
 import { loadCore, loadFeed, crewTotals } from '../lib/data.js';
 import { refresh } from '../nav.js';
 import { total, crewPicker } from './rank.js';
+import { renderFriends, tabs } from './friends.js';
 
 const joinForms = open => `
   <details class="panel" ${open ? 'open' : ''}><summary>초대코드로 크루 들어가기</summary>
@@ -15,8 +16,9 @@ const joinForms = open => `
     <form class="inline" data-form="crew-new"><input type="text" name="name" maxlength="30" placeholder="질수없다 러닝크루" aria-label="크루 이름" required><button class="btn">만들기</button></form></details>`;
 
 export async function renderCrew() {
+  if (S.crewTab === 'friends') return renderFriends();
   const v = $('#v-crew'), c = crew();
-  if (!c) return v.innerHTML = `<h2 class="page-title">크루</h2><p class="lead">크루 안에서만 기록이 공유돼요. 초대코드를 받았다면 입력하고, 아니면 새로 만들어서 코드를 보내 주세요.</p>` + joinForms(true);
+  if (!c) return v.innerHTML = `<h2 class="page-title">크루</h2>${tabs()}<p class="lead">크루 안에서만 기록이 공유돼요. 초대코드를 받았다면 입력하고, 아니면 새로 만들어서 코드를 보내 주세요.</p>` + joinForms(true);
 
   const chs = ok(await sb.from('challenges').select('*').eq('crew_id', c.id).order('end_date', { ascending: false }).limit(10));
   const blocks = await Promise.all(chs.map(async ch => {
@@ -35,7 +37,7 @@ export async function renderCrew() {
   }));
   const iso = d => toLocalInput(d).slice(0, 10), today = new Date();
 
-  v.innerHTML = `<h2 class="page-title">크루</h2>${crewPicker()}
+  v.innerHTML = `<h2 class="page-title">크루</h2>${tabs()}${crewPicker()}
     <section class="crew-card">
       <div class="crew-top"><b>${esc(c.name)}</b><span>${S.members[c.id].length}명</span></div>
       <div class="code-row"><div><span>초대코드</span><code>${esc(c.invite_code)}</code></div><button class="btn" data-act="copy">${ic('copy')}초대 문구 복사</button></div>

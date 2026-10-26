@@ -3,7 +3,7 @@ import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import './styles.css';
 import { S, sb, ok, $ } from './state.js';
 import { fillIcons } from './lib/icons.js';
-import { toast, fail } from './lib/util.js';
+import { toast, fail, lsGet, lsSet } from './lib/util.js';
 import { loadCore, loadFeed, loadMine, loadBody } from './lib/data.js';
 import { show, refresh } from './nav.js';
 import * as feed from './screens/feed.js';
@@ -14,9 +14,10 @@ import * as body from './screens/body.js';
 import * as notif from './screens/notif.js';
 import * as report from './screens/report.js';
 import * as consent from './screens/consent.js';
+import * as friends from './screens/friends.js';
 import { initForm, resetForm } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
 const forms = {
   newpw: async (f, d) => {
@@ -26,6 +27,9 @@ const forms = {
   ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms };
 
 fillIcons();
+// 친구 초대 링크(?f=코드): 저장해 두고 주소창에서 지움 → 로그인 뒤 friends.acceptInvite()
+{ const f = new URLSearchParams(location.search).get('f');
+  if (f) { lsSet('invite', f); history.replaceState(null, '', location.pathname); $('#l-invited').hidden = false; } }
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
@@ -50,7 +54,9 @@ $('#login-form').onsubmit = async e => {
       if (!consent.over14(birthdate)) return toast('만 14세 이상만 가입할 수 있어요. 생년월일을 확인해 주세요.');
       if (!$('#l-agree').checked) return toast('이용약관과 개인정보처리방침에 동의해 주세요.');
       // 생년월일은 서버가 나이만 확인하고 지움(supabase/008)
-      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname, birthdate, terms_version: consent.TERMS_VER }, emailRedirectTo: location.origin + location.pathname } }));
+      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname, birthdate, terms_version: consent.TERMS_VER },
+        // 초대받은 사람은 확인 메일 링크에도 초대 코드를 실어 다른 브라우저에서 열어도 친구가 되게
+        emailRedirectTo: location.origin + location.pathname + (lsGet('invite') ? '?f=' + lsGet('invite') : '') } }));
       if (!data.session) toast('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.');
     } else ok(await sb.auth.signInWithPassword({ email, password }));
   } catch (err) { fail(err); }
@@ -82,6 +88,7 @@ async function boot() {
     await Promise.all([loadFeed(true), loadMine(), loadBody()]);
     refresh(); if (!S.editing) resetForm();
     notif.loadNotifs();
+    await friends.acceptInvite();
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
 }
 

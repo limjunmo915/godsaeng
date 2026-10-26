@@ -122,7 +122,8 @@ export async function renderMe() {
         <label class="field"><span>닉네임</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>
         <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
       </div>
-      <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원이 나를 약올릴 수 없어요)</label>
+      <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원·친구가 나를 약올릴 수 없어요)</label>
+      <label class="check"><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}>닉네임 검색에 나 표시</label>
       <button class="btn">저장</button></form>
       ${S.blocked.length ? `<h4 class="sec">차단한 사람</h4>${S.blocked.map(id => `<div class="blk">${avatar(id, 'sm')}<span>${esc(nameOf(id))}</span><button class="linkbtn" data-act="unblock" data-id="${id}">차단 풀기</button></div>`).join('')}` : ''}
       <p class="hint">닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
@@ -188,7 +189,7 @@ export const forms = {
     await loadGear(); initGearSelect(); return refresh();
   },
   settings: async (f, d) => {
-    S.me = ok(await sb.from('profiles').update({ nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on }).eq('id', S.uid).select().single());
+    S.me = ok(await sb.from('profiles').update({ nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable }).eq('id', S.uid).select().single());
     S.people[S.uid] = S.me; toast('저장했어요'); return refresh();
   },
 };

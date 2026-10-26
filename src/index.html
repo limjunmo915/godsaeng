@@ -16,7 +16,8 @@
   <form class="login-box" id="login-form" novalidate>
     <div class="wordmark lg">갓생살기<i></i></div>
     <p class="slogan">질 수 없다</p>
-    <p class="lead">운동하고, 올리고, 친구들 약올리기. 크루끼리만 보여요.</p>
+    <p class="lead">운동하고, 올리고, 친구들 약올리기. 크루와 친구끼리만 보여요.</p>
+    <p class="invited" id="l-invited" hidden>친구 초대를 받았어요! 가입하거나 로그인하면 바로 친구가 돼요.</p>
     <label class="field"><span>이메일</span><input type="email" id="l-email" autocomplete="email" required></label>
     <label class="field"><span>비밀번호 (6자 이상)</span><input type="password" id="l-pw" autocomplete="current-password" minlength="6" required></label>
     <label class="field up-only" hidden><span>닉네임</span><input type="text" id="l-nick" maxlength="20" placeholder="크루에 보일 이름"></label>
@@ -86,7 +87,7 @@
         <fieldset class="group">
           <legend>공개 설정</legend>
           <div class="checks">
-            <label class="check"><input type="radio" name="vis" id="vis-crew" value="crew" checked>크루 공개</label>
+            <label class="check"><input type="radio" name="vis" id="vis-crew" value="crew" checked>크루·친구 공개</label>
             <label class="check"><input type="radio" name="vis" id="vis-private" value="private">나만 보기</label>
             <label class="check"><input type="checkbox" id="f-commute">출퇴근</label>
           </div>

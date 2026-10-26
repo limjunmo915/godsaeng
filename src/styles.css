@@ -75,6 +75,7 @@ main { padding-bottom: calc(var(--nav-h) + 24px + env(safe-area-inset-bottom, 0p
 .btn:hover { background: var(--fill); }
 .btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); height: 52px; font-size: 16px; font-weight: 700; }
 .btn.primary:hover { filter: brightness(1.08); }
+.btn.sm { height: 32px; padding: 0 12px; font-size: 13px; flex: none; }
 .btn.taunt { background: var(--taunt); border-color: var(--taunt); color: var(--taunt-ink); }
 .btn.wide { width: 100%; }
 .btn.danger, .linkbtn.danger { color: var(--down); }
@@ -257,6 +258,10 @@ dd { margin: 0; }
 .legal.left { text-align: left; }
 .legal a { color: inherit; }
 .check a { color: var(--brand-text); }
+.invited { background: var(--taunt); color: var(--taunt-ink); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-weight: 600; margin: 0; }
+.frow { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.frow .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.sec small { font-weight: 500; color: var(--muted); font-size: 12px; margin-left: 6px; }
 .blk { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
 .blk span { flex: 1; }
 .avatar-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
