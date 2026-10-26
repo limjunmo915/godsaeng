@@ -3,7 +3,7 @@ import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { DAY, esc, fmtNum, fmtDur, fmtDurS, fmtDist, fmtDate, startOf, dayKey, toast, fail, compress } from '../lib/util.js';
 import { typeOf } from '../lib/types.js';
-import { sum, pace, effort, streaks, badges, avatar, nameOf } from '../lib/calc.js';
+import { sum, pace, effort, streaks, badges, bests, avatar, nameOf } from '../lib/calc.js';
 import { loadGear, signAvatars } from '../lib/data.js';
 import { refresh } from '../nav.js';
 import { seg } from './rank.js';
@@ -13,7 +13,8 @@ import { initGearSelect } from './log.js';
 import { renderBody } from './body.js';
 
 export const meHead = sub => `
-  <div class="profile">${avatar(S.uid, 'lg')}<div><b>${esc(S.me.nickname)}</b><span>${sub}</span></div></div>
+  <div class="profile">${avatar(S.uid, 'lg')}<div><b>${esc(S.me.nickname)}</b><span>${sub}</span></div>
+    <button class="btn sm" data-act="profile" data-id="${S.uid}">내 프로필 보기</button></div>
   ${seg('meTab', S.meTab, [['stats', '운동 기록'], ['body', '내 몸']])}`;
 
 // 내 기록 검색: 공백으로 나눈 단어가 모두 들어있는 기록 (날짜는 2026-10-13 / 10/13 / 10월 13일 모두 매칭)
@@ -60,19 +61,11 @@ export async function renderMe() {
   // 종목별, 최고기록, 장비
   const byType = {}; for (const w of mine) byType[w.type] = (byType[w.type] || 0) + +w.duration_min;
   const types = Object.entries(byType).sort((a, b) => b[1] - a[1]), tmax = types[0]?.[1] || 1;
-  const best = f => mine.reduce((a, w) => f(w) > f(a) ? w : a);
-  const pbRun = k => { const r = mine.filter(w => w.type === 'run' && +w.distance_km >= k); if (!r.length) return null;
-    return pace(r.reduce((a, w) => w.duration_min / w.distance_km < a.duration_min / a.distance_km ? w : a))[1]; };
   const gearKm = id => mine.filter(w => w.gear_id === id).reduce((a, w) => a + +w.distance_km, 0);
   const goal = me.weekly_goal_min;
   const monthTop = Object.entries(in_(mo, Infinity).reduce((a, w) => (a[w.type] = (a[w.type] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1])[0];
-  const pbs = mine.length ? [
-    ['5K 최고 페이스', pbRun(5)], ['10K 최고 페이스', pbRun(10)], ['하프 최고 페이스', pbRun(21.0975)],
-    ...(b => +b.distance_km ? [[`최장 거리 · ${typeOf(b.type).label}`, fmtNum(b.distance_km, 2) + ' km']] : [])(best(w => +w.distance_km)),
-    ...(b => [[`최장 시간 · ${typeOf(b.type).label}`, fmtDur(b.duration_min)]])(best(w => +w.duration_min)),
-    ...(b => [[`최대 칼로리 · ${typeOf(b.type).label}`, fmtNum(b.kcal) + ' kcal']])(best(w => +w.kcal)),
-    ...(b => b.avg_hr ? [['최고 상대적 노력', String(effort(b))]] : [])(best(effort)),
-  ].filter(x => x[1]) : [];
+  const pbs = bests(mine);
+
 
   v.innerHTML = meHead(`${mine.length}번 운동 · 크루 ${S.crews.length}개`) + `
     ${goal ? `<section class="goal"><div><span>이번 주 목표</span><b class="num">${Math.round(tw.minutes)} / ${goal}분</b></div><div class="bar"><i style="width:${Math.min(100, tw.minutes / goal * 100)}%"></i></div></section>` : ''}

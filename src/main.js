@@ -100,8 +100,10 @@ document.addEventListener('click', async e => {
   const sg = e.target.closest('[data-seg] [data-v]');
   if (sg) { S[sg.closest('[data-seg]').dataset.seg] = sg.dataset.v; return refresh(); }
   const b = e.target.closest('[data-act]'); if (!b || !actions[b.dataset.act]) return;
-  const w = S.feed.find(x => x.id === b.closest('[data-wid]')?.dataset.wid);
+  const wid = b.closest('[data-wid]')?.dataset.wid, w = S.feed.find(x => x.id === wid) || S.ppList?.find(x => x.id === wid);
   try { await actions[b.dataset.act](b, w, e); } catch (err) { b.disabled = false; fail(err); }
+  // 프로필 페이지 안에서 반응·팔로우 등을 하면 페이지 다시 그리기
+  if (S.pp && b.closest('#pp') && !/^(pp-|profile$)/.test(b.dataset.act)) profile.renderPP();
 });
 document.addEventListener('submit', async e => {
   const f = e.target, fn = forms[f.dataset.form]; if (!fn) return;
@@ -109,6 +111,7 @@ document.addEventListener('submit', async e => {
   const btn = f.querySelector('button:not([type=button])'); if (btn) btn.disabled = true;
   const d = Object.fromEntries([...new FormData(f)].map(([k, v]) => [k, String(v).trim()]));
   try { await fn(f, d); } catch (err) { fail(err); } finally { if (btn) btn.disabled = false; }
+  if (S.pp && f.closest('#pp')) profile.renderPP();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) notif.loadNotifs(); });
 

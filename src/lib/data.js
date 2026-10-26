@@ -49,7 +49,7 @@ export async function signPhotos(paths) {
   const res = ok(await sb.storage.from('photos').createSignedUrls(need, 6 * 3600));
   for (const r of res) if (r.signedUrl) S.urls[r.path] = r.signedUrl;
 }
-const FEED_SEL = '*, reactions(user_id,kind), comments(id,user_id,body,created_at)';
+export const FEED_SEL = '*, reactions(user_id,kind), comments(id,user_id,body,created_at)';
 export async function loadFeed(reset) {
   if (reset) { S.feed = []; S.feedEnd = false; }
   // 남의 기록은 crew_workouts(서버가 숨긴 심박·칼로리를 빈칸으로 보냄)로만 읽음 → supabase/004

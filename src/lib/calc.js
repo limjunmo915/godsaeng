@@ -1,7 +1,7 @@
 // 운동·신체 계산식과 사람 표시 도구
 import { S } from '../state.js';
 import { TYPES, typeOf, points } from './types.js';
-import { DAY, esc, fmtNum, startOf, dayKey } from './util.js';
+import { DAY, esc, fmtNum, fmtDur, startOf, dayKey } from './util.js';
 
 export const sum = list => list.reduce((a, w) => ({
   count: a.count + 1, minutes: a.minutes + (+w.duration_min || 0), kcal: a.kcal + (+w.kcal || 0),
@@ -54,6 +54,20 @@ export function streaks(list) {
     run = prev !== null && Math.round((k - prev) / DAY) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = k;
   }
   return { daily, weekly, best };
+}
+// 개인 최고 기록 [[이름, 값]] (나 탭·프로필 페이지 공용)
+export function bests(list) {
+  if (!list.length) return [];
+  const best = f => list.reduce((a, w) => f(w) > f(a) ? w : a);
+  const pbRun = k => { const r = list.filter(w => w.type === 'run' && +w.distance_km >= k); if (!r.length) return null;
+    return pace(r.reduce((a, w) => w.duration_min / w.distance_km < a.duration_min / a.distance_km ? w : a))[1]; };
+  return [
+    ['5K 최고 페이스', pbRun(5)], ['10K 최고 페이스', pbRun(10)], ['하프 최고 페이스', pbRun(21.0975)],
+    ...(b => +b.distance_km ? [[`최장 거리 · ${typeOf(b.type).label}`, fmtNum(b.distance_km, 2) + ' km']] : [])(best(w => +w.distance_km)),
+    ...(b => [[`최장 시간 · ${typeOf(b.type).label}`, fmtDur(b.duration_min)]])(best(w => +w.duration_min)),
+    ...(b => +b.kcal ? [[`최대 칼로리 · ${typeOf(b.type).label}`, fmtNum(b.kcal) + ' kcal']] : [])(best(w => +w.kcal || 0)),
+    ...(b => b.avg_hr ? [['최고 상대적 노력', String(effort(b))]] : [])(best(effort)),
+  ].filter(x => x[1]);
 }
 export function badges(list, st) {
   const all = sum(list), runs = list.filter(w => w.type === 'run'), hours = list.map(w => new Date(w.started_at).getHours());

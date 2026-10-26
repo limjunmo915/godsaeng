@@ -64,7 +64,7 @@ document.addEventListener('input', e => {
 async function reload(msg) {
   await loadFollows(); await signAvatars().catch(console.error); await loadFeed(true);
   if (msg) toast(msg);
-  if ($('#profile').open) await openProfile(S.profileId);   // 프로필 창에서 팔로우했으면 창도 새로
+  if (S.pp) await openProfile(S.pp.id, true);   // 프로필 페이지에서 팔로우했으면 페이지도 새로
   return refresh();
 }
 

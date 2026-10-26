@@ -11,7 +11,7 @@ import { seg } from './rank.js';
 import { syncForm } from './log.js';
 import { HEALTH_TEXT } from './consent.js';
 
-function lineChart(pts, unit, d) {
+export function lineChart(pts, unit, d) {
   if (pts.length < 2) return '<p class="hint">측정 기록이 2개 이상 쌓이면 추이 그래프가 그려져요.</p>';
   const W = 600, H = 190, L = 44, R = 12, T = 14, B = 26;
   const t0 = pts[0].t, t1 = pts.at(-1).t || t0 + 1, vs = pts.map(p => p.v);

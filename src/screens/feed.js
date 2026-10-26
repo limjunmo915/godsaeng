@@ -12,7 +12,7 @@ import { shareWorkout } from './share.js';
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
 
-function card(w) {
+export function card(w) {
   const t = typeOf(w.type), mine = w.user_id === S.uid, hide = mine ? [] : (w.hide_stats || []);
   const all = [];
   if (+w.distance_km) all.push(['거리', fmtDist(w)]);
@@ -37,7 +37,7 @@ function card(w) {
 
   return `<article class="card" data-wid="${w.id}">
     <header class="who">${avatar(w.user_id)}
-      <div class="who-t"><b>${esc(nameOf(w.user_id))}</b><span>${ic(t.icon)}${esc(t.label)} · ${fmtDate(w.started_at)} ${fmtTime(w.started_at)}</span></div>
+      <div class="who-t"><button type="button" class="who-nm" data-act="profile" data-id="${w.user_id}">${esc(nameOf(w.user_id))}</button><span>${ic(t.icon)}${esc(t.label)} · ${fmtDate(w.started_at)} ${fmtTime(w.started_at)}</span></div>
       ${mine ? `<button class="icbtn" data-act="share" aria-label="공유 카드 만들기">${ic('share-2')}</button><button class="icbtn" data-act="edit" aria-label="기록 수정">${ic('pencil')}</button><button class="icbtn" data-act="del" aria-label="기록 삭제">${ic('trash')}</button>`
         : `<button class="icbtn" data-act="report" aria-label="기록 신고">${ic('flag')}</button>`}
     </header>
@@ -144,7 +144,7 @@ export const actions = {
 export const forms = {
   comment: async f => {
     const body = f.querySelector('input').value.trim(); if (!body) return;
-    const w = S.feed.find(x => x.id === f.closest('[data-wid]').dataset.wid);
+    const wid = f.closest('[data-wid]').dataset.wid, w = S.feed.find(x => x.id === wid) || S.ppList?.find(x => x.id === wid);
     const c = ok(await sb.from('comments').insert({ workout_id: w.id, body }).select().single());
     w.comments.push(c); w._open = true; return renderFeed();
   },
