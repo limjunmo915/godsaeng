@@ -4,7 +4,7 @@ import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { esc, ago, toast } from '../lib/util.js';
 import { typeOf } from '../lib/types.js';
-import { avatar } from '../lib/calc.js';
+import { avatar, hue, nameOf } from '../lib/calc.js';
 import { signAvatars, isFriend } from '../lib/data.js';
 import { relBtn } from './friends.js';
 
@@ -34,18 +34,25 @@ export async function openProfile(id) {
 
 async function viewAvatar(id) {
   const small = S.people[id]?.avatar_url;
-  if (!small) return;
-  // 큰 사진이 없거나(예전에 올린 사진) 볼 권한이 없으면 작은 사진으로
-  const { data } = await sb.storage.from('photos').createSignedUrl(small.replace(/\.jpg$/, '-l.jpg'), 600);
-  $('#photo-view img').src = data?.signedUrl || S.urls[small];
+  $('#photo-view img').hidden = !small; $('#pv-default').hidden = !!small;
+  if (small) {
+    // 큰 사진이 없거나(예전에 올린 사진) 볼 권한이 없으면 작은 사진으로
+    const { data } = await sb.storage.from('photos').createSignedUrl(small.replace(/\.jpg$/, '-l.jpg'), 600);
+    $('#photo-view img').src = data?.signedUrl || S.urls[small];
+  } else {
+    // 사진 없는 사람: 카톡처럼 기본 프로필(사람 모양 + 이름)
+    $('#pv-default').style.setProperty('--h', hue(id));
+    $('#pv-default b').textContent = nameOf(id);
+  }
   $('#photo-view').showModal();
 }
 
 // 사진 누르면 크게(버튼 안의 사진은 그 버튼 동작이 우선)
 document.addEventListener('click', e => {
-  const img = e.target.closest('img.av[data-uid]');
+  const img = e.target.closest('.av[data-uid]');
   if (!img || img.closest('[data-act]')) return;
-  if (canEnlarge(img.dataset.uid)) viewAvatar(img.dataset.uid);
+  // 기본 프로필(사진 없음)은 누구나, 진짜 사진은 팔로우·크루·친구만
+  if (!S.people[img.dataset.uid]?.avatar_url || canEnlarge(img.dataset.uid)) viewAvatar(img.dataset.uid);
   else toast('팔로우하면 프로필 사진을 크게 볼 수 있어요');
 });
 document.addEventListener('click', e => { if (e.target.closest('#photo-view')) $('#photo-view').close(); });

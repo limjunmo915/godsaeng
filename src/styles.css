@@ -264,7 +264,10 @@ dd { margin: 0; }
 .frow .nm span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .frow .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
 .av.xl { width: 88px; height: 88px; font-size: 32px; }
-img.av[data-uid] { cursor: zoom-in; }
+.av[data-uid] { cursor: zoom-in; }
+.pv-default { width: min(80vw, 320px); text-align: center; cursor: zoom-out; }
+.pv-default svg { display: block; overflow: hidden; width: 100%; aspect-ratio: 1; border-radius: 50%; background: hsl(var(--h, 245) 45% 72%); fill: hsl(var(--h, 245) 60% 92%); }
+.pv-default b { display: block; margin-top: 14px; color: #fff; font-size: 18px; }
 .pv-head { display: flex; align-items: center; gap: 14px; }
 .pv-head b { display: block; font-size: 20px; font-weight: 800; }
 .pv-head span { color: var(--muted); font-size: 13px; }

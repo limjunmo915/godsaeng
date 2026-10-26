@@ -69,11 +69,12 @@ export function badges(list, st) {
 
 export const nameOf = id => id === S.uid ? '나' : (S.people[id]?.nickname || '누군가');
 export const crew = () => S.crews.find(c => c.id === S.crewId);
+// 사진 없는 사람의 색(아이디로 정해져 늘 같음)
+export const hue = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 export function avatar(id, cls = '') {
   const p = S.people[id];
   const src = p?.avatar_url && S.urls[p.avatar_url];   // 서명 주소(data.js signAvatars). 외부 주소는 쓰지 않음
   if (src) return `<img class="av ${cls}" alt="" src="${esc(src)}" data-uid="${id}">`;
-  let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) % 360;
-  return `<span class="av ${cls}" style="--h:${h}" aria-hidden="true">${esc((p?.nickname || '?').slice(0, 1))}</span>`;
+  return `<span class="av ${cls}" style="--h:${hue(id)}" data-uid="${id}" aria-hidden="true">${esc((p?.nickname || '?').slice(0, 1))}</span>`;
 }
 export const typeLabel = k => typeOf(k).label;

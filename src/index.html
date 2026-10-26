@@ -139,7 +139,9 @@
   <div class="sheet-head"><h2>프로필</h2><button class="icbtn" data-act="close-profile" aria-label="닫기"><i data-ic="x"></i></button></div>
   <div class="sheet-body" id="profile-body"></div>
 </dialog>
-<dialog id="photo-view" class="viewer" aria-label="프로필 사진 크게 보기"><img alt="프로필 사진"></dialog>
+<dialog id="photo-view" class="viewer" aria-label="프로필 사진 크게 보기"><img alt="프로필 사진">
+  <div id="pv-default" class="pv-default" hidden><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="18"/><path d="M8 110c3-28 20-42 42-42s39 14 42 42z"/></svg><b></b></div>
+</dialog>
 
 <dialog id="pw-reset" aria-labelledby="pw-title">
   <div class="sheet-head"><h2 id="pw-title">새 비밀번호 정하기</h2></div>
