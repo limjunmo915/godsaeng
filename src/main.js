@@ -15,9 +15,10 @@ import * as notif from './screens/notif.js';
 import * as report from './screens/report.js';
 import * as consent from './screens/consent.js';
 import * as friends from './screens/friends.js';
+import * as profile from './screens/profile.js';
 import { initForm, resetForm } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
 const forms = {
   newpw: async (f, d) => {

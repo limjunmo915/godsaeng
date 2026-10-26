@@ -8,17 +8,19 @@ import { nameOf, avatar } from '../lib/calc.js';
 import { loadFollows, loadFeed, signAvatars, isFriend } from '../lib/data.js';
 import { refresh } from '../nav.js';
 import { seg } from './rank.js';
+import { openProfile } from './profile.js';
 
 export const tabs = () => seg('crewTab', S.crewTab, [['crew', '크루'], ['friends', '친구']]);
 
 // 이 사람과의 관계에 맞는 버튼
-function relBtn(id) {
+export function relBtn(id) {
   if (isFriend(id)) return `<span class="tag">${ic('check')}친구</span>`;
   if (S.following.includes(id)) return `<button class="btn sm" data-act="unfollow" data-id="${id}">요청 취소</button>`;
   if (S.followers.includes(id)) return `<button class="btn sm primary" data-act="follow" data-id="${id}">맞팔로우</button>`;
   return `<button class="btn sm primary" data-act="follow" data-id="${id}">팔로우</button>`;
 }
-const row = (id, right) => `<div class="frow">${avatar(id, 'sm')}<span class="nm">${esc(nameOf(id))}</span>${right}</div>`;
+// 이름(사진) 누르면 미리보기 프로필
+const row = (id, right) => `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${id}">${avatar(id, 'sm')}<span>${esc(nameOf(id))}${S.people[id]?.region ? `<small>${esc(S.people[id].region)}</small>` : ''}</span></button>${right}</div>`;
 
 export async function renderFriends() {
   const vis = id => !S.blocked.includes(id);
@@ -51,7 +53,8 @@ document.addEventListener('input', e => {
   timer = setTimeout(async () => {
     try {
       const list = ok(await sb.rpc('search_users', { q }));
-      for (const p of list) S.people[p.id] ??= p;
+      for (const p of list) S.people[p.id] = { ...S.people[p.id], ...p };
+      await signAvatars().catch(console.error);
       if ($('#f-search')?.value.trim() !== q) return;
       $('#f-results').innerHTML = list.map(p => row(p.id, relBtn(p.id))).join('') || '<p class="hint">찾는 사람이 없어요.</p>';
     } catch (err) { fail(err); }
@@ -61,6 +64,7 @@ document.addEventListener('input', e => {
 async function reload(msg) {
   await loadFollows(); await signAvatars().catch(console.error); await loadFeed(true);
   if (msg) toast(msg);
+  if ($('#profile').open) await openProfile(S.profileId);   // 프로필 창에서 팔로우했으면 창도 새로
   return refresh();
 }
 

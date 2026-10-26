@@ -122,11 +122,15 @@ export async function renderMe() {
         <label class="field"><span>닉네임</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>
         <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
       </div>
+      <div class="row">
+        <label class="field"><span>활동 지역 (선택)</span><input type="text" name="region" maxlength="20" value="${esc(me.region || '')}" placeholder="서울 마포구"></label>
+        <label class="field"><span>한 줄 소개 (선택)</span><input type="text" name="bio" maxlength="40" value="${esc(me.bio || '')}" placeholder="주 3회 5km 목표!"></label>
+      </div>
       <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원·친구가 나를 약올릴 수 없어요)</label>
       <label class="check"><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}>닉네임 검색에 나 표시</label>
       <button class="btn">저장</button></form>
       ${S.blocked.length ? `<h4 class="sec">차단한 사람</h4>${S.blocked.map(id => `<div class="blk">${avatar(id, 'sm')}<span>${esc(nameOf(id))}</span><button class="linkbtn" data-act="unblock" data-id="${id}">차단 풀기</button></div>`).join('')}` : ''}
-      <p class="hint">닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
+      <p class="hint">닉네임·프로필 사진·활동 지역·소개는 검색한 사람에게도 보여요(검색 노출을 끄면 안 보여요). 닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
       <div class="consent-row"><span>건강정보 동의 ${S.consents.health ? '함' : '안 함'}</span>${S.consents.health
         ? '<button class="linkbtn danger" data-act="health-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="health-agree">동의하기</button>'}</div>
       <p class="legal left"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · 문의 ijm09@naver.com</p>
@@ -134,19 +138,22 @@ export async function renderMe() {
       <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button></details>`;
 }
 
-// 프로필 사진: 가운데 정사각형 160px(약 7KB)로 줄여 <내 id>/avatar-시각.jpg 에 저장, 예전 파일은 지움
+// 프로필 사진: 가운데 정사각형 160px(약 7KB) = <내 id>/avatar-시각.jpg, 크게 보기용 480px(약 30KB) = …-l.jpg
+// 누가 볼 수 있는지는 supabase/010(작은 사진: 검색 노출 시 누구나, 큰 사진: 나를 팔로우한 사람·크루·친구). 예전 파일은 지움
 async function setAvatar(path) {
   const old = S.me.avatar_url;
   S.me = ok(await sb.from('profiles').update({ avatar_url: path }).eq('id', S.uid).select().single()); S.people[S.uid] = S.me;
-  if (old) await sb.storage.from('photos').remove([old]);
+  if (old) await sb.storage.from('photos').remove([old, old.replace(/\.jpg$/, '-l.jpg')]);
   await signAvatars(); return refresh();
 }
 document.addEventListener('change', async e => {
   if (e.target.id !== 'avatar-file' || !e.target.files[0]) return;
   const file = e.target.files[0]; e.target.value = '';
   try {
-    const blob = await compress(file, 160, true), path = `${S.uid}/avatar-${Date.now()}.jpg`;
-    ok(await sb.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '604800' }));
+    const [small, large] = await Promise.all([compress(file, 160, true), compress(file, 480, true)]), path = `${S.uid}/avatar-${Date.now()}.jpg`;
+    const opt = { contentType: 'image/jpeg', cacheControl: '604800' };
+    ok(await sb.storage.from('photos').upload(path, small, opt));
+    ok(await sb.storage.from('photos').upload(path.replace(/\.jpg$/, '-l.jpg'), large, opt));
     await setAvatar(path); toast('프로필 사진을 바꿨어요');
   } catch (err) { fail(err, '사진을 올리지 못했어요. 다른 사진으로 해 보세요.'); }
 });
@@ -189,7 +196,7 @@ export const forms = {
     await loadGear(); initGearSelect(); return refresh();
   },
   settings: async (f, d) => {
-    S.me = ok(await sb.from('profiles').update({ nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable }).eq('id', S.uid).select().single());
+    S.me = ok(await sb.from('profiles').update({ nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, region: d.region || null, bio: d.bio || null }).eq('id', S.uid).select().single());
     S.people[S.uid] = S.me; toast('저장했어요'); return refresh();
   },
 };
