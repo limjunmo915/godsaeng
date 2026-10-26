@@ -18,7 +18,12 @@ import { initForm, resetForm } from './screens/log.js';
 
 const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
-const forms = { ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms };
+const forms = {
+  newpw: async (f, d) => {
+    if (d.pw.length < 6) return toast('6자 이상 입력해 주세요.');
+    ok(await sb.auth.updateUser({ password: d.pw })); $('#pw-reset').close(); toast('비밀번호를 바꿨어요');
+  },
+  ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms };
 
 fillIcons();
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
@@ -29,6 +34,7 @@ $('#l-toggle').onclick = () => {
   S.loginMode = S.loginMode === 'in' ? 'up' : 'in';
   const up = S.loginMode === 'up';
   document.querySelectorAll('.up-only').forEach(el => { el.hidden = !up; });
+  document.querySelectorAll('.in-only').forEach(el => { el.hidden = up; });
   $('#l-submit').textContent = up ? '가입하기' : '로그인';
   $('#l-toggle').textContent = up ? '이미 계정이 있어요 · 로그인' : '처음이에요 · 회원가입';
   $('#l-pw').autocomplete = up ? 'new-password' : 'current-password';
@@ -50,7 +56,15 @@ $('#login-form').onsubmit = async e => {
   } catch (err) { fail(err); }
   finally { $('#l-submit').disabled = false; }
 };
-sb.auth.onAuthStateChange((_ev, session) => {
+// 비밀번호 찾기: 메일 링크로 돌아오면 PASSWORD_RECOVERY → 새 비밀번호 창
+$('#l-forgot').onclick = async () => {
+  const email = $('#l-email').value.trim();
+  if (!email) return toast('위 칸에 가입한 이메일을 먼저 입력해 주세요.');
+  try { ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname })); toast('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 눌러 주세요.'); }
+  catch (err) { fail(err); }
+};
+sb.auth.onAuthStateChange((ev, session) => {
+  if (ev === 'PASSWORD_RECOVERY') setTimeout(() => $('#pw-reset').showModal());
   const uid = session?.user?.id ?? null;
   if (uid === S.uid) return;
   S.uid = uid;

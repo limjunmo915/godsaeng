@@ -24,6 +24,7 @@
     <label class="check up-only" hidden><input type="checkbox" id="l-agree"><span><a href="terms.html" target="_blank" rel="noopener">이용약관</a>과 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>(국외 이전 포함)에 동의합니다</span></label>
     <button class="btn primary wide" id="l-submit">로그인</button>
     <button type="button" class="linkbtn center" id="l-toggle">처음이에요 · 회원가입</button>
+    <button type="button" class="linkbtn center in-only" id="l-forgot">비밀번호를 잊었어요</button>
     <p class="legal"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>
   </form>
 </section>
@@ -130,6 +131,14 @@
     <label class="check" id="fb-block"><input type="checkbox" name="block">이 사람도 차단하기</label>
     <button class="btn primary wide">보내기</button>
     <button type="button" class="linkbtn center" id="fb-block-only" data-act="block">신고 없이 차단만 하기</button>
+  </form>
+</dialog>
+
+<dialog id="pw-reset" aria-labelledby="pw-title">
+  <div class="sheet-head"><h2 id="pw-title">새 비밀번호 정하기</h2></div>
+  <form class="stack sheet-body" data-form="newpw">
+    <label class="field"><span>새 비밀번호 (6자 이상)</span><input type="password" name="pw" minlength="6" autocomplete="new-password"></label>
+    <button class="btn primary wide">비밀번호 바꾸기</button>
   </form>
 </dialog>
 

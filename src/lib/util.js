@@ -52,8 +52,12 @@ export function toast(msg) {
 export function fail(err, fallback = '실패했어요. 잠시 후 다시 시도해 주세요.') {
   console.error(err);
   const m = err?.message || '';
-  toast(/초대코드|1분에 한 번/.test(m) ? m
+  // 서버 SQL 이 한국어로 낸 오류(약올리기 끔, 도배 방지 등)는 그대로 보여 줌
+  toast(/[가-힣]/.test(m) ? m
     : /Invalid login/.test(m) ? '이메일 또는 비밀번호가 맞지 않아요.'
+    : /rate limit|security purposes/i.test(m) ? '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.'
+    : /Database error saving new user/.test(m) ? '가입하지 못했어요. 만 14세 이상인지 생년월일을 확인해 주세요.'
+    : /should be different/.test(m) ? '예전과 다른 비밀번호를 입력해 주세요.'
     : /already registered/.test(m) ? '이미 가입된 이메일이에요. 로그인해 주세요.'
     : /Email not confirmed/.test(m) ? '메일함에서 가입 확인 링크를 먼저 눌러 주세요.'
     : fallback);
