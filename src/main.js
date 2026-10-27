@@ -82,6 +82,7 @@ sb.auth.onAuthStateChange((ev, session) => {
 
 async function boot() {
   $('#login').hidden = true; $('#app').hidden = false;
+  if (!history.state?.godsaeng) guard();
   try {
     await loadCore();
     await consent.loadConsents(); await consent.termsGate();
@@ -117,5 +118,29 @@ document.addEventListener('submit', async e => {
   if (f.closest('#srch')) search.rerender();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) notif.loadNotifs(); });
+
+/* 휴대폰 뒤로 가기: 앱은 화면만 바꾸고 주소 기록을 안 남겨서 바로 꺼짐 → 기록에 '쉼표' 하나를 두고
+   뒤로 가기마다 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 피드가 아닌 탭 → (피드에서) 한 번 더 누르면 종료 */
+const guard = () => history.pushState({ godsaeng: 1 }, '');
+let exitArmed = null;
+addEventListener('popstate', () => {
+  if (!S.uid || !S.me) return;
+  const dlg = [...document.querySelectorAll('dialog[open]')].at(-1);
+  const menu = document.querySelector('.pp-menu[open]');
+  if (dlg && dlg.id !== 'terms-gate') dlg.close();
+  else if (dlg) { /* 약관 동의 창은 뒤로 가기로 못 닫음 */ }
+  else if (menu) menu.open = false;
+  else if (!$('#pp').hidden) profile.actions['pp-back']();
+  else if (!$('#srch').hidden) search.actions['search-close']();
+  else if (S.tab !== 'feed') show('feed');
+  else {
+    // 피드(홈)에서: 2초 안에 한 번 더 누르면 기록이 없어 앱이 닫힘
+    if (exitArmed) return;
+    $('#exit-hint').hidden = false;
+    exitArmed = setTimeout(() => { $('#exit-hint').hidden = true; exitArmed = null; guard(); }, 2000);
+    return;
+  }
+  guard();
+});
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
