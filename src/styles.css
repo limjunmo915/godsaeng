@@ -180,6 +180,8 @@ dd { margin: 0; }
 .photos img { flex: 0 0 100%; width: 100%; aspect-ratio: 4 / 5; max-height: 520px; object-fit: cover; background: var(--fill); scroll-snap-align: start; }
 .photos.multi img { flex-basis: 86%; }
 .memo { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.memo.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.card .more { margin-top: -12px; padding: 2px 0; font-weight: 600; }
 .note { margin: 0; display: flex; gap: 6px; font-size: 13px; color: var(--muted); background: var(--fill); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .actbar { display: flex; align-items: center; gap: 2px; border-top: 1px solid var(--line); margin-inline: -16px; padding: 6px 12px 0; flex-wrap: wrap; }
 .rx { height: 34px; padding: 0 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
@@ -467,3 +469,46 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 /* 홈에서 뒤로 가기 한 번: 한 번 더 누르면 닫힘 안내(반투명 배경) */
 .exit-hint { position: fixed; inset: 0; z-index: 60; background: rgba(13, 15, 26, .45); display: flex; align-items: flex-end; justify-content: center; padding-bottom: calc(var(--nav-h) + 32px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
 .exit-hint p { margin: 0; background: rgba(16, 18, 31, .92); color: #fff; padding: 14px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; }
+
+/* 메시지: 대화 목록 · 말풍선 */
+.msg-row { width: 100%; text-align: left; border-bottom: 1px solid var(--line); padding: 12px 0; }
+.msg-row .nm span { font-weight: 600; }
+.msg-row .nm small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-row em { font-style: normal; font-size: 11px; color: var(--brand-text); background: var(--brand-soft); border-radius: 6px; padding: 1px 6px; margin-left: 4px; vertical-align: 2px; }
+.msg-row.unread .nm small { color: var(--ink); font-weight: 700; }
+.msg-row.unread .when::after { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--down); margin-left: 6px; }
+.msg-row .when { color: var(--muted); font-size: 12px; flex: none; }
+.crew-av { background: var(--brand-soft); color: var(--brand-text); }
+.bubbles { display: grid; gap: 6px; padding: 8px 0 16px; }
+.bubbles .day { text-align: center; color: var(--muted); font-size: 12px; margin: 10px 0 4px; }
+.bub { display: flex; gap: 8px; align-items: flex-start; max-width: 80%; }
+.bub > div { display: grid; gap: 2px; min-width: 0; }
+.bub b { font-size: 12px; color: var(--muted); font-weight: 600; }
+.bub p { margin: 0; padding: 8px 12px; border-radius: 16px 16px 16px 4px; background: var(--bg); white-space: pre-wrap; overflow-wrap: anywhere; }
+.bub small { font-size: 11px; color: var(--muted); }
+.bub.mine { margin-left: auto; justify-content: flex-end; }
+.bub.mine > div { justify-items: end; }
+.bub.mine p { background: var(--brand); color: #fff; border-radius: 16px 16px 4px 16px; cursor: pointer; }
+.av-gap { width: 28px; flex: none; }
+.msg-form { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: flex-end; background: var(--surface); padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); margin: 0; }
+.msg-form textarea { flex: 1; min-height: 44px; max-height: 120px; resize: none; border: 0; border-radius: 22px; background: var(--bg); padding: 11px 16px; font: inherit; color: var(--ink); }
+.msg-form .icbtn { color: var(--brand-text); }
+#msg .pp-top .who-nm { font-size: 18px; font-weight: 700; }
+#msg { padding-bottom: 0; }
+#msg-body { min-height: 100%; display: flex; flex-direction: column; }
+#msg-body .bubbles { flex: 1; align-content: end; }
+/* GPS 기록 화면(시험 중) */
+.trk-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 8px; margin: 24px 0 8px; text-align: center; }
+.trk-nums .big { grid-column: 1 / -1; }
+.trk-nums small { display: block; color: var(--muted); font-size: 13px; }
+.trk-nums b { font-size: 24px; font-weight: 800; }
+.trk-nums b small { display: inline; font-size: 13px; font-weight: 600; }
+.trk-nums .big b { font-size: 56px; letter-spacing: -0.03em; }
+.trk-state { text-align: center; }
+.trk-btns { display: flex; gap: 8px; margin-top: 16px; }
+.trk-btns .btn { flex: 1; height: 56px; font-size: 17px; }
+.splits { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 4px; }
+.splits li { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 6px 0; }
+.route { width: 100%; height: auto; max-height: 240px; background: var(--fill); border-radius: 12px; }
+.route path { fill: none; stroke: var(--brand); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+#route-prev:empty { display: none; }

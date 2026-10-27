@@ -37,7 +37,7 @@ export async function openProfile(id, again) {
   renderPP(); if (!again) $('#pp').scrollTo(0, 0);
 }
 export function closeProfile() {
-  $('#pp').hidden = true; if ($('#srch').hidden) document.body.classList.remove('pp-open');
+  $('#pp').hidden = true; if (!document.querySelector('.pp:not([hidden])')) document.body.classList.remove('pp-open');
   S.pp = null; S.ppList = null; S.ppStack = [];
 }
 
@@ -65,7 +65,8 @@ function mainPage() {
   const actions = me ? `<button class="btn" data-act="invite-link">${ic('share-2')}초대 링크</button><button class="btn" data-act="pp-edit">${ic('pencil')}프로필 편집</button>`
     : `${friend ? `<details class="pp-menu inline"><summary class="btn">${ic('check')}친구 ▾</summary><div><button data-act="unfriend" data-id="${id}">친구 끊기</button></div></details>` : relBtn(id)}
        ${(friend || crewPoke) && !p.poke_off && !S.people[id]?.poke_off
-         ? `<button class="taunt-btn" data-act="${friend ? 'poke-friend' : 'poke'}" data-to="${id}" ${crewPoke ? `data-crew="${crewPoke}"` : ''}>약올리기</button>` : ''}`;
+         ? `<button class="taunt-btn" data-act="${friend ? 'poke-friend' : 'poke'}" data-to="${id}" ${crewPoke ? `data-crew="${crewPoke}"` : ''}>약올리기</button>` : ''}
+       ${(friend || sharedCrew(id)) && !S.blocked.includes(id) ? `<button class="btn" data-act="msg-to" data-id="${id}">${ic('send')}메시지</button>` : ''}`;
 
   return top('', menu) + `
     <section class="pp-head">${avatar(id, 'xxl')}<div><h1>${esc(p.nickname)}</h1>${p.region ? `<span>${esc(p.region)}</span>` : ''}</div></section>

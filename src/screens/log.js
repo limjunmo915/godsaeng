@@ -20,7 +20,7 @@ function drawQuickTypes() {
   $('#quick-types').innerHTML = top.map(k => `<button type="button" class="chip" data-type="${k}" aria-pressed="${k === typeVal()}">${ic(TYPES[k].icon)}${TYPES[k].label}</button>`).join('');
 }
 function setType(k) {
-  $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km');
+  $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km'); followAuto();
   document.querySelectorAll('#quick-types [data-type]').forEach(b => b.setAttribute('aria-pressed', b.dataset.type === k));
   syncForm();
 }
@@ -35,6 +35,7 @@ export function initForm() {
   $('#brag-presets').innerHTML = BRAGS.map(s => `<button type="button" class="chip" data-brag="${esc(s)}">${esc(s)}</button>`).join('');
   $('#brag-presets').onclick = e => { const b = e.target.closest('[data-brag]'); if (b) $('#f-brag').value = b.dataset.brag; };
   $('#log-form').addEventListener('input', syncForm);
+  $('#f-when').addEventListener('change', followAuto);
   $('#f-unit').onchange = () => setUnit($('#f-unit').value);
   $('#f-rpe').oninput = () => { $('#rpe-out').textContent = $('#f-rpe').value; };
   // 심박은 건강정보 → 동의 전엔 입력 못 함
@@ -82,7 +83,7 @@ async function addPhotos(e) {
 }
 export function resetForm() {
   if (!formReady) return;
-  S.editing = null;
+  S.editing = null; auto = null; $('#route-prev').innerHTML = '';
   $('#log-form').reset();
   S.newPhotos.forEach(p => URL.revokeObjectURL(p.url)); S.newPhotos = []; S.keptPhotos = [];
   $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5;
@@ -154,17 +155,53 @@ async function saveWorkout(e) {
   } catch (err) { fail(err, '저장하지 못했어요. 다시 시도해 주세요.'); }
   finally { $('#f-submit').disabled = false; }
 }
+// 자동 제목: 시간대 + 종목 ("저녁 테니스"). 공유·워치·GPS 로 넘어온 기록에만 넣고, 종목·시간을 바꾸면 따라 바뀜(직접 고치면 멈춤)
+export function autoTitle(type = typeVal(), when = $('#f-when').value || Date.now()) {
+  const h = new Date(when).getHours();
+  const part = h < 5 ? '새벽' : h < 11 ? '아침' : h < 14 ? '점심' : h < 18 ? '오후' : h < 22 ? '저녁' : '밤';
+  return `${part} ${TYPES[type]?.label || '운동'}`;
+}
+let auto = null;   // 지금 제목 칸에 들어 있는 자동 제목
+function followAuto() { if (auto !== null && $('#f-title').value === auto) $('#f-title').value = auto = autoTitle(); }
+
+// 밖에서 넘어온 운동(공유 글·워치·GPS)을 새 기록 화면에 채움. 없는 값은 비워 둠
+// d: { type, start(시각), minutes, km, elev, kcal, hr, memo, photos[blob] }
+export async function fillAuto(d) {
+  resetForm();
+  if (d.type && TYPES[d.type]) setType(d.type);
+  if (d.start) $('#f-when').value = toLocalInput(d.start);
+  if (d.minutes) $('#f-dur').value = fmtClock(d.minutes);
+  if (d.km) $('#f-dist').value = d.type === 'swim' ? Math.round(d.km * 1000) : +d.km.toFixed(2);
+  if (d.elev) $('#f-elev').value = Math.round(d.elev);
+  if (d.kcal) $('#f-kcal').value = Math.round(d.kcal);
+  if (d.hr && S.consents.health) $('#f-hr').value = Math.round(d.hr);   // 심박은 건강정보 → 동의한 사람만
+  if (d.memo) $('#f-memo').value = d.memo.slice(0, 1000);
+  for (const b of d.photos || []) {
+    if (S.newPhotos.length >= 10) break;
+    try { const blob = await compress(b); S.newPhotos.push({ blob, url: URL.createObjectURL(blob) }); } catch { /* 사진이 아닌 파일 */ }
+  }
+  $('#f-title').value = auto = autoTitle();
+  drawThumbs(); syncForm(); show('log');
+}
+
+// 공유 글에서 숫자 뽑기: "5.2km", "29:44", "350kcal", "142bpm", 종목 이름
+export function parseShared(text) {
+  const n = re => { const m = text.match(re); return m ? parseFloat(m[1].replace(',', '')) : null; };
+  const dur = text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/)?.[1];
+  const type = Object.entries(TYPES).sort((a, b) => b[1].label.length - a[1].label.length).find(([, t]) => text.includes(t.label))?.[0]
+    || (/러닝|런닝|조깅/.test(text) ? 'run' : /사이클|라이딩/.test(text) ? 'ride' : null);
+  return { type, minutes: dur ? parseDur(dur) : null, km: n(/([\d.,]+)\s*km/i), kcal: n(/([\d,]+)\s*kcal/i) || n(/칼로리\D{0,6}([\d,]+)/), hr: n(/(\d{2,3})\s*bpm/i) || n(/심박\S*\s*(\d{2,3})/) };
+}
+
 // 다른 앱에서 공유받은 사진·글(sw.js 가 'share' 저장소에 둠) → 새 기록 화면에 담기
 export async function takeShared() {
   if (!self.caches || !formReady) return;
   const c = await caches.open('share'), keys = await c.keys(); if (!keys.length) return;
-  resetForm();
+  let text = ''; const photos = [];
   for (const k of keys) {
     const r = await c.match(k); await c.delete(k);
-    if (k.url.endsWith('/text')) { $('#f-memo').value = (await r.text()).slice(0, 1000); continue; }
-    if (S.newPhotos.length >= 10) continue;
-    try { const blob = await compress(await r.blob()); S.newPhotos.push({ blob, url: URL.createObjectURL(blob) }); } catch { /* 사진이 아닌 파일 */ }
+    if (k.url.endsWith('/text')) text = await r.text(); else photos.push(await r.blob());
   }
-  drawThumbs(); show('log');
-  toast('공유한 내용을 담았어요. 종목과 시간을 채워 주세요');
+  await fillAuto({ ...parseShared(text), memo: text, photos });
+  toast('공유한 내용을 담았어요. 종목과 시간을 확인해 주세요');
 }

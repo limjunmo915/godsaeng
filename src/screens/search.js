@@ -60,7 +60,7 @@ export const actions = {
   },
   'search-close': () => {
     $('#srch').hidden = true; S.srch = null; S.searchList = null;
-    if ($('#pp').hidden) document.body.classList.remove('pp-open');
+    if (!document.querySelector('.pp:not([hidden])')) document.body.classList.remove('pp-open');
   },
   'srch-tab': b => { S.srch.tab = b.dataset.v; render(); },
 };

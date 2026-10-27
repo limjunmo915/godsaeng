@@ -17,22 +17,27 @@ import * as consent from './screens/consent.js';
 import * as friends from './screens/friends.js';
 import * as profile from './screens/profile.js';
 import * as search from './screens/search.js';
+import * as msg from './screens/msg.js';
+import * as track from './screens/track.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
 const forms = {
   newpw: async (f, d) => {
     if (d.pw.length < 6) return toast('6자 이상 입력해 주세요.');
     ok(await sb.auth.updateUser({ password: d.pw })); $('#pw-reset').close(); toast('비밀번호를 바꿨어요');
   },
-  ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms };
+  ...feed.forms, ...crew.forms, ...me.forms, ...body.forms, ...report.forms, ...consent.forms, ...msg.forms };
 
 fillIcons();
 // 친구 초대 링크(?f=코드): 저장해 두고 주소창에서 지움 → 로그인 뒤 friends.acceptInvite()
 { const q = new URLSearchParams(location.search), f = q.get('f');
   if (f) { lsSet('invite', f); $('#l-invited').hidden = false; }
-  if (f || q.has('share')) history.replaceState(null, '', location.pathname); }   // ?share=1 = 공유받기(sw.js)
+  // GPS 기록 시험 켜기(?gps=1 실제 GPS, ?gps=sim 가짜 경로, ?gps=off 끄기) — 위치 신고 전이라 숨김
+  if (q.has('gps')) q.get('gps') === 'off' ? localStorage.removeItem('gps') : lsSet('gps', q.get('gps'));
+  $('#gps-btn').hidden = !lsGet('gps');
+  if (f || q.has('share') || q.has('gps')) history.replaceState(null, '', location.pathname); }   // ?share=1 = 공유받기(sw.js)
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
@@ -92,7 +97,7 @@ async function boot() {
     await Promise.all([loadFeed(true), loadMine(), loadBody()]);
     refresh(); if (!S.editing) resetForm();
     await takeShared();
-    notif.loadNotifs();
+    notif.loadNotifs(); msg.loadMsgs().catch(console.error); msg.listen();
     await friends.acceptInvite();
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
 }
@@ -107,8 +112,8 @@ document.addEventListener('click', async e => {
   const wid = b.closest('[data-wid]')?.dataset.wid, w = [S.feed, S.ppList, S.searchList].flatMap(l => l || []).find(x => x.id === wid);
   try { await actions[b.dataset.act](b, w, e); } catch (err) { b.disabled = false; fail(err); }
   // 프로필 페이지 안에서 반응·팔로우 등을 하면 페이지 다시 그리기
-  if (S.pp && b.closest('#pp') && !/^(pp-|profile$)/.test(b.dataset.act)) profile.renderPP();
-  if (b.closest('#srch') && !/^(srch-|search-|profile$)/.test(b.dataset.act)) search.rerender();
+  if (S.pp && b.closest('#pp') && !/^(pp-|profile$|memo-more$)/.test(b.dataset.act)) profile.renderPP();
+  if (b.closest('#srch') && !/^(srch-|search-|profile$|memo-more$)/.test(b.dataset.act)) search.rerender();
 });
 document.addEventListener('submit', async e => {
   const f = e.target, fn = forms[f.dataset.form]; if (!fn) return;
@@ -119,7 +124,7 @@ document.addEventListener('submit', async e => {
   if (S.pp && f.closest('#pp')) profile.renderPP();
   if (f.closest('#srch')) search.rerender();
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) notif.loadNotifs(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); } });
 
 /* 휴대폰 뒤로 가기: 앱은 화면만 바꾸고 주소 기록을 안 남겨서 바로 꺼짐 → 기록에 '쉼표' 하나를 두고
    뒤로 가기마다 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 피드가 아닌 탭 → (피드에서) 한 번 더 누르면 종료 */
@@ -133,6 +138,8 @@ addEventListener('popstate', () => {
   else if (dlg) { /* 약관 동의 창은 뒤로 가기로 못 닫음 */ }
   else if (menu) menu.open = false;
   else if (!$('#pp').hidden) profile.actions['pp-back']();
+  else if (!$('#trk').hidden) track.actions['trk-close']();
+  else if (!$('#msg').hidden) msg.actions['msg-back']();
   else if (!$('#srch').hidden) search.actions['search-close']();
   else if (S.tab !== 'feed') show('feed');
   else {

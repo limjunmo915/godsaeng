@@ -42,12 +42,12 @@ export function card(w) {
         : `<button class="icbtn" data-act="report" aria-label="기록 신고">${ic('flag')}</button>`}
     </header>
     ${w.title ? `<h3 class="title">${esc(w.title)}</h3>` : ''}
+    ${w.memo ? (w._memo ? `<p class="memo">${esc(w.memo)}</p>` : `<p class="memo clamp">${esc(w.memo)}</p><button type="button" class="linkbtn more" data-act="memo-more" hidden>더보기</button>`) : ''}
     <dl class="stats">${main.map(([k, v]) => `<div><dt>${k}</dt><dd>${big(v)}</dd></div>`).join('')}</dl>
     ${rest.length ? `<dl class="sub">${rest.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
     ${tags ? `<div class="tags">${tags}</div>` : ''}
     ${w.brag ? `<p class="brag">${esc(w.brag)}</p>` : ''}
     ${w.photos?.length ? `<div class="photos ${w.photos.length > 1 ? 'multi' : ''}">${w.photos.map((p, i) => `<img alt="${esc(nameOf(w.user_id))}의 운동 사진 ${i + 1}" src="${esc(S.urls[p] || '')}" loading="lazy">`).join('')}</div>` : ''}
-    ${w.memo ? `<p class="memo">${esc(w.memo)}</p>` : ''}
     ${mine && S.notes[w.id] ? `<p class="note">${ic('lock')}${esc(S.notes[w.id])}</p>` : ''}
     <div class="actbar">
       ${Object.entries(REACTS).map(([k, [emoji, label]]) => {
@@ -105,7 +105,14 @@ export async function goToWorkout(id) {
   setTimeout(() => el.classList.remove('flash'), 2500);
 }
 
+// 메모는 3줄까지 접어 두고, 실제로 넘칠 때만 '더보기'를 보여 줌(피드·프로필·검색 어디서 그려도)
+new MutationObserver(() => document.querySelectorAll('.memo.clamp:not([data-m])').forEach(p => {
+  if (!p.clientHeight) return;   // 숨은 화면이면 보일 때 다시 잼
+  p.dataset.m = 1; p.nextElementSibling.hidden = p.scrollHeight <= p.clientHeight + 1;
+})).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+
 export const actions = {
+  'memo-more': (b, w) => { if (w) w._memo = true; b.previousElementSibling.classList.remove('clamp'); b.remove(); },
   'more-feed': async b => { b.disabled = true; await loadFeed(); return renderFeed(); },
   'more-cm': (b, w) => { w._open = true; return renderFeed(); },
   react: async (b, w) => {

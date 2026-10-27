@@ -39,6 +39,7 @@
       <path class="mk-beat" d="M4 20H11.5L13.3 16.5 15.6 23.5 18 18 19.4 20H28"/>
     </svg>갓생살기</div>
     <div class="top-btns"><button class="icbtn" data-act="search-open" aria-label="검색"><i data-ic="search"></i></button>
+    <button class="icbtn" data-act="msg-list" aria-label="메시지"><i data-ic="send"></i><span class="dot" id="msg-dot" hidden></span></button>
     <button class="icbtn" data-act="notif" aria-label="알림"><i data-ic="bell"></i><span class="dot" id="notif-dot" hidden></span></button></div>
   </div></header>
 
@@ -48,6 +49,7 @@
     <section class="view wrap" id="v-log" hidden>
       <form id="log-form" class="stack" novalidate>
         <h2 class="page-title" id="log-heading">운동 기록</h2>
+        <button type="button" class="btn wide" data-act="trk-open" id="gps-btn" hidden><i data-ic="route"></i>GPS로 기록하기 (시험 중)</button>
 
         <fieldset class="group">
           <legend>운동 종류</legend>
@@ -57,7 +59,9 @@
 
         <fieldset class="group">
           <legend>기록</legend>
+          <div id="route-prev"></div>
           <label class="field"><span>제목</span><input type="text" id="f-title" maxlength="60" placeholder="퇴근길 한강 런"></label>
+          <label class="field"><span>메모 (크루·친구에게 보임)</span><textarea id="f-memo" maxlength="1000" placeholder="코스, 컨디션, 세트 기록"></textarea></label>
           <div class="row">
             <label class="field"><span>언제</span><input type="datetime-local" id="f-when"></label>
             <label class="field"><span>운동 시간</span><input type="text" id="f-dur" autocomplete="off" inputmode="text" placeholder="29:44"><small class="hint" id="dur-out"></small></label>
@@ -81,7 +85,6 @@
           <div class="thumbs" id="thumbs"></div>
           <label class="field"><span>약올리기 한마디</span><input type="text" id="f-brag" maxlength="80" placeholder="나 이만큼 했지롱"></label>
           <div class="chips" id="brag-presets"></div>
-          <label class="field"><span>메모 (크루에게 보임)</span><textarea id="f-memo" maxlength="1000" placeholder="코스, 컨디션, 세트 기록"></textarea></label>
           <label class="field"><span>비공개 메모 (나만 보임)</span><textarea id="f-note" maxlength="1000" placeholder="부상, 혼자 볼 기록"></textarea></label>
         </fieldset>
 
@@ -136,6 +139,8 @@
   </form>
 </dialog>
 
+<section id="trk" class="pp" hidden aria-label="GPS 기록"><div class="wrap" id="trk-body"></div></section>
+<section id="msg" class="pp" hidden aria-label="메시지"><div class="wrap" id="msg-body"></div></section>
 <section id="srch" class="pp" hidden aria-label="검색"><div class="wrap">
   <header class="pp-top"><button class="icbtn" data-act="search-close" aria-label="닫기"><i data-ic="chevron-left"></i></button>
     <label class="search grow-in"><i data-ic="search"></i><input type="search" id="srch-q" placeholder="사람, 운동 기록 검색" autocomplete="off" aria-label="검색어"></label></header>
