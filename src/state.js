@@ -15,5 +15,8 @@ export const S = {
   body: { p: null, logs: [] }, meTab: 'stats', bodyMetric: 'weight_kg', q: '', qDay: null,
 };
 
+// 링크·메일에 넣는 앱 주소: 안드로이드 앱 안에선 https://localhost 라서 웹 주소로
+export const WEB = window.Capacitor?.isNativePlatform?.() ? 'https://limjunmo915.github.io/godsaeng/' : location.origin + location.pathname;
+
 export const $ = s => document.querySelector(s);
 export const ok = ({ data, error }) => { if (error) throw error; return data; };

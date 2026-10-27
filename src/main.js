@@ -1,7 +1,7 @@
 // 앱 시작: 로그인, 부팅, 공통 클릭·폼 처리
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import './styles.css';
-import { S, sb, ok, $ } from './state.js';
+import { S, sb, ok, $, WEB } from './state.js';
 import { fillIcons } from './lib/icons.js';
 import { toast, fail, lsGet, lsSet } from './lib/util.js';
 import { loadCore, loadFeed, loadMine, loadBody } from './lib/data.js';
@@ -64,7 +64,7 @@ $('#login-form').onsubmit = async e => {
       // 생년월일은 서버가 나이만 확인하고 지움(supabase/008)
       const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname, birthdate, terms_version: consent.TERMS_VER },
         // 초대받은 사람은 확인 메일 링크에도 초대 코드를 실어 다른 브라우저에서 열어도 친구가 되게
-        emailRedirectTo: location.origin + location.pathname + (lsGet('invite') ? '?f=' + lsGet('invite') : '') } }));
+        emailRedirectTo: WEB + (lsGet('invite') ? '?f=' + lsGet('invite') : '') } }));
       if (!data.session) toast('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.');
     } else ok(await sb.auth.signInWithPassword({ email, password }));
   } catch (err) { fail(err); }
@@ -74,7 +74,7 @@ $('#login-form').onsubmit = async e => {
 $('#l-forgot').onclick = async () => {
   const email = $('#l-email').value.trim();
   if (!email) return toast('위 칸에 가입한 이메일을 먼저 입력해 주세요.');
-  try { ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname })); toast('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 눌러 주세요.'); }
+  try { ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: WEB })); toast('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 눌러 주세요.'); }
   catch (err) { fail(err); }
 };
 sb.auth.onAuthStateChange((ev, session) => {
@@ -152,4 +152,4 @@ addEventListener('popstate', () => {
   guard();
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) navigator.serviceWorker.register('sw.js').catch(() => {});

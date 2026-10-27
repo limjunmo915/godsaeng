@@ -1,0 +1,41 @@
+# 안드로이드 시험용 APK: main 에 push 하면 빌드 → 릴리스 'android' 에 godsaeng.apk 로 올림
+# 받는 주소: https://github.com/limjunmo915/godsaeng/releases/download/android/godsaeng.apk
+name: android
+on:
+  push:
+    branches: [main]
+    paths: [src/**, android/**, package.json, package-lock.json, capacitor.config.json, .github/workflows/android.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+      - run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+        working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+      - run: cp android/app/build/outputs/apk/release/app-release.apk godsaeng.apk
+      - name: 릴리스에 올리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view android >/dev/null 2>&1 || gh release create android --prerelease --title "안드로이드 시험판" --notes "폰에 직접 설치하는 시험용 앱. main 에 올릴 때마다 새로 만들어짐."
+          gh release upload android godsaeng.apk --clobber

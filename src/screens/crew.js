@@ -1,5 +1,5 @@
 // 크루: 초대코드, 멤버, 챌린지
-import { S, sb, ok, $ } from '../state.js';
+import { S, sb, ok, $, WEB } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { DAY, esc, toLocalInput, lsSet, toast } from '../lib/util.js';
 import { METRIC } from '../lib/types.js';
@@ -65,7 +65,7 @@ export async function renderCrew() {
 
 export const actions = {
   copy: async () => {
-    const text = `갓생살기 크루 "${crew().name}" 초대코드: ${crew().invite_code}\n${location.origin + location.pathname}`;
+    const text = `갓생살기 크루 "${crew().name}" 초대코드: ${crew().invite_code}\n${WEB}`;
     try { await navigator.clipboard.writeText(text); toast('초대 문구를 복사했어요'); } catch { toast('초대코드: ' + crew().invite_code); }
   },
   leave: async () => {

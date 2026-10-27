@@ -1,6 +1,6 @@
 // 친구: 검색·팔로우·맞팔로우(친구)·초대 링크·친구 약올리기 (supabase/009)
 // 팔로우만으론 아무것도 안 보이고, 서로 팔로우해야 친구 → 기록이 보이고 반응·댓글·약올리기 가능
-import { S, sb, ok, $ } from '../state.js';
+import { S, sb, ok, $, WEB } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { esc, pick, toast, fail, lsGet, lsSet } from '../lib/util.js';
 import { POKES } from '../lib/types.js';
@@ -79,7 +79,7 @@ export async function acceptInvite() {
 export const actions = {
   'invite-link': async () => {
     const code = ok(await sb.rpc('my_friend_code'));
-    const text = `갓생살기에서 같이 운동하고 서로 약올려요! 질 수 없다 💪\n${location.origin + location.pathname}?f=${code}`;
+    const text = `갓생살기에서 같이 운동하고 서로 약올려요! 질 수 없다 💪\n${WEB}?f=${code}`;
     try { await navigator.clipboard.writeText(text); toast('초대 링크를 복사했어요. 카톡으로 보내 보세요'); } catch { prompt('이 링크를 복사해서 보내세요', text); }
   },
   follow: async b => {

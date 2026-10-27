@@ -1,0 +1,8 @@
+{
+  "appId": "com.godsaeng.app",
+  "appName": "갓생살기",
+  "webDir": "dist",
+  "plugins": {
+    "SystemBars": { "initialViewportFitValueHint": "cover" }
+  }
+}
