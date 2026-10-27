@@ -24,7 +24,7 @@ export async function renderRank() {
     <ol class="rank">${rows.map(([id, val], i) => {
       const tag = i === 0 && val > 0 ? '<span class="tag hot">갓생러</span>' : val === 0 ? '<span class="tag">누워있음</span>' : (i === rows.length - 1 && rows.length > 2 ? '<span class="tag">꼴찌</span>' : '');
       return `<li class="rk ${id === S.uid ? 'me' : ''}"><span class="pos">${i === 0 && val > 0 ? ic('crown') : i + 1}</span>${avatar(id)}
-        <div class="mid"><b>${esc(nameOf(id))}</b>${tag}<div class="bar"><i style="width:${val / max * 100}%"></i></div></div>
+        <div class="mid"><button type="button" class="who-nm" data-act="profile" data-id="${id}">${esc(nameOf(id))}</button>${tag}<div class="bar"><i style="width:${val / max * 100}%"></i></div></div>
         <span class="val">${M.fmt(val)}</span>
         ${id !== S.uid && !S.blocked.includes(id) && !S.people[id]?.poke_off ? `<button class="taunt-btn sm" data-act="poke" data-to="${id}" data-crew="${S.crewId}">${i === 0 ? '견제' : '약올리기'}</button>` : '<span></span>'}</li>`;
     }).join('')}</ol>

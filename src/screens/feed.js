@@ -144,7 +144,7 @@ export const actions = {
 export const forms = {
   comment: async f => {
     const body = f.querySelector('input').value.trim(); if (!body) return;
-    const wid = f.closest('[data-wid]').dataset.wid, w = S.feed.find(x => x.id === wid) || S.ppList?.find(x => x.id === wid);
+    const wid = f.closest('[data-wid]').dataset.wid, w = [S.feed, S.ppList, S.searchList].flatMap(l => l || []).find(x => x.id === wid);
     const c = ok(await sb.from('comments').insert({ workout_id: w.id, body }).select().single());
     w.comments.push(c); w._open = true; return renderFeed();
   },

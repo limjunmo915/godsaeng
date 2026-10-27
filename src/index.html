@@ -38,7 +38,8 @@
       <path class="mk-heart" d="M16 29C9 24 6 20.5 6 17 6 14 8.2 12 10.8 12 13 12 14.6 13.2 16 15 17.4 13.2 19 12 21.2 12 23.8 12 26 14 26 17 26 20.5 23 24 16 29Z"/>
       <path class="mk-beat" d="M4 20H11.5L13.3 16.5 15.6 23.5 18 18 19.4 20H28"/>
     </svg>갓생살기</div>
-    <button class="icbtn" data-act="notif" aria-label="알림"><i data-ic="bell"></i><span class="dot" id="notif-dot" hidden></span></button>
+    <div class="top-btns"><button class="icbtn" data-act="search-open" aria-label="검색"><i data-ic="search"></i></button>
+    <button class="icbtn" data-act="notif" aria-label="알림"><i data-ic="bell"></i><span class="dot" id="notif-dot" hidden></span></button></div>
   </div></header>
 
   <main>
@@ -135,6 +136,12 @@
   </form>
 </dialog>
 
+<section id="srch" class="pp" hidden aria-label="검색"><div class="wrap">
+  <header class="pp-top"><button class="icbtn" data-act="search-close" aria-label="닫기"><i data-ic="chevron-left"></i></button>
+    <label class="search grow-in"><i data-ic="search"></i><input type="search" id="srch-q" placeholder="사람, 운동 기록 검색" autocomplete="off" aria-label="검색어"></label></header>
+  <div class="st-tabs two" id="srch-tabs"></div>
+  <div id="srch-list"></div>
+</div></section>
 <section id="pp" class="pp" hidden aria-label="프로필"><div class="wrap" id="pp-body"></div></section>
 <dialog id="photo-view" class="viewer" aria-label="프로필 사진 크게 보기"><img alt="프로필 사진">
   <div id="pv-default" class="pv-default" hidden><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="18"/><path d="M8 110c3-28 20-42 42-42s39 14 42 42z"/></svg><b></b></div>

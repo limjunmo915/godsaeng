@@ -16,9 +16,10 @@ import * as report from './screens/report.js';
 import * as consent from './screens/consent.js';
 import * as friends from './screens/friends.js';
 import * as profile from './screens/profile.js';
+import * as search from './screens/search.js';
 import { initForm, resetForm } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
 const forms = {
   newpw: async (f, d) => {
@@ -100,10 +101,11 @@ document.addEventListener('click', async e => {
   const sg = e.target.closest('[data-seg] [data-v]');
   if (sg) { S[sg.closest('[data-seg]').dataset.seg] = sg.dataset.v; return refresh(); }
   const b = e.target.closest('[data-act]'); if (!b || !actions[b.dataset.act]) return;
-  const wid = b.closest('[data-wid]')?.dataset.wid, w = S.feed.find(x => x.id === wid) || S.ppList?.find(x => x.id === wid);
+  const wid = b.closest('[data-wid]')?.dataset.wid, w = [S.feed, S.ppList, S.searchList].flatMap(l => l || []).find(x => x.id === wid);
   try { await actions[b.dataset.act](b, w, e); } catch (err) { b.disabled = false; fail(err); }
   // 프로필 페이지 안에서 반응·팔로우 등을 하면 페이지 다시 그리기
   if (S.pp && b.closest('#pp') && !/^(pp-|profile$)/.test(b.dataset.act)) profile.renderPP();
+  if (b.closest('#srch') && !/^(srch-|search-|profile$)/.test(b.dataset.act)) search.rerender();
 });
 document.addEventListener('submit', async e => {
   const f = e.target, fn = forms[f.dataset.form]; if (!fn) return;
@@ -112,6 +114,7 @@ document.addEventListener('submit', async e => {
   const d = Object.fromEntries([...new FormData(f)].map(([k, v]) => [k, String(v).trim()]));
   try { await fn(f, d); } catch (err) { fail(err); } finally { if (btn) btn.disabled = false; }
   if (S.pp && f.closest('#pp')) profile.renderPP();
+  if (f.closest('#srch')) search.rerender();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) notif.loadNotifs(); });
 

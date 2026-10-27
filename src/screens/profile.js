@@ -37,7 +37,7 @@ export async function openProfile(id, again) {
   renderPP(); if (!again) $('#pp').scrollTo(0, 0);
 }
 export function closeProfile() {
-  $('#pp').hidden = true; document.body.classList.remove('pp-open');
+  $('#pp').hidden = true; if ($('#srch').hidden) document.body.classList.remove('pp-open');
   S.pp = null; S.ppList = null; S.ppStack = [];
 }
 

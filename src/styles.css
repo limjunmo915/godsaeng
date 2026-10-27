@@ -271,6 +271,10 @@ body.pp-open { overflow: hidden; }
 .pp-top { position: sticky; top: 0; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 8px; height: 52px; margin: 0 -16px; padding: env(safe-area-inset-top, 0px) 8px 0; }
 .pp-top h2 { flex: 1; margin: 0; font-size: 18px; }
 .pp-top > span { flex: 1; }
+.pp-top .grow-in { flex: 1; margin-right: 8px; }
+.top-btns { display: flex; gap: 2px; }
+#srch .feed { margin: 0 -16px; background: var(--bg); }
+#srch-list .hint { text-align: center; margin-top: 32px; }
 .pp-top > div { display: flex; gap: 2px; }
 .pp-head { display: flex; align-items: center; gap: 18px; margin-top: 8px; }
 .pp-head h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
