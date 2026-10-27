@@ -17,7 +17,7 @@ import * as consent from './screens/consent.js';
 import * as friends from './screens/friends.js';
 import * as profile from './screens/profile.js';
 import * as search from './screens/search.js';
-import { initForm, resetForm } from './screens/log.js';
+import { initForm, resetForm, takeShared } from './screens/log.js';
 
 const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
@@ -30,8 +30,9 @@ const forms = {
 
 fillIcons();
 // 친구 초대 링크(?f=코드): 저장해 두고 주소창에서 지움 → 로그인 뒤 friends.acceptInvite()
-{ const f = new URLSearchParams(location.search).get('f');
-  if (f) { lsSet('invite', f); history.replaceState(null, '', location.pathname); $('#l-invited').hidden = false; } }
+{ const q = new URLSearchParams(location.search), f = q.get('f');
+  if (f) { lsSet('invite', f); $('#l-invited').hidden = false; }
+  if (f || q.has('share')) history.replaceState(null, '', location.pathname); }   // ?share=1 = 공유받기(sw.js)
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
@@ -90,6 +91,7 @@ async function boot() {
     show(S.crews.length ? S.tab : 'crew');
     await Promise.all([loadFeed(true), loadMine(), loadBody()]);
     refresh(); if (!S.editing) resetForm();
+    await takeShared();
     notif.loadNotifs();
     await friends.acceptInvite();
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }

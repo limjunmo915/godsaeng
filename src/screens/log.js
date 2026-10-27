@@ -154,3 +154,17 @@ async function saveWorkout(e) {
   } catch (err) { fail(err, '저장하지 못했어요. 다시 시도해 주세요.'); }
   finally { $('#f-submit').disabled = false; }
 }
+// 다른 앱에서 공유받은 사진·글(sw.js 가 'share' 저장소에 둠) → 새 기록 화면에 담기
+export async function takeShared() {
+  if (!self.caches || !formReady) return;
+  const c = await caches.open('share'), keys = await c.keys(); if (!keys.length) return;
+  resetForm();
+  for (const k of keys) {
+    const r = await c.match(k); await c.delete(k);
+    if (k.url.endsWith('/text')) { $('#f-memo').value = (await r.text()).slice(0, 1000); continue; }
+    if (S.newPhotos.length >= 10) continue;
+    try { const blob = await compress(await r.blob()); S.newPhotos.push({ blob, url: URL.createObjectURL(blob) }); } catch { /* 사진이 아닌 파일 */ }
+  }
+  drawThumbs(); show('log');
+  toast('공유한 내용을 담았어요. 종목과 시간을 채워 주세요');
+}
