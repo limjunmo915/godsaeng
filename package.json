@@ -12,6 +12,7 @@
     "@capacitor/core": "^8.5.3",
     "@supabase/supabase-js": "^2.118.0",
     "@tabler/icons": "^3.49.0",
+    "leaflet": "^1.9.4",
     "pretendard": "^1.3.9"
   },
   "devDependencies": {
