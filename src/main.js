@@ -34,9 +34,8 @@ fillIcons();
 // 친구 초대 링크(?f=코드): 저장해 두고 주소창에서 지움 → 로그인 뒤 friends.acceptInvite()
 { const q = new URLSearchParams(location.search), f = q.get('f');
   if (f) { lsSet('invite', f); $('#l-invited').hidden = false; }
-  // GPS 기록 시험 켜기(?gps=1 실제 GPS, ?gps=sim 가짜 경로, ?gps=off 끄기) — 위치 신고 전이라 숨김
+  // GPS 기록 시험: ?gps=sim 가짜 경로, ?gps=off 실제 GPS로 되돌리기
   if (q.has('gps')) q.get('gps') === 'off' ? localStorage.removeItem('gps') : lsSet('gps', q.get('gps'));
-  $('#gps-btn').hidden = !lsGet('gps') && !window.Capacitor?.isNativePlatform?.();   // 안드로이드 앱에선 늘 보임(시험판)
   if (f || q.has('share') || q.has('gps')) history.replaceState(null, '', location.pathname); }   // ?share=1 = 공유받기(sw.js)
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());  // Esc 로 닫고 넘어가지 못하게
 
