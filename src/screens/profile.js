@@ -183,7 +183,7 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => { if (e.target.closest('#photo-view')) $('#photo-view').close(); });
 
 export const actions = {
-  profile: b => openProfile(b.dataset.id),
+  profile: b => { b.closest('dialog')?.close(); return openProfile(b.dataset.id); },   // 반응한 사람 목록 등 창 안에서 누르면 창 닫고
   'pp-go': b => { S.pp.page = b.dataset.page; renderPP(); $('#pp').scrollTo(0, 0); },
   'pp-stat': b => { S.pp.statType = b.dataset.v; renderPP(); },
   'pp-media': b => { S.pp.media = b.dataset.v; renderPP(); },

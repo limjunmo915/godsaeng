@@ -12,6 +12,14 @@ import { shareWorkout } from './share.js';
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
 
+// 반응한 사람: 겹친 사진 3개 + "민수 외 2명이 반응했어요" → 누르면 누가 무슨 반응을 했는지 목록
+function rxWho(w) {
+  const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id)); if (!rs.length) return '';
+  const first = rs.find(r => r.user_id !== S.uid) || rs[0], n = rs.length;
+  const text = n > 1 ? `${esc(nameOf(first.user_id))} 외 ${n - 1}명이 반응했어요` : first.user_id === S.uid ? '내가 반응했어요' : `${esc(nameOf(first.user_id))}님이 반응했어요`;
+  return `<button type="button" class="rx-who" data-act="rx-who"><span class="faces">${rs.slice(0, 3).map(r => avatar(r.user_id, 'xs')).join('')}</span>${text}</button>`;
+}
+
 export function card(w) {
   const t = typeOf(w.type), mine = w.user_id === S.uid, hide = mine ? [] : (w.hide_stats || []);
   const all = [];
@@ -55,6 +63,7 @@ export function card(w) {
         return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}"><i aria-hidden="true">${emoji}</i><span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
       }).join('')}
     </div>
+    ${rxWho(w)}
     <div class="comments">
       ${!open ? `<button class="linkbtn" data-act="more-cm">댓글 ${cms.length}개 모두 보기</button>` : ''}
       ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${esc(c.body)}<small>${ago(c.created_at)}</small></p>
@@ -112,6 +121,13 @@ new MutationObserver(() => document.querySelectorAll('.memo.clamp:not([data-m])'
 })).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
 
 export const actions = {
+  'rx-who': (b, w) => {
+    const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id));
+    $('#rx-list').innerHTML = Object.keys(REACTS).flatMap(k => rs.filter(r => r.kind === k)).map(r =>
+      `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${r.user_id}">${avatar(r.user_id, 'sm')}<span>${esc(nameOf(r.user_id))}</span></button><span class="rx-tag">${REACTS[r.kind][0]} ${REACTS[r.kind][1]}</span></div>`).join('');
+    $('#rx-dlg').showModal();
+  },
+  'close-rx': () => $('#rx-dlg').close(),
   'memo-more': (b, w) => { if (w) w._memo = true; b.previousElementSibling.classList.remove('clamp'); b.remove(); },
   'more-feed': async b => { b.disabled = true; await loadFeed(); return renderFeed(); },
   'more-cm': (b, w) => { w._open = true; return renderFeed(); },
