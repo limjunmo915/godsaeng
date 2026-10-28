@@ -538,3 +538,11 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .fab:active { transform: scale(.94); }
 main:has(#v-log:not([hidden])) ~ .fab { display: none; }
 main { padding-bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom, 0px)); }
+/* 상단 띠(피드 빼고): 앱 이름 + 흐르는 응원 문구 */
+#ad-top { padding-top: 12px; }
+.ad-top { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-text); overflow: hidden; }
+.ad-top b { flex: none; font-size: 13px; font-weight: 800; }
+.ad-run { flex: 1; overflow: hidden; white-space: nowrap; }
+.ad-run span { display: inline-block; padding-left: 100%; font-size: 14px; font-weight: 600; animation: ad-run 11s linear infinite; }
+@keyframes ad-run { to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .ad-run span { animation: none; padding-left: 0; } }

@@ -126,7 +126,7 @@ export async function renderMe() {
       <p class="hint">닉네임·프로필 사진·활동 지역·소개는 검색한 사람에게도 보여요(검색 노출을 끄면 안 보여요). 닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
       <div class="consent-row"><span>건강정보 동의 ${S.consents.health ? '함' : '안 함'}</span>${S.consents.health
         ? '<button class="linkbtn danger" data-act="health-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="health-agree">동의하기</button>'}</div>
-      <p class="legal left"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · 문의 ijm09@naver.com</p>
+      <p class="legal left"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="licenses.html" target="_blank" rel="noopener">오픈소스 라이선스</a> · 문의 ijm09@naver.com</p>
       <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button>
       <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button></details>`;
 }

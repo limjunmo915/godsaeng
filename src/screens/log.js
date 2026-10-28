@@ -47,7 +47,8 @@ export function initForm() {
     if (kind === 'k') S.keptPhotos.splice(+i, 1); else URL.revokeObjectURL(S.newPhotos.splice(+i, 1)[0].url);
     drawThumbs();
   };
-  $('#f-cancel').onclick = () => { resetForm(); show('feed'); };
+  // 새 기록: '기록 안 올리기'(입력한 것 지우고 피드로), 수정 중: '수정 취소'
+  $('#f-cancel').onclick = () => { if (!S.editing && !confirm('이 기록을 올리지 않고 지울까요?')) return; resetForm(); show('feed'); };
   $('#log-form').onsubmit = saveWorkout;
   resetForm();
 }
@@ -88,7 +89,7 @@ export function resetForm() {
   S.newPhotos.forEach(p => URL.revokeObjectURL(p.url)); S.newPhotos = []; S.keptPhotos = [];
   $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5;
   drawQuickTypes(); setType($('#quick-types [data-type]').dataset.type);
-  $('#log-heading').textContent = '운동 기록'; $('#f-submit').textContent = '올리고 약올리기'; $('#f-cancel').hidden = true;
+  $('#log-heading').textContent = '운동 기록'; $('#f-submit').textContent = '올리고 약올리기'; $('#f-cancel').textContent = '기록 안 올리기';
   initGearSelect(); drawThumbs(); syncForm();
 }
 export function editWorkout(w) {
@@ -103,7 +104,7 @@ export function editWorkout(w) {
   $('#vis-' + w.visibility).checked = true; $('#f-commute').checked = w.tags?.includes('commute');
   for (const k of ['pace', 'hr', 'kcal']) $('#hide-' + k).checked = w.hide_stats?.includes(k);
   S.keptPhotos = [...w.photos];
-  $('#log-heading').textContent = '기록 수정'; $('#f-submit').textContent = '수정 저장'; $('#f-cancel').hidden = false;
+  $('#log-heading').textContent = '기록 수정'; $('#f-submit').textContent = '수정 저장'; $('#f-cancel').textContent = '수정 취소';
   initGearSelect(); drawThumbs(); syncForm(); show('log');
 }
 async function saveWorkout(e) {
