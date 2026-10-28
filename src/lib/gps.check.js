@@ -1,6 +1,6 @@
 // GPS 계산 확인: node src/lib/gps.check.js  (아무것도 안 나오고 'ok' 면 통과)
 import assert from 'node:assert';
-import { dist, accept, summarize, trim, fakeTrack } from './gps.js';
+import { dist, accept, summarize, trim, fakeTrack, recentPace } from './gps.js';
 
 // 위도 0.01도 ≈ 1.11km
 assert(Math.abs(dist({ lat: 37.5, lng: 127 }, { lat: 37.51, lng: 127 }) - 1112) < 5);
@@ -27,4 +27,7 @@ assert(summarize([still]).minutes === 0);
 // 프라이버시 구역: 출발·도착 200m 안 점은 없음
 const tr = trim(pts);
 assert(tr.length && tr.every(p => dist(p, pts[0]) > 200 && dist(p, pts.at(-1)) > 200));
+// 지금 페이스: 끝부분 30초로 5:30 근처, 멈춰 있으면 0
+assert(Math.abs(recentPace(pts) - 330) < 30, `지금 페이스 ${recentPace(pts)}`);
+assert(recentPace(still) === 0);
 console.log('ok');

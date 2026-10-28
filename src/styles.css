@@ -498,7 +498,7 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 #msg-body { min-height: 100%; display: flex; flex-direction: column; }
 #msg-body .bubbles { flex: 1; align-content: end; }
 /* GPS 기록 화면(시험 중) */
-.trk-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 8px; margin: 24px 0 8px; text-align: center; }
+.trk-nums { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 8px; margin: 24px 0 8px; text-align: center; }
 .trk-nums .big { grid-column: 1 / -1; }
 .trk-nums small { display: block; color: var(--muted); font-size: 13px; }
 .trk-nums b { font-size: 24px; font-weight: 800; }
@@ -526,3 +526,7 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .trk-sig { text-align: center; margin-top: 12px; }
 .trk-sig .bad { color: #E5484D; font-weight: 600; }
 .leaflet-control-attribution { font-size: 10px; }
+.trk-count { font-size: 120px; font-weight: 800; text-align: center; color: var(--brand); margin: 24px 0; }
+.trk-goal { height: 8px; border-radius: 4px; background: var(--fill); overflow: hidden; margin-top: 8px; }
+.trk-goal span { display: block; height: 100%; background: var(--brand); transition: width .3s; }
+.trk-lbl { font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 4px; }

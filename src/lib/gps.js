@@ -37,6 +37,15 @@ export function summarize(segs) {
   return { km: m / 1000, minutes: sec / 60, elev: gain, splits, paceSec: m ? sec / (m / 1000) : 0 };
 }
 
+// 지금 페이스(초/km): 마지막 sec초 동안 움직인 거리로. 20m 못 갔으면 0(멈춤)
+export function recentPace(seg, sec = 30) {
+  const end = seg.at(-1); if (!end) return 0;
+  let m = 0, i = seg.length - 1;
+  while (i > 0 && seg[i - 1].t >= end.t - sec * 1000) { m += dist(seg[i - 1], seg[i]); i--; }
+  const dt = (end.t - seg[i].t) / 1000;
+  return m >= 20 && dt > 0 ? dt / (m / 1000) : 0;
+}
+
 // 프라이버시 구역: 출발·도착 지점 반경 r m 안의 점은 경로 그림에서 지움(집 위치 노출 방지)
 export function trim(pts, r = 200) {
   if (pts.length < 2) return [];
