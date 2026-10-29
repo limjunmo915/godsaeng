@@ -1,5 +1,7 @@
 // 앱 시작: 로그인, 부팅, 공통 클릭·폼 처리
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+import '@fontsource/archivo/latin-800-italic.css';   // 큰 숫자용 기울어진 운동 글꼴(D 시안, 숫자·영문만)
+import '@fontsource/archivo/latin-900-italic.css';
 import './styles.css';
 import { S, sb, ok, $, WEB } from './state.js';
 import { fillIcons } from './lib/icons.js';
