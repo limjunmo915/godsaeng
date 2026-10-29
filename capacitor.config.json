@@ -3,6 +3,11 @@
   "appName": "갓생살기",
   "webDir": "dist",
   "plugins": {
-    "SystemBars": { "initialViewportFitValueHint": "cover" }
+    "SystemBars": {
+      "initialViewportFitValueHint": "cover"
+    }
+  },
+  "android": {
+    "useLegacyBridge": true
   }
 }

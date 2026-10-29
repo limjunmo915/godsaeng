@@ -1,6 +1,7 @@
 // GPS 기록 화면 — 시험 중(웹·앱 모두 보임). 주소에 ?gps=sim 을 붙이면 가짜 5km, ?gps=off 로 실제 GPS 로 되돌림
 // 경로(위치)는 서버에 저장하지 않음. 끝나면 거리·시간·상승고도만 기록 화면에 채우고, 지도·경로 그림은 이 폰 화면에만
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
@@ -12,6 +13,7 @@ const KINDS = ['run', 'walk', 'hike', 'ride'];
 // 목표(NRC 식): 거리 또는 시간(움직인 시간)
 const GOALS = [null, { k: 'km', v: 3 }, { k: 'km', v: 5 }, { k: 'km', v: 10 }, { k: 'min', v: 20 }, { k: 'min', v: 30 }, { k: 'min', v: 60 }];
 const goalTxt = g => g ? g.k === 'km' ? `${g.v}km` : `${g.v}분` : '없음';
+const BgGeo = registerPlugin('BackgroundGeolocation');
 let R = null;   // 기록 상태 { type, goal, segs, laps, state: ready | count | rec | pause, last(마지막 위치), moveAt, auto(자동 일시정지), said(안내한 km), done(목표 달성), follow, stop, wake, 지도 }
 
 // 음성 안내: 앱에선 안드로이드 음성, 웹에선 브라우저 음성(플러그인이 알아서 고름). 끄면 이 폰에 기억
@@ -23,7 +25,8 @@ const isRide = () => TYPES[R.type].pace === 'kmh';
 const speed = paceSec => paceSec ? (3600 / paceSec).toFixed(1) : '0.0';
 
 // 위치 입구: 화면을 열면 바로 켜서 지도에 내 위치를 보여 주고, '시작' 뒤의 점만 기록에 씀
-// 지금은 브라우저 GPS(화면이 켜져 있을 때만 됨). 안드로이드 앱 백그라운드 기록은 이 함수만 위치 플러그인으로 바꿈
+// 앱: 백그라운드 위치 플러그인(알림을 띄운 채 화면을 꺼도 계속 받음). 웹: 브라우저 GPS(화면이 켜져 있을 때만 됨)
+const permMsg = '위치 권한이 꺼져 있어요. 휴대폰 설정에서 위치를 허용해 주세요.';
 function source(onPoint) {
   if (lsGet('gps') === 'sim') {   // 가짜: 첫 점은 바로, 나머지는 기록 중일 때만 흘림
     const pts = fakeTrack(5, 330); let i = 0;
@@ -31,9 +34,17 @@ function source(onPoint) {
     const h = setInterval(() => R?.state === 'rec' && i < pts.length && onPoint(pts[i++]), 40);
     return () => clearInterval(h);
   }
+  if (Capacitor.isNativePlatform()) {
+    const w = BgGeo.addWatcher({ backgroundTitle: '갓생살기 GPS 기록 중', backgroundMessage: '화면을 꺼도 기록이 계속돼요', requestPermissions: true, stale: false },
+      (l, e) => {
+        if (e) { if (R) { R.err = e.code === 'NOT_AUTHORIZED' ? permMsg : '위치를 아직 못 잡았어요.'; info(); } return; }
+        onPoint({ t: l.time ?? Date.now(), lat: l.latitude, lng: l.longitude, alt: l.altitude, acc: l.accuracy });
+      });
+    return () => w.then(id => BgGeo.removeWatcher({ id })).catch(() => {});
+  }
   const id = navigator.geolocation.watchPosition(
     p => onPoint({ t: p.timestamp, lat: p.coords.latitude, lng: p.coords.longitude, alt: p.coords.altitude, acc: p.coords.accuracy }),
-    e => { if (!R) return; R.err = e.code === 1 ? '위치 권한이 꺼져 있어요. 휴대폰 설정에서 위치를 허용해 주세요.' : '위치를 아직 못 잡았어요. 하늘이 보이는 곳으로 가 보세요.'; info(); },
+    e => { if (!R) return; R.err = e.code === 1 ? permMsg : '위치를 아직 못 잡았어요. 하늘이 보이는 곳으로 가 보세요.'; info(); },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
   return () => navigator.geolocation.clearWatch(id);
 }
@@ -114,7 +125,7 @@ function info() {
   $('#trk-info').innerHTML = `<p class="hint trk-sig">${signal()}</p>
     ${R.state === 'ready' ? `<div class="chips">${KINDS.map(k => `<button type="button" class="chip" data-act="trk-type" data-v="${k}" aria-pressed="${k === R.type}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('')}</div>
       <p class="trk-lbl">목표</p><div class="chips">${GOALS.map((g, i) => `<button type="button" class="chip" data-act="trk-goal" data-i="${i}" aria-pressed="${goalTxt(g) === goalTxt(R.goal)}">${goalTxt(g)}</button>`).join('')}</div>
-      <p class="hint">GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).</p>` : ''}
+      <p class="hint">GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. ${Capacitor.isNativePlatform() ? '앱에선 화면을 꺼도 기록이 계속돼요(알림창에 기록 중 표시).' : '웹에선 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).'}</p>` : ''}
     ${R.state === 'count' ? `<div class="trk-count num">${R.n}</div>` : `<div class="trk-nums">
       <div class="big"><small>시간</small><b class="num">${fmtClock(s.minutes)}</b></div>
       <div><small>거리</small><b class="num">${s.km.toFixed(2)}<small> km</small></b></div>
@@ -123,7 +134,7 @@ function info() {
       <div><small>상승고도</small><b class="num">${Math.round(s.elev)}<small> m</small></b></div>
     </div>`}
     ${R.goal && R.state !== 'ready' ? `<div class="trk-goal"><span style="width:${pct}%"></span></div><p class="hint trk-state">${R.done ? `🎉 목표 ${goalTxt(R.goal)} 달성!` : `목표 ${goalTxt(R.goal)}까지 ${left(s)} 남음`}</p>` : ''}
-    ${R.state === 'rec' || R.state === 'pause' ? `<p class="hint trk-state">${R.state === 'pause' ? '일시정지' : R.auto ? '<b>자동 일시정지</b> · 움직이면 다시 기록해요' : got ? '기록 중 · 화면을 끄지 마세요' : '기록 시작 · 첫 위치 기다리는 중…'}</p>` : ''}
+    ${R.state === 'rec' || R.state === 'pause' ? `<p class="hint trk-state">${R.state === 'pause' ? '일시정지' : R.auto ? '<b>자동 일시정지</b> · 움직이면 다시 기록해요' : got ? `기록 중${Capacitor.isNativePlatform() ? '' : ' · 화면을 끄지 마세요'}` : '기록 시작 · 첫 위치 기다리는 중…'}</p>` : ''}
     <div class="trk-btns">${R.state === 'ready' ? `<button class="btn primary wide" data-act="trk-start">시작</button>`
       : R.state === 'count' ? '' : R.state === 'rec' ? `<button class="btn" data-act="trk-lap">랩</button><button class="btn" data-act="trk-pause">일시정지</button>`
       : `<button class="btn primary" data-act="trk-start">계속</button><button class="btn" data-act="trk-end">종료하고 기록하기</button>`}</div>
@@ -136,6 +147,14 @@ function begin() {
   R.segs.push([]); R.state = 'rec'; R.follow = true; R.moveAt = null; R.auto = false; lock();
   if (R.L) R.lines.push(R.L.polyline([], LINE).addTo(R.map));
   info();
+}
+// 끝내기 확인 창(종료·뒤로 가기·닫기): 50m 미만이면 기록은 못 올리고 삭제·계속만
+function ask() {
+  const short = summarize(R.segs).km < 0.05;
+  $('#trk-ask-t').textContent = short ? '50m 미만은 기록할 수 없어요' : '기록을 끝낼까요?';
+  $('#trk-ask-p').textContent = short ? '거리가 너무 짧아 올릴 수 없어요. 더 움직이려면 계속하기를 눌러요.' : '삭제하면 지금까지 기록은 사라져요.';
+  $('#trk-ask-end').hidden = short;
+  if (!$('#trk-ask').open) $('#trk-ask').showModal();
 }
 const voiceBtn = () => `<button class="icbtn" data-act="trk-voice" aria-label="음성 안내 ${voice ? '끄기' : '켜기'}">${ic(voice ? 'volume' : 'volume-off')}</button>`;
 
@@ -171,14 +190,17 @@ export const actions = {
   'trk-pause': () => { R.state = 'pause'; R.auto = false; say('일시정지'); info(); },
   'trk-end': async () => {
     const s = summarize(R.segs), pts = R.segs.flat(), type = R.type;
-    if (s.km < 0.05) return toast('기록할 거리가 너무 짧아요(50m 미만).');
+    if (s.km < 0.05) return ask();
     actions['trk-close'](true);
     say(`수고했어요. ${s.km.toFixed(2)}킬로미터, ${saySec(s.minutes * 60)}`);
     await fillAuto({ type, start: pts[0].t, minutes: s.minutes, km: s.km, elev: s.elev });
     $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
   },
+  'trk-drop': () => actions['trk-close'](true),
+  'trk-ask-no': () => $('#trk-ask').close(),
   'trk-close': force => {
-    if (force !== true && R?.state !== 'ready' && !confirm('기록을 그만두고 닫을까요? 지금까지 기록은 사라져요.')) return;
+    if (force !== true && R && R.state !== 'ready') return ask();
+    $('#trk-ask').close();
     R?.stop?.(); R?.wake?.release?.().catch(() => {}); R?.map?.remove(); R = null;
     $('#trk').hidden = true;
     if (!document.querySelector('.pp:not([hidden])')) document.body.classList.remove('pp-open');
