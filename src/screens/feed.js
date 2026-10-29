@@ -1,6 +1,6 @@
 // 피드: 크루 기록 카드, 라이벌 현황, 약올림 목록
 import { S, sb, ok, $ } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, rxImg } from '../lib/icons.js';
 import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast } from '../lib/util.js';
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
@@ -58,9 +58,9 @@ export function card(w) {
     ${w.photos?.length ? `<div class="photos ${w.photos.length > 1 ? 'multi' : ''}">${w.photos.map((p, i) => `<img alt="${esc(nameOf(w.user_id))}의 운동 사진 ${i + 1}" src="${esc(S.urls[p] || '')}" loading="lazy">`).join('')}</div>` : ''}
     ${mine && S.notes[w.id] ? `<p class="note">${ic('lock')}${esc(S.notes[w.id])}</p>` : ''}
     <div class="actbar">
-      ${Object.entries(REACTS).map(([k, [emoji, label]]) => {
+      ${Object.entries(REACTS).map(([k, [, label]]) => {
         const n = w.reactions.filter(r => r.kind === k).length;
-        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}"><i aria-hidden="true">${emoji}</i><span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
+        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}">${rxImg(k)}<span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
       }).join('')}
     </div>
     ${rxWho(w)}
@@ -124,7 +124,7 @@ export const actions = {
   'rx-who': (b, w) => {
     const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id));
     $('#rx-list').innerHTML = Object.keys(REACTS).flatMap(k => rs.filter(r => r.kind === k)).map(r =>
-      `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${r.user_id}">${avatar(r.user_id, 'sm')}<span>${esc(nameOf(r.user_id))}</span></button><span class="rx-tag">${REACTS[r.kind][0]} ${REACTS[r.kind][1]}</span></div>`).join('');
+      `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${r.user_id}">${avatar(r.user_id, 'sm')}<span>${esc(nameOf(r.user_id))}</span></button><span class="rx-tag">${rxImg(r.kind)}${REACTS[r.kind][1]}</span></div>`).join('');
     $('#rx-dlg').showModal();
   },
   'close-rx': () => $('#rx-dlg').close(),

@@ -12,3 +12,8 @@ export const ic = (name, cls = '') => (ICONS[name] || ICONS.activity).replace('c
 
 // 정적 HTML 의 <i data-ic="이름"> 을 아이콘으로 채움
 export const fillIcons = (root = document) => root.querySelectorAll('[data-ic]').forEach(el => { el.outerHTML = ic(el.dataset.ic, el.className); });
+
+// 사용자가 만든 그림(src/public/img, 10-29): 반응 스티커·종목 아이콘. 그림이 없는 종목은 선 아이콘
+const SPORT = { run: 'run', walk: 'walk', ride: 'ride', gym: 'weight', hike: 'hike', swim: 'swim', yoga: 'yoga', tennis: 'tennis' };
+export const sportIc = (k, icon) => SPORT[k] ? `<img class="sp" src="img/sp-${SPORT[k]}.webp" alt="">` : ic(icon);
+export const rxImg = k => `<img class="rx-img" src="img/rx-${k}.webp" alt="">`;

@@ -2,7 +2,7 @@
 // 경로(위치)는 서버에 저장하지 않음. 끝나면 거리·시간·상승고도만 기록 화면에 채우고, 지도·경로 그림은 이 폰 화면에만
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { $ } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
 import { TYPES } from '../lib/types.js';
 import { dist, accept, summarize, recentPace, trim, routeSvg, fakeTrack } from '../lib/gps.js';
@@ -112,7 +112,7 @@ function info() {
   const pct = R.goal ? Math.min(100, (R.goal.k === 'km' ? s.km : s.minutes) / R.goal.v * 100) : 0;
   const laps = R.laps.map((l, i) => { const p = R.laps[i - 1] || { km: 0, minutes: 0 }; return { km: l.km - p.km, sec: (l.minutes - p.minutes) * 60 }; });
   $('#trk-info').innerHTML = `<p class="hint trk-sig">${signal()}</p>
-    ${R.state === 'ready' ? `<div class="chips">${KINDS.map(k => `<button type="button" class="chip" data-act="trk-type" data-v="${k}" aria-pressed="${k === R.type}">${ic(TYPES[k].icon)}${TYPES[k].label}</button>`).join('')}</div>
+    ${R.state === 'ready' ? `<div class="chips">${KINDS.map(k => `<button type="button" class="chip" data-act="trk-type" data-v="${k}" aria-pressed="${k === R.type}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('')}</div>
       <p class="trk-lbl">목표</p><div class="chips">${GOALS.map((g, i) => `<button type="button" class="chip" data-act="trk-goal" data-i="${i}" aria-pressed="${goalTxt(g) === goalTxt(R.goal)}">${goalTxt(g)}</button>`).join('')}</div>
       <p class="hint">GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).</p>` : ''}
     ${R.state === 'count' ? `<div class="trk-count num">${R.n}</div>` : `<div class="trk-nums">

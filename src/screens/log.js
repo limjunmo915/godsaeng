@@ -1,6 +1,6 @@
 // 기록하기 / 기록 수정 폼
 import { S, sb, ok, $ } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, sportIc } from '../lib/icons.js';
 import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress } from '../lib/util.js';
 import { TYPE_GROUPS, TYPES, QUICK_DEFAULT, BRAGS } from '../lib/types.js';
 import { agreeHealth } from './consent.js';
@@ -17,7 +17,7 @@ const setUnit = u => { $('#f-unit').value = u; $('#f-dist').placeholder = u === 
 function drawQuickTypes() {
   const n = {}; for (const w of S.mine) n[w.type] = (n[w.type] || 0) + 1;
   const top = [...new Set([...Object.keys(n).filter(k => TYPES[k]).sort((a, b) => n[b] - n[a]), ...QUICK_DEFAULT])].slice(0, 6);
-  $('#quick-types').innerHTML = top.map(k => `<button type="button" class="chip" data-type="${k}" aria-pressed="${k === typeVal()}">${ic(TYPES[k].icon)}${TYPES[k].label}</button>`).join('');
+  $('#quick-types').innerHTML = top.map(k => `<button type="button" class="chip" data-type="${k}" aria-pressed="${k === typeVal()}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('');
 }
 function setType(k) {
   $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km'); followAuto();
