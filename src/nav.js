@@ -6,7 +6,9 @@ import { renderRank } from './screens/rank.js';
 import { renderCrew } from './screens/crew.js';
 import { renderMe } from './screens/me.js';
 
+const past = [];   // 지나온 탭(뒤로 가기용). 피드(홈)로 오면 비움
 export function show(tab, noRender) {
+  if (tab === 'feed') past.length = 0; else if (S.tab && S.tab !== tab) past.push(S.tab);
   S.tab = tab;
   document.querySelectorAll('.tabs [data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   for (const v of ['feed', 'rank', 'log', 'crew', 'me']) $('#v-' + v).hidden = v !== tab;
@@ -14,6 +16,8 @@ export function show(tab, noRender) {
   scrollTo({ top: 0 });
   if (tab !== 'log' && !noRender) refresh();
 }
+// 뒤로 가기: 바로 전 탭으로(show 가 지금 탭을 다시 쌓으니 하나 버림), 더 없으면 피드
+export function backTab() { show(past.pop() || 'feed'); past.pop(); }
 export function refresh() {
   const r = { feed: renderFeed, rank: renderRank, crew: renderCrew, me: renderMe }[S.tab];
   r?.().catch(err => fail(err, '화면을 그리지 못했어요.'));

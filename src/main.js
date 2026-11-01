@@ -7,7 +7,9 @@ import { S, sb, ok, $, WEB } from './state.js';
 import { fillIcons } from './lib/icons.js';
 import { toast, fail, lsGet, lsSet } from './lib/util.js';
 import { loadCore, loadFeed, loadMine, loadBody } from './lib/data.js';
-import { show, refresh } from './nav.js';
+import { show, refresh, backTab } from './nav.js';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import * as feed from './screens/feed.js';
 import * as rank from './screens/rank.js';
 import * as crew from './screens/crew.js';
@@ -127,12 +129,13 @@ document.addEventListener('submit', async e => {
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); } });
 
-/* 휴대폰 뒤로 가기: 앱은 화면만 바꾸고 주소 기록을 안 남겨서 바로 꺼짐 → 기록에 '쉼표' 하나를 두고
-   뒤로 가기마다 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 피드가 아닌 탭 → (피드에서) 한 번 더 누르면 종료 */
+/* 휴대폰 뒤로 가기: 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 지나온 탭을 거꾸로 → 피드(홈)
+   → 홈에서 누르면 '한 번 더 누르면 종료' → 2초 안에 또 누르면 종료
+   앱: 안드로이드 뒤로 가기 버튼을 직접 받음(@capacitor/app). 웹: 주소 기록에 '쉼표' 하나를 두고 popstate 로 받음 */
 const guard = () => history.pushState({ godsaeng: 1 }, '');
 let exitArmed = null;
-addEventListener('popstate', () => {
-  if (!S.uid || !S.me) return;
+function back() {   // 'exit' = 종료, 'armed' = 종료 안내 띄움
+  if (!S.uid || !S.me) return 'exit';
   const dlg = [...document.querySelectorAll('dialog[open]')].at(-1);
   const menu = document.querySelector('.pp-menu[open]');
   if (dlg && dlg.id !== 'terms-gate') dlg.close();
@@ -142,15 +145,17 @@ addEventListener('popstate', () => {
   else if (!$('#trk').hidden) track.actions['trk-close']();
   else if (!$('#msg').hidden) msg.actions['msg-back']();
   else if (!$('#srch').hidden) search.actions['search-close']();
-  else if (S.tab !== 'feed') show('feed');
+  else if (S.tab !== 'feed') backTab();
   else {
-    // 피드(홈)에서: 2초 안에 한 번 더 누르면 기록이 없어 앱이 닫힘
-    if (exitArmed) return;
+    if (exitArmed) return 'exit';
     $('#exit-hint').hidden = false;
-    exitArmed = setTimeout(() => { $('#exit-hint').hidden = true; exitArmed = null; guard(); }, 2000);
-    return;
+    exitArmed = setTimeout(() => { $('#exit-hint').hidden = true; exitArmed = null; if (!NATIVE) guard(); }, 2000);
+    return 'armed';
   }
-  guard();
-});
+}
+const NATIVE = Capacitor.isNativePlatform();
+if (NATIVE) App.addListener('backButton', () => { if (back() === 'exit') App.exitApp(); });
+// 웹: 'armed' 면 쉼표를 안 다시 둬서 2초 안에 또 누르면 사이트를 떠남
+else addEventListener('popstate', () => { if (S.uid && S.me && !back()) guard(); });
 
 if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) navigator.serviceWorker.register('sw.js').catch(() => {});
