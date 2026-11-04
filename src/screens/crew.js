@@ -1,6 +1,6 @@
 // 크루: 초대코드, 멤버, 챌린지
 import { S, sb, ok, $, WEB } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, kkEmpty } from '../lib/icons.js';
 import { DAY, esc, toLocalInput, lsSet, toast } from '../lib/util.js';
 import { METRIC } from '../lib/types.js';
 import { nameOf, crew, avatar } from '../lib/calc.js';
@@ -44,7 +44,7 @@ export async function renderCrew() {
       <div class="members">${S.members[c.id].map(id => `<span>${avatar(id, 'sm')}${esc(nameOf(id))}</span>`).join('')}</div>
     </section>
     <h3 class="sec">챌린지</h3>
-    ${blocks.join('') || '<p class="hint">아직 챌린지가 없어요. 내기 하나 걸어 보세요.</p>'}
+    ${blocks.join('') || kkEmpty('crew-arm', '아직 챌린지가 없어요. 내기 하나 걸어 보세요.')}
     <details class="panel"><summary>새 챌린지 만들기</summary>
       <form class="stack" data-form="challenge">
         <label class="field"><span>제목</span><input type="text" name="title" maxlength="40" placeholder="10월 100km 달성"></label>

@@ -1,7 +1,7 @@
 // 전체 검색(상단 돋보기): [사람 | 기록] 탭
 // 사람 = 닉네임(search_users, 검색 노출 켠 사람) / 기록 = 내가 볼 수 있는 기록(crew_workouts: 내 것·크루·친구)의 제목·메모·한마디·종목·작성자
 import { S, sb, ok, $ } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, kkEmpty } from '../lib/icons.js';
 import { esc, fail } from '../lib/util.js';
 import { TYPES } from '../lib/types.js';
 import { avatar } from '../lib/calc.js';
@@ -15,8 +15,8 @@ function render() {
     `<button type="button" data-act="srch-tab" data-v="${k}" aria-pressed="${tab === k}">${l}</button>`).join('');
   $('#srch-list').innerHTML = q.length < 2 ? '<p class="hint">2자 이상 입력하면 사람과 기록을 함께 찾아요.<br>예: 닉네임, 한강, 테니스, 아침</p>'
     : tab === 'people'
-      ? people.map(u => `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${u.id}">${avatar(u.id, 'sm')}<span>${esc(u.nickname)}${u.region ? `<small>${esc(u.region)}</small>` : ''}</span></button>${u.id === S.uid ? '' : relBtn(u.id)}</div>`).join('') || '<p class="hint">찾는 사람이 없어요.</p>'
-      : `<div class="feed">${recs.map(card).join('') || '<p class="hint">찾는 기록이 없어요.</p>'}</div>`;
+      ? people.map(u => `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${u.id}">${avatar(u.id, 'sm')}<span>${esc(u.nickname)}${u.region ? `<small>${esc(u.region)}</small>` : ''}</span></button>${u.id === S.uid ? '' : relBtn(u.id)}</div>`).join('') || kkEmpty('empty-search', '찾는 사람이 없어요.')
+      : `<div class="feed">${recs.map(card).join('') || kkEmpty('empty-search', '찾는 기록이 없어요.')}</div>`;
 }
 
 async function run(q) {

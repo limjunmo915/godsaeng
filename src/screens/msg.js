@@ -1,6 +1,6 @@
 // 메시지(supabase/012): 1:1(친구·같은 크루) + 크루 단체방. 상단 종이비행기 → 대화 목록 → 대화방
 import { S, sb, ok, $ } from '../state.js';
-import { ic } from '../lib/icons.js';
+import { ic, kkEmpty } from '../lib/icons.js';
 import { esc, ago, fmtDate, fmtTime, toast, lsGet, lsSet } from '../lib/util.js';
 import { avatar, nameOf } from '../lib/calc.js';
 import { isFriend, signAvatars } from '../lib/data.js';
@@ -52,7 +52,7 @@ function render() {
   if (S.chat === 'new') {
     const ids = [...new Set([...S.following.filter(isFriend), ...S.crews.flatMap(c => S.members[c.id] || [])])].filter(id => id !== S.uid && canDM(id));
     el.innerHTML = top('새 메시지') + `<p class="hint">친구와 같은 크루 사람에게 보낼 수 있어요.</p>`
-      + (ids.map(id => `<button type="button" class="frow msg-row" data-act="msg-open" data-k="u:${id}">${avatar(id)}<span class="nm"><span>${esc(nameOf(id))}</span></span></button>`).join('') || '<p class="hint">아직 보낼 수 있는 사람이 없어요. 친구를 맺거나 크루에 들어가 보세요.</p>');
+      + (ids.map(id => `<button type="button" class="frow msg-row" data-act="msg-open" data-k="u:${id}">${avatar(id)}<span class="nm"><span>${esc(nameOf(id))}</span></span></button>`).join('') || kkEmpty('empty-msg', '아직 보낼 수 있는 사람이 없어요. 친구를 맺거나 크루에 들어가 보세요.'));
     return;
   }
   if (!S.chat) {

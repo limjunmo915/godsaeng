@@ -14,7 +14,7 @@ export const crewPicker = () => S.crews.length > 1
 
 export async function renderRank() {
   const v = $('#v-rank');
-  if (!S.crewId) return v.innerHTML = `<div class="empty">${ic('trophy', 'big')}<b>크루가 없어요</b><p>크루에 들어가면 순위가 매겨져요.</p><button class="btn primary" data-act="go" data-tab="crew">크루로 가기</button></div>`;
+  if (!S.crewId) return v.innerHTML = `<div class="empty"><img class="kk-big" src="img/kk/empty-rank.webp" alt=""><b>크루가 없어요</b><p>크루에 들어가면 순위가 매겨져요.</p><button class="btn primary" data-act="go" data-tab="crew">크루로 가기</button></div>`;
   const by = await crewTotals(startOf(S.rPeriod));
   const rows = Object.entries(by).map(([id, l]) => [id, total(l, S.rMetric)]).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...rows.map(r => r[1])), M = METRIC[S.rMetric];

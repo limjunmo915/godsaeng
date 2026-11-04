@@ -27,4 +27,6 @@ export const STICKERS = ['cm-cheer', 'cm-thanks', 'cm-wow', 'cm-hi5', 'cm-lol', 
   'rank-king', 'rank-podium', 'rank-last', 'rank-turtle', 'streak-fire', 'streak-broken', 'goal-done', 'crew-arm'];
 export const stickerOf = body => { const m = /^\[kk:([a-z-]+)\]$/.exec(body || ''); return m && STICKERS.includes(m[1]) ? m[1] : null; };
 export const cmText = body => stickerOf(body) ? '(스티커)' : body;
+// 빈 화면: 깐족이 그림 + 한 줄(글은 코드에 적힌 고정 문구만)
+export const kkEmpty = (img, text) => `<div class="kk-empty"><img src="img/kk/${img}.webp" alt=""><p>${text}</p></div>`;
 export const rxImg = k => `<img class="rx-img" src="${kkRx(k)}" alt="">`;

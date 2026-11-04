@@ -607,3 +607,17 @@ main { padding-bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom, 0p
 }
 @keyframes kk-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .kk-pop { animation-name: kk-fade; } }
+
+/* 깐족이 빈 화면·첫 사용 안내 */
+.empty .kk-big { width: 140px; height: 140px; object-fit: contain; }
+.kk-empty { display: grid; justify-items: center; gap: 6px; padding: 20px 12px; text-align: center; color: var(--muted); font-size: 14px; }
+.kk-empty img { width: 116px; height: 116px; object-fit: contain; }
+.kk-empty p { margin: 0; max-width: 300px; }
+dialog.intro { margin: auto; width: min(380px, calc(100% - 32px)); border-radius: 28px; padding: 20px 20px 18px; text-align: center; }
+.intro img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 22px; }
+.intro h2 { margin: 14px 0 6px; font-size: 22px; }
+.intro p { margin: 0; color: var(--muted); font-size: 15px; min-height: 3em; }
+.intro-dots { display: flex; justify-content: center; gap: 6px; margin: 14px 0; }
+.intro-dots i { width: 7px; height: 7px; border-radius: 999px; background: var(--line); transition: width .2s; }
+.intro-dots i.on { width: 20px; background: var(--brand); }
+.intro-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }

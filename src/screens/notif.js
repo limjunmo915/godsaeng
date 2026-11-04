@@ -2,7 +2,7 @@
 // ponytail: 앱을 열었을 때만 확인. 휴대폰 푸시 알림은 서버 함수(Edge Function)+VAPID 키가 필요해 다음 단계에서
 import { S, sb, ok, $ } from '../state.js';
 import { DAY, esc, ago, lsGet, lsSet, pop } from '../lib/util.js';
-import { kkRx, kkTease, cmText } from '../lib/icons.js';
+import { kkRx, kkTease, cmText, kkEmpty } from '../lib/icons.js';
 import { REACTS, typeOf } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
 import { NOTICES } from '../lib/notices.js';
@@ -52,7 +52,7 @@ async function openNotifs() {
   if (NOTICES.length) lsSet('notice', NOTICES[0].id);
   const list = await fetchNotifs();
   lsSet('seen', new Date().toISOString()); $('#notif-dot').hidden = true;
-  $('#notif-list').innerHTML = head + (list.map(n => `<button type="button" class="nt" data-act="${n.wid ? 'notif-goto' : 'notif-profile'}" data-id="${n.wid || n.id}">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></button>`).join('') || '<p class="hint">최근 2주간 알림이 없어요. 먼저 약올려 보세요.</p>');
+  $('#notif-list').innerHTML = head + (list.map(n => `<button type="button" class="nt" data-act="${n.wid ? 'notif-goto' : 'notif-profile'}" data-id="${n.wid || n.id}">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></button>`).join('') || kkEmpty('empty-notif', '최근 2주간 알림이 없어요. 먼저 약올려 보세요.'));
 }
 
 export const actions = {

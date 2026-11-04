@@ -1,7 +1,7 @@
 // 친구: 검색·팔로우·맞팔로우(친구)·초대 링크·친구 약올리기 (supabase/009)
 // 팔로우만으론 아무것도 안 보이고, 서로 팔로우해야 친구 → 기록이 보이고 반응·댓글·약올리기 가능
 import { S, sb, ok, $, WEB } from '../state.js';
-import { ic, kkTease } from '../lib/icons.js';
+import { ic, kkTease, kkEmpty } from '../lib/icons.js';
 import { esc, pick, toast, fail, lsGet, lsSet, pop } from '../lib/util.js';
 import { POKES } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
@@ -39,7 +39,7 @@ export async function renderFriends() {
       ${incoming.map(id => row(id, `<button class="btn sm primary" data-act="follow" data-id="${id}">맞팔로우</button><button class="linkbtn" data-act="remove-follower" data-id="${id}">삭제</button>`)).join('')}` : ''}
     <h3 class="sec">친구 ${friends.length}명</h3>
     ${friends.map(id => row(id, `${S.people[id]?.poke_off ? '' : `<button class="taunt-btn sm" data-act="poke-friend" data-to="${id}">약올리기</button>`}<button class="linkbtn" data-act="unfriend" data-id="${id}">끊기</button>`)).join('')
-      || '<p class="hint">아직 친구가 없어요. 초대 링크를 보내거나 닉네임으로 찾아 팔로우해 보세요.</p>'}
+      || kkEmpty('empty-crew', '아직 친구가 없어요. 초대 링크를 보내거나 닉네임으로 찾아 팔로우해 보세요.')}
     ${sent.length ? `<h3 class="sec">보낸 팔로우 <small>상대가 맞팔로우하면 친구</small></h3>${sent.map(id => row(id, relBtn(id))).join('')}` : ''}`;
 }
 

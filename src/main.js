@@ -26,7 +26,9 @@ import * as track from './screens/track.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
 const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions,
-  go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); } };
+  go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); },
+  'intro-next': () => introAt < INTRO.length - 1 ? intro(introAt + 1) : $('#intro').close(),
+  'intro-skip': () => $('#intro').close() };
 const forms = {
   newpw: async (f, d) => {
     if (d.pw.length < 6) return toast('6자 이상 입력해 주세요.');
@@ -102,7 +104,23 @@ async function boot() {
     await takeShared();
     notif.loadNotifs(); msg.loadMsgs().catch(console.error); msg.listen();
     await friends.acceptInvite();
+    if (!lsGet('intro') && !document.querySelector('dialog[open]')) intro(0);
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
+}
+
+// 첫 사용 안내 3장(이 폰에서 처음 한 번만)
+const INTRO = [
+  ['운동하면 바로 기록', '오른쪽 아래 측정 버튼으로 GPS 기록, 가운데 + 버튼으로 직접 입력해요.'],
+  ['크루끼리 약올리기', '랭킹에서 앞선 친구는 견제하고, 누워 있는 친구는 깐족이로 약올려요.'],
+  ['친구를 이겨라', '이번 주 1등은 왕관! 반응·댓글 스티커로 서로 응원도 해요.'],
+];
+let introAt = 0;
+function intro(i) {
+  introAt = i; const [t, p] = INTRO[i];
+  $('#intro-img').src = `img/kk/onboard-${i + 1}.webp`; $('#intro-t').textContent = t; $('#intro-p').textContent = p;
+  document.querySelectorAll('.intro-dots i').forEach((d, k) => d.classList.toggle('on', k === i));
+  $('[data-act="intro-next"]').textContent = i === INTRO.length - 1 ? '시작하기' : '다음';
+  if (!$('#intro').open) { $('#intro').showModal(); lsSet('intro', '1'); }   // 한 번 보여 주면 끝(어떻게 닫든)
 }
 
 /* 공통 처리: 탭, 세그먼트, data-act 버튼, data-form 폼 */

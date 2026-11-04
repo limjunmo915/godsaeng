@@ -1,6 +1,6 @@
 // 피드: 크루 기록 카드, 라이벌 현황, 약올림 목록
 import { S, sb, ok, $ } from '../state.js';
-import { ic, rxImg, kkRx, kkTease, STICKERS, stickerOf } from '../lib/icons.js';
+import { ic, rxImg, kkRx, kkTease, STICKERS, stickerOf, kkEmpty } from '../lib/icons.js';
 import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast, pop, lsGet, lsSet } from '../lib/util.js';
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
@@ -98,7 +98,7 @@ export async function renderFeed() {
   const list = S.feed.filter(w => !S.blocked.includes(w.user_id));
   $('#v-feed').innerHTML = `<div class="feed-head">${head.join('')}</div>` + (list.length
     ? list.map(card).join('') + (S.feedEnd ? '<p class="end">여기까지예요</p>' : '<button class="btn ghost wide" data-act="more-feed">더 보기</button>')
-    : `<div class="empty">${ic(S.crews.length ? 'run' : 'users', 'big')}<b>${S.crews.length ? '아직 아무도 운동 안 함' : '먼저 크루에 들어가세요'}</b>
+    : `<div class="empty"><img class="kk-big" src="img/kk/${S.crews.length ? 'empty-feed' : 'empty-crew'}.webp" alt=""><b>${S.crews.length ? '아직 아무도 운동 안 함' : '먼저 크루에 들어가세요'}</b>
       <p>${S.crews.length ? '지금 기록하면 자동으로 1등이에요.' : '크루를 만들거나 초대코드로 들어가면 친구들 기록이 여기 떠요.'}</p>
       <button class="btn primary" data-act="go" data-tab="${S.crews.length ? 'log' : 'crew'}">${S.crews.length ? '첫 기록 올리기' : '크루로 가기'}</button></div>`);
   markPoked(list).catch(console.error);
