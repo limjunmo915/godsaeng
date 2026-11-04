@@ -1,6 +1,6 @@
 // 피드: 크루 기록 카드, 라이벌 현황, 약올림 목록
 import { S, sb, ok, $ } from '../state.js';
-import { ic, rxImg, kkRx, kkTease } from '../lib/icons.js';
+import { ic, rxImg, kkRx, kkTease, STICKERS, stickerOf } from '../lib/icons.js';
 import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast, pop, lsGet, lsSet } from '../lib/util.js';
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
@@ -66,10 +66,10 @@ export function card(w) {
     ${rxWho(w)}
     <div class="comments">
       ${!open ? `<button class="linkbtn" data-act="more-cm">댓글 ${cms.length}개 모두 보기</button>` : ''}
-      ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${esc(c.body)}<small>${ago(c.created_at)}</small></p>
+      ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${stickerOf(c.body) ? `<img class="cm-sticker" src="img/kk/${stickerOf(c.body)}.webp" alt="깐족이 스티커">` : esc(c.body)}<small>${ago(c.created_at)}</small></p>
         ${c.user_id !== S.uid ? `<button class="icbtn sm" data-act="report-cm" data-cid="${c.id}" aria-label="댓글 신고">${ic('flag')}</button>` : ''}
         ${c.user_id === S.uid || mine ? `<button class="icbtn sm" data-act="del-cm" data-cid="${c.id}" aria-label="댓글 삭제">${ic('x')}</button>` : ''}</div>`).join('')}
-      <form class="cform" data-form="comment"><input type="text" maxlength="300" placeholder="댓글 달기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
+      <form class="cform" data-form="comment"><button type="button" class="stk-btn" data-act="stk" aria-label="깐족이 스티커">${ic('mood-smile')}</button><input type="text" maxlength="300" placeholder="댓글 달기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
     </div>
   </article>`;
 }
@@ -165,6 +165,14 @@ export const actions = {
     }
     return renderFeed();
   },
+  // 스티커 고르는 칸: 처음 누를 때만 그림을 채움(카드마다 미리 그리면 무거움)
+  stk: b => {
+    const f = b.closest('.cform'); let pk = f.nextElementSibling;
+    if (!pk?.classList.contains('stk-pick')) {
+      f.insertAdjacentHTML('afterend', `<div class="stk-pick">${STICKERS.map(s => `<button type="button" data-act="stk-send" data-s="${s}" aria-label="스티커 보내기"><img src="img/kk/${s}.webp" alt="" loading="lazy"></button>`).join('')}</div>`);
+    } else pk.hidden = !pk.hidden;
+  },
+  'stk-send': (b, w) => { const c = b.closest('.card'); pop(`img/kk/${b.dataset.s}.webp`, c?.querySelector('.photos') || c); return addComment(w, `[kk:${b.dataset.s}]`); },
   'del-cm': async (b, w) => {
     ok(await sb.from('comments').delete().eq('id', b.dataset.cid));
     w.comments = w.comments.filter(c => c.id !== b.dataset.cid);
@@ -187,11 +195,15 @@ export const actions = {
   goto: b => goToWorkout(b.dataset.id),
 };
 
+async function addComment(w, body) {
+  const c = ok(await sb.from('comments').insert({ workout_id: w.id, body }).select().single());
+  w.comments.push(c); w._open = true; return renderFeed();
+}
+
 export const forms = {
   comment: async f => {
     const body = f.querySelector('input').value.trim(); if (!body) return;
-    const wid = f.closest('[data-wid]').dataset.wid, w = [S.feed, S.ppList, S.searchList].flatMap(l => l || []).find(x => x.id === wid);
-    const c = ok(await sb.from('comments').insert({ workout_id: w.id, body }).select().single());
-    w.comments.push(c); w._open = true; return renderFeed();
+    const wid = f.closest('[data-wid]').dataset.wid;
+    return addComment([S.feed, S.ppList, S.searchList].flatMap(l => l || []).find(x => x.id === wid), body);
   },
 };

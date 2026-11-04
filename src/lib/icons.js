@@ -1,6 +1,6 @@
 // Tabler 선 아이콘. 쓰는 것만 골라 빌드에 포함 (목록에 없는 이름은 activity 로 대체)
 const raw = import.meta.glob(
-  '../../node_modules/@tabler/icons/icons/outline/{run,walk,treadmill,trekking,mountain,wheelchair,bike,bolt,wheel,swimming,kayak,sailboat,wave-sine,wind,ski-jumping,snowboarding,snowflake,ice-skating,roller-skating,skateboarding,barbell,weight,flame,stretching,stretching-2,activity,stairs-up,yoga,music,first-aid-kit,ball-tennis,ping-pong,ball-football,ball-basketball,ball-volleyball,cricket,golf,ball-baseball,sparkles,home,trophy,plus,users,user,bell,search,chevron-right,chevron-left,lock,message-circle,share-2,pencil,trash,x,camera,calendar,calendar-stats,route,trending-up,trending-down,crown,medal,award,shoe,heart-rate-monitor,copy,logout,settings,chart-bar,stopwatch,sun,moon,target,photo,check,eye-off,flag,bulb,dots-vertical,send,current-location,volume,volume-off,player-play}.svg',
+  '../../node_modules/@tabler/icons/icons/outline/{run,walk,treadmill,trekking,mountain,wheelchair,bike,bolt,wheel,swimming,kayak,sailboat,wave-sine,wind,ski-jumping,snowboarding,snowflake,ice-skating,roller-skating,skateboarding,barbell,weight,flame,stretching,stretching-2,activity,stairs-up,yoga,music,first-aid-kit,ball-tennis,ping-pong,ball-football,ball-basketball,ball-volleyball,cricket,golf,ball-baseball,sparkles,home,trophy,plus,users,user,bell,search,chevron-right,chevron-left,lock,message-circle,share-2,pencil,trash,x,camera,calendar,calendar-stats,route,trending-up,trending-down,crown,medal,award,shoe,heart-rate-monitor,copy,logout,settings,chart-bar,stopwatch,sun,moon,target,photo,check,eye-off,flag,bulb,dots-vertical,send,current-location,volume,volume-off,player-play,mood-smile}.svg',
   { query: '?raw', import: 'default', eager: true },
 );
 const ICONS = Object.fromEntries(Object.entries(raw).map(([p, svg]) => [
@@ -21,4 +21,9 @@ const KK_RX = { fire: 'rx-respect', mad: 'rx-fire', meh: 'tease-shrug', sofa: 'r
 const TEASE = ['merong', 'snicker', 'rofl', 'chill', 'bye', 'shrug', 'flex', 'trophy'];
 export const kkRx = k => `img/kk/${KK_RX[k]}.webp`;
 export const kkTease = () => `img/kk/tease-${TEASE[Math.floor(Math.random() * TEASE.length)]}.webp`;
+// 댓글 스티커: 내용을 '[kk:이름]' 으로 저장(DB 변경 없음), 화면에선 깐족이 그림으로
+export const STICKERS = [...TEASE.map(t => 'tease-' + t), 'rx-respect', 'rx-clap', 'rx-fire', 'rx-cry', 'rx-mad', 'rx-shock', 'rx-sofa', 'rx-love',
+  'mood-melt', 'mood-water', 'mood-stretch', 'mood-chicken', 'mood-sleep', 'mood-run', 'mood-lift', 'mood-party'];
+export const stickerOf = body => { const m = /^\[kk:([a-z-]+)\]$/.exec(body || ''); return m && STICKERS.includes(m[1]) ? m[1] : null; };
+export const cmText = body => stickerOf(body) ? '(스티커)' : body;
 export const rxImg = k => `<img class="rx-img" src="${kkRx(k)}" alt="">`;

@@ -2,7 +2,7 @@
 // ponytail: 앱을 열었을 때만 확인. 휴대폰 푸시 알림은 서버 함수(Edge Function)+VAPID 키가 필요해 다음 단계에서
 import { S, sb, ok, $ } from '../state.js';
 import { DAY, esc, ago, lsGet, lsSet, pop } from '../lib/util.js';
-import { kkRx, kkTease } from '../lib/icons.js';
+import { kkRx, kkTease, cmText } from '../lib/icons.js';
 import { REACTS, typeOf } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
 import { NOTICES } from '../lib/notices.js';
@@ -23,7 +23,7 @@ async function fetchNotifs() {
     ...Object.entries(S.followedAt || {}).filter(([, t]) => new Date(t) >= new Date(since)).map(([id, t]) => ({ ts: t, id,
       html: `<b>${esc(nameOf(id))}</b>님이 ${S.following.includes(id) ? '맞팔로우해서 친구가 됐어요' : '팔로우했어요. 눌러서 맞팔로우하면 친구가 돼요'}` })),
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, pop: kkTease(), cap: `${nameOf(p.from_id)}님이 약올렸어요`, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
-    ...cm.map(c => ({ ts: c.created_at, id: c.user_id, wid: c.workout_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(c.body)}` })),
+    ...cm.map(c => ({ ts: c.created_at, id: c.user_id, wid: c.workout_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(cmText(c.body))}` })),
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, wid: r.workout_id, pop: kkRx(r.kind), cap: `${nameOf(r.user_id)}님이 '${REACTS[r.kind]?.[1] || ''}'`, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
   ].filter(n => !S.blocked.includes(n.id)).sort((a, b) => new Date(b.ts) - new Date(a.ts));
 }
