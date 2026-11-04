@@ -1,7 +1,7 @@
 // 피드: 크루 기록 카드, 라이벌 현황, 약올림 목록
 import { S, sb, ok, $ } from '../state.js';
 import { ic, rxImg, kkRx, kkTease } from '../lib/icons.js';
-import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast, pop } from '../lib/util.js';
+import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast, pop, lsGet, lsSet } from '../lib/util.js';
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
 import { loadFeed, loadMine, crewTotals } from '../lib/data.js';
@@ -101,6 +101,27 @@ export async function renderFeed() {
     : `<div class="empty">${ic(S.crews.length ? 'run' : 'users', 'big')}<b>${S.crews.length ? '아직 아무도 운동 안 함' : '먼저 크루에 들어가세요'}</b>
       <p>${S.crews.length ? '지금 기록하면 자동으로 1등이에요.' : '크루를 만들거나 초대코드로 들어가면 친구들 기록이 여기 떠요.'}</p>
       <button class="btn primary" data-act="go" data-tab="${S.crews.length ? 'log' : 'crew'}">${S.crews.length ? '첫 기록 올리기' : '크루로 가기'}</button></div>`);
+  markPoked(list).catch(console.error);
+}
+
+// 24시간 안에 약올림 당한 크루원·친구의 글이 화면에 들어오면 깐족이 뿅(SQL 013). 약올림 하나당 이 폰에서 한 번만, 누가 했는지는 안 보임
+let poked = { at: 0, rows: [] }, pokeObs;
+async function markPoked(list) {
+  const ids = [...new Set(list.map(w => w.user_id))].filter(id => id !== S.uid);
+  if (Date.now() - poked.at > 60000 && ids.length) {
+    const { data, error } = await sb.rpc('recent_poked', { ids });
+    poked = { at: Date.now(), rows: error ? [] : data };   // SQL 013 실행 전이면 조용히 넘어감
+  }
+  const seen = JSON.parse(lsGet('pokeSeen') || '[]');
+  const todo = new Map(poked.rows.filter(p => !seen.includes(p.poke_id)).map(p => [p.user_id, p.poke_id]));
+  pokeObs?.disconnect(); if (!todo.size) return;
+  pokeObs = new IntersectionObserver(es => es.forEach(e => {
+    const w = S.feed.find(x => x.id === e.target.dataset.wid), pid = w && todo.get(w.user_id);
+    if (!e.isIntersecting || !pid) return;
+    todo.delete(w.user_id); lsSet('pokeSeen', JSON.stringify([...seen, pid].slice(-100))); seen.push(pid);
+    pop(kkTease(), e.target.querySelector('.photos') || e.target, `${nameOf(w.user_id)}님 약올림 당하는 중`);
+  }), { threshold: 0.6 });
+  document.querySelectorAll('#v-feed .card[data-wid]').forEach(c => { const w = S.feed.find(x => x.id === c.dataset.wid); if (w && todo.has(w.user_id)) pokeObs.observe(c); });
 }
 
 // 피드에서 해당 기록으로 이동 (아직 안 불러온 기록이면 페이지를 더 불러옴)
