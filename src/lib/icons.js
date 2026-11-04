@@ -14,13 +14,15 @@ export const ic = (name, cls = '') => (ICONS[name] || ICONS.activity).replace('c
 export const fillIcons = (root = document) => root.querySelectorAll('[data-ic]').forEach(el => { el.outerHTML = ic(el.dataset.ic, el.className); });
 
 // 사용자가 만든 그림(src/public/img, 10-29): 반응 스티커·종목 아이콘. 그림이 없는 종목은 선 아이콘
-// 종목 아이콘(연두): 전용 그림이 아직 없는 종목은 비슷한 그림으로(종목별 그림이 오면 이 표만 고침), 없으면 선 아이콘
-const SPORT = { run: 'run', trail: 'run', vrun: 'run', walk: 'walk', hike: 'hike', snowshoe: 'hike', ride: 'ride', mtb: 'ride', gravel: 'ride', ebike: 'ride', emtb: 'ride',
-  vride: 'ride', velomobile: 'ride', handcycle: 'ride', swim: 'swim', rowing: 'rowing', vrow: 'rowing', kayak: 'rowing', canoe: 'rowing', sup: 'rowing',
-  alpine: 'ski', backcountry: 'ski', nordic: 'ski', rollerski: 'ski', snowboard: 'snowboard', inline: 'inline', iceskate: 'inline', skateboard: 'inline',
-  gym: 'weight', crossfit: 'weight', hiit: 'jumprope', home: 'stretch', physio: 'stretch', yoga: 'yoga', pilates: 'pilates', dance: 'dance', climbing: 'climb',
-  tennis: 'tennis', squash: 'tennis', racquetball: 'tennis', padel: 'tennis', badminton: 'badminton', tabletennis: 'pingpong', pickleball: 'pingpong',
-  soccer: 'soccer', basketball: 'basketball', volleyball: 'basketball', golf: 'golf', ball: 'baseball', cricket: 'baseball' };
+// 종목 아이콘(연두, img/lime/sp-*.webp): 종목마다 전용 그림, 표에 없으면 선 아이콘
+const SPORT = { run: 'run', trail: 'trail', vrun: 'treadmill', walk: 'walk', hike: 'hike', wheelchair: 'wheelchair', snowshoe: 'snowshoe',
+  ride: 'ride', mtb: 'mtb', gravel: 'gravel', ebike: 'ebike', emtb: 'emtb', vride: 'vride', velomobile: 'velomobile', handcycle: 'handcycle',
+  swim: 'swim', rowing: 'rowing', vrow: 'vrow', kayak: 'kayak', canoe: 'canoe', sup: 'sup', surf: 'surf', kitesurf: 'kitesurf', windsurf: 'windsurf', sail: 'sail',
+  alpine: 'ski', backcountry: 'backcountry', nordic: 'nordic', rollerski: 'rollerski', snowboard: 'snowboard', inline: 'inline', iceskate: 'iceskate', skateboard: 'skateboard',
+  gym: 'weight', crossfit: 'crossfit', hiit: 'hiit', home: 'home', elliptical: 'elliptical', stair: 'stair', physio: 'physio',
+  yoga: 'yoga', pilates: 'pilates', dance: 'dance', climbing: 'climb',
+  tennis: 'tennis', squash: 'squash', racquetball: 'racquetball', padel: 'padel', badminton: 'badminton', tabletennis: 'pingpong', pickleball: 'pickleball',
+  soccer: 'soccer', basketball: 'basketball', volleyball: 'volleyball', golf: 'golf', cricket: 'cricket', ball: 'baseball' };
 export const sportIc = (k, icon) => SPORT[k] ? `<img class="sp" src="img/lime/sp-${SPORT[k]}.webp" alt="">` : ic(icon);
 // 깐족이 스티커: 반응 4종(인정·질 수 없다·그게 다야?·누워있음), 약올리기는 8개 중 무작위
 const KK_RX = { fire: 'rx-respect', mad: 'rx-fire', meh: 'tease-shrug', sofa: 'rx-sofa' };
