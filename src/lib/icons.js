@@ -22,8 +22,9 @@ const TEASE = ['merong', 'snicker', 'rofl', 'chill', 'bye', 'shrug', 'flex', 'tr
 export const kkRx = k => `img/kk/${KK_RX[k]}.webp`;
 export const kkTease = () => `img/kk/tease-${TEASE[Math.floor(Math.random() * TEASE.length)]}.webp`;
 // 댓글 스티커: 내용을 '[kk:이름]' 으로 저장(DB 변경 없음), 화면에선 깐족이 그림으로
-export const STICKERS = [...TEASE.map(t => 'tease-' + t), 'rx-respect', 'rx-clap', 'rx-fire', 'rx-cry', 'rx-mad', 'rx-shock', 'rx-sofa', 'rx-love',
-  'mood-melt', 'mood-water', 'mood-stretch', 'mood-chicken', 'mood-sleep', 'mood-run', 'mood-lift', 'mood-party'];
+export const STICKERS = ['cm-cheer', 'cm-thanks', 'cm-wow', 'cm-hi5', 'cm-lol', 'cm-envy', 'cm-nope', 'cm-night', ...TEASE.map(t => 'tease-' + t), 'rx-respect', 'rx-clap', 'rx-fire', 'rx-cry', 'rx-mad', 'rx-shock', 'rx-sofa', 'rx-love',
+  'mood-melt', 'mood-water', 'mood-stretch', 'mood-chicken', 'mood-sleep', 'mood-run', 'mood-lift', 'mood-party',
+  'rank-king', 'rank-podium', 'rank-last', 'rank-turtle', 'streak-fire', 'streak-broken', 'goal-done', 'crew-arm'];
 export const stickerOf = body => { const m = /^\[kk:([a-z-]+)\]$/.exec(body || ''); return m && STICKERS.includes(m[1]) ? m[1] : null; };
 export const cmText = body => stickerOf(body) ? '(스티커)' : body;
 export const rxImg = k => `<img class="rx-img" src="${kkRx(k)}" alt="">`;
