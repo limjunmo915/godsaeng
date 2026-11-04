@@ -19,6 +19,7 @@ const SPORT = { run: 'run', trail: 'trail', vrun: 'treadmill', walk: 'walk', hik
   ride: 'ride', mtb: 'mtb', gravel: 'gravel', ebike: 'ebike', emtb: 'emtb', vride: 'vride', velomobile: 'velomobile', handcycle: 'handcycle',
   swim: 'swim', rowing: 'rowing', vrow: 'vrow', kayak: 'kayak', canoe: 'canoe', sup: 'sup', surf: 'surf', kitesurf: 'kitesurf', windsurf: 'windsurf', sail: 'sail',
   alpine: 'ski', backcountry: 'backcountry', nordic: 'nordic', rollerski: 'rollerski', snowboard: 'snowboard', inline: 'inline', iceskate: 'iceskate', skateboard: 'skateboard',
+  plogging: 'walk', triathlon: 'swim', jumprope: 'jumprope', boxing: 'boxing', martial: 'boxing', spinning: 'vride', baseball: 'baseball', bowling: 'baseball',
   gym: 'weight', crossfit: 'crossfit', hiit: 'hiit', home: 'home', elliptical: 'elliptical', stair: 'stair', physio: 'physio',
   yoga: 'yoga', pilates: 'pilates', dance: 'dance', climbing: 'climb',
   tennis: 'tennis', squash: 'squash', racquetball: 'racquetball', padel: 'padel', badminton: 'badminton', tabletennis: 'pingpong', pickleball: 'pickleball',
