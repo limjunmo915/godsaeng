@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 갓생 형광 연두 테마(Capacitor 기본 파랑 #3F51B5 덮어쓰기) -->
+    <color name="colorPrimary">#141A0B</color>
+    <color name="colorPrimaryDark">#141A0B</color>
+    <color name="colorAccent">#C6FF3D</color>
+</resources>

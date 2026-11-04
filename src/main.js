@@ -8,7 +8,7 @@ import { fillIcons } from './lib/icons.js';
 import { toast, fail, lsGet, lsSet } from './lib/util.js';
 import { loadCore, loadFeed, loadMine, loadBody } from './lib/data.js';
 import { show, refresh, backTab } from './nav.js';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle, SystemBarType } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import * as feed from './screens/feed.js';
 import * as rank from './screens/rank.js';
@@ -172,6 +172,8 @@ function back() {   // 'exit' = 종료, 'armed' = 종료 안내 띄움
   }
 }
 const NATIVE = Capacitor.isNativePlatform();
+// 아래 뒤로 가기 버튼 줄은 검정 바탕이라 버튼(아이콘)을 밝게
+if (NATIVE) SystemBars.setStyle({ style: SystemBarsStyle.Dark, bar: SystemBarType.NavigationBar }).catch(() => {});
 if (NATIVE) App.addListener('backButton', () => { if (back() === 'exit') App.exitApp(); });
 // 웹: 'armed' 면 쉼표를 안 다시 둬서 2초 안에 또 누르면 사이트를 떠남
 else addEventListener('popstate', () => { if (S.uid && S.me && !back()) guard(); });

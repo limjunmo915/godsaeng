@@ -623,3 +623,6 @@ dialog.intro { margin: auto; width: min(380px, calc(100% - 32px)); border-radius
 .intro-dots i { width: 7px; height: 7px; border-radius: 999px; background: var(--line); transition: width .2s; }
 .intro-dots i.on { width: 20px; background: var(--brand-text); }
 .intro-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+
+/* 안드로이드 맨 아래 뒤로 가기 버튼 줄 자리: 검정 띠(웹 브라우저는 높이 0이라 안 보임) */
+body::after { content: ""; position: fixed; inset: auto 0 0; height: env(safe-area-inset-bottom, 0px); background: #141A0B; z-index: 70; pointer-events: none; }
