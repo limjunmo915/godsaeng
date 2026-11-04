@@ -54,7 +54,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && R?
 
 // 지도: Leaflet + OpenStreetMap 지도(키·가입 없음). 처음 열 때만 불러와서 첫 화면은 가볍게
 // ponytail: OSM 무료 지도는 많이 쓰면 막힘(이용 정책) — 사용자 늘면·출시 땐 카카오/네이버 지도로 바꾸기
-const LINE = { color: '#2A1FC2', weight: 5, opacity: 0.9 };
+const LINE = { color: '#141A0B', weight: 5, opacity: 0.85 };   // 연두는 지도 위에서 안 보여 잉크로
 async function makeMap() {
   const [{ default: L }] = await Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]);
   if (!R) return;

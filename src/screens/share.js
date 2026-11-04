@@ -6,7 +6,7 @@ import { sum, pace } from '../lib/calc.js';
 import { signPhotos } from '../lib/data.js';
 
 const F = '"Pretendard Variable", Pretendard, "Malgun Gothic", sans-serif';
-const BRAND = '#3D2EFF', TAUNT = '#FFE14D', TAUNT_INK = '#3A3000';
+const BRAND = '#141A0B', TAUNT = '#C6FF3D', TAUNT_INK = '#141A0B';   // 사진 없으면 잉크 바탕, 포인트는 형광 연두
 
 async function makeCard({ kicker, title, stats, brag, photo }) {
   await document.fonts.load(`800 64px "Pretendard Variable"`).catch(() => {});
