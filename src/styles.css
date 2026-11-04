@@ -543,9 +543,6 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 #route-prev:empty { display: none; }
 /* 반응한 사람 */
 .rx-who { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 2px 0; margin-top: -6px; justify-self: start; text-align: left; }
-.rx-who .faces { display: flex; }
-.rx-who .av { pointer-events: none; box-shadow: 0 0 0 2px var(--surface); }
-.rx-who .av + .av { margin-left: -6px; }
 .av.xs { width: 22px; height: 22px; font-size: 10px; }
 .rx-tag { font-size: 13px; color: var(--muted); white-space: nowrap; }
 /* GPS 기록 지도 */
@@ -626,3 +623,8 @@ dialog.intro { margin: auto; width: min(380px, calc(100% - 32px)); border-radius
 
 /* 안드로이드 맨 아래 뒤로 가기 버튼 줄 자리: 검정 띠(웹 브라우저는 높이 0이라 안 보임) */
 body::after { content: ""; position: fixed; inset: auto 0 0; height: env(safe-area-inset-bottom, 0px); background: #141A0B; z-index: 70; pointer-events: none; }
+
+/* 반응한 사람: 깐족이 스티커 최대 5개 겹치기 */
+.rx-stack { display: inline-flex; flex: none; }
+.rx-stack img { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(20, 26, 11, .2)); }
+.rx-stack img + img { margin-left: -12px; }

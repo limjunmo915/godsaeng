@@ -12,12 +12,13 @@ import { shareWorkout } from './share.js';
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
 
-// 반응한 사람: 겹친 사진 3개 + "민수 외 2명이 반응했어요" → 누르면 누가 무슨 반응을 했는지 목록
+// 반응한 사람: 각자 누른 깐족이 스티커를 최대 5개 겹쳐서 + "민수, 지은, 나 외 4명이 반응했어요" → 누르면 누가 무슨 반응을 했는지 목록
 function rxWho(w) {
   const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id)); if (!rs.length) return '';
-  const first = rs.find(r => r.user_id !== S.uid) || rs[0], n = rs.length;
-  const text = n > 1 ? `${esc(nameOf(first.user_id))} 외 ${n - 1}명이 반응했어요` : first.user_id === S.uid ? '내가 반응했어요' : `${esc(nameOf(first.user_id))}님이 반응했어요`;
-  return `<button type="button" class="rx-who" data-act="rx-who"><span class="faces">${rs.slice(0, 3).map(r => avatar(r.user_id, 'xs')).join('')}</span>${text}</button>`;
+  const order = [...rs.filter(r => r.user_id === S.uid), ...rs.filter(r => r.user_id !== S.uid)];   // 나는 맨 앞
+  const names = order.slice(0, 3).map(r => r.user_id === S.uid ? '나' : esc(nameOf(r.user_id)) + '님'), more = rs.length - names.length;
+  const text = names.length === 1 && order[0].user_id === S.uid ? '내가 반응했어요' : `${names.join(', ')}${more > 0 ? ` 외 ${more}명이` : '이'} 반응했어요`;
+  return `<button type="button" class="rx-who" data-act="rx-who"><span class="rx-stack">${order.slice(0, 5).map(r => `<img src="${kkRx(r.kind)}" alt="">`).join('')}</span>${text}</button>`;
 }
 
 export function card(w) {
