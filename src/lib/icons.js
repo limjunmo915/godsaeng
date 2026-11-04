@@ -16,4 +16,9 @@ export const fillIcons = (root = document) => root.querySelectorAll('[data-ic]')
 // 사용자가 만든 그림(src/public/img, 10-29): 반응 스티커·종목 아이콘. 그림이 없는 종목은 선 아이콘
 const SPORT = { run: 'run', walk: 'walk', ride: 'ride', gym: 'weight', hike: 'hike', swim: 'swim', yoga: 'yoga', tennis: 'tennis' };
 export const sportIc = (k, icon) => SPORT[k] ? `<img class="sp" src="img/sp-${SPORT[k]}.webp" alt="">` : ic(icon);
-export const rxImg = k => `<img class="rx-img" src="img/rx-${k}.webp" alt="">`;
+// 깐족이 스티커: 반응 4종(인정·질 수 없다·그게 다야?·누워있음), 약올리기는 8개 중 무작위
+const KK_RX = { fire: 'rx-respect', mad: 'rx-fire', meh: 'tease-shrug', sofa: 'rx-sofa' };
+const TEASE = ['merong', 'snicker', 'rofl', 'chill', 'bye', 'shrug', 'flex', 'trophy'];
+export const kkRx = k => `img/kk/${KK_RX[k]}.webp`;
+export const kkTease = () => `img/kk/tease-${TEASE[Math.floor(Math.random() * TEASE.length)]}.webp`;
+export const rxImg = k => `<img class="rx-img" src="${kkRx(k)}" alt="">`;

@@ -1,7 +1,7 @@
 // 피드: 크루 기록 카드, 라이벌 현황, 약올림 목록
 import { S, sb, ok, $ } from '../state.js';
-import { ic, rxImg } from '../lib/icons.js';
-import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast } from '../lib/util.js';
+import { ic, rxImg, kkRx, kkTease } from '../lib/icons.js';
+import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, toast, pop } from '../lib/util.js';
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
 import { loadFeed, loadMine, crewTotals } from '../lib/data.js';
@@ -87,9 +87,10 @@ export async function renderFeed() {
         <em>${i === 0 ? `2위보다 ${P(mine - board[1][1])} 앞섬` : `${esc(nameOf(board[i - 1][0]))}까지 ${P(board[i - 1][1] - mine)}`}</em>
       </section>`);
     }
-    const pokes = ok(await sb.from('pokes').select('*').eq('crew_id', S.crewId).order('created_at', { ascending: false }).limit(10))
-      .filter(p => !S.blocked.includes(p.from_id) && !S.blocked.includes(p.to_id)).slice(0, 5);
-    if (pokes.length) head.push(`<section class="ticker" aria-label="최근 약올리기">${pokes.map(p => `<p class="${p.to_id === S.uid ? 'mine' : ''}"><span>${esc(nameOf(p.from_id))} → ${esc(nameOf(p.to_id))}</span><mark>${esc(p.text)}</mark><small>${ago(p.created_at)}</small></p>`).join('')}</section>`);
+    // 나를 약올린 것만(내가 한 것·남끼리 한 것은 안 보임)
+    const pokes = ok(await sb.from('pokes').select('*').eq('to_id', S.uid).order('created_at', { ascending: false }).limit(10))
+      .filter(p => !S.blocked.includes(p.from_id)).slice(0, 5);
+    if (pokes.length) head.push(`<section class="ticker" aria-label="나를 약올린 사람">${pokes.map(p => `<p class="mine"><span>${esc(nameOf(p.from_id))}</span><mark>${esc(p.text)}</mark><small>${ago(p.created_at)}</small></p>`).join('')}</section>`);
   }
   const wk = sum(S.mine.filter(w => new Date(w.started_at) >= startOf('week'))).minutes, goal = S.me.weekly_goal_min;
   if (goal) head.push(`<section class="goal"><div><span>이번 주 목표</span><b class="num">${Math.round(wk)} / ${goal}분</b></div><div class="bar"><i style="width:${Math.min(100, wk / goal * 100)}%"></i></div></section>`);
@@ -138,6 +139,7 @@ export const actions = {
       w.reactions = w.reactions.filter(r => r !== cur);
     } else {
       ok(await sb.from('reactions').upsert({ workout_id: w.id, user_id: S.uid, kind: b.dataset.k }));
+      const c = b.closest('.card'); pop(kkRx(b.dataset.k), c?.querySelector('.photos') || c);
       w.reactions = [...w.reactions.filter(r => r.user_id !== S.uid), { user_id: S.uid, kind: b.dataset.k }];
     }
     return renderFeed();
@@ -159,7 +161,7 @@ export const actions = {
   poke: async b => {
     b.disabled = true;
     ok(await sb.from('pokes').insert({ to_id: b.dataset.to, crew_id: b.dataset.crew || S.crewId, text: pick(POKES) }));
-    toast(`${nameOf(b.dataset.to)} 약올림 완료 😏`);
+    pop(kkTease(), null, `${nameOf(b.dataset.to)} 약올림 완료`);
   },
   goto: b => goToWorkout(b.dataset.id),
 };

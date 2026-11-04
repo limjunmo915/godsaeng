@@ -1,8 +1,8 @@
 // 친구: 검색·팔로우·맞팔로우(친구)·초대 링크·친구 약올리기 (supabase/009)
 // 팔로우만으론 아무것도 안 보이고, 서로 팔로우해야 친구 → 기록이 보이고 반응·댓글·약올리기 가능
 import { S, sb, ok, $, WEB } from '../state.js';
-import { ic } from '../lib/icons.js';
-import { esc, pick, toast, fail, lsGet, lsSet } from '../lib/util.js';
+import { ic, kkTease } from '../lib/icons.js';
+import { esc, pick, toast, fail, lsGet, lsSet, pop } from '../lib/util.js';
 import { POKES } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
 import { loadFollows, loadFeed, signAvatars, isFriend } from '../lib/data.js';
@@ -103,6 +103,6 @@ export const actions = {
   'poke-friend': async b => {
     b.disabled = true;
     ok(await sb.from('pokes').insert({ to_id: b.dataset.to, crew_id: null, text: pick(POKES) }));
-    toast(`${nameOf(b.dataset.to)} 약올림 완료 😏`);
+    pop(kkTease(), null, `${nameOf(b.dataset.to)} 약올림 완료`);
   },
 };

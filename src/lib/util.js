@@ -49,6 +49,18 @@ export function toast(msg) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
   document.body.append(t); setTimeout(() => t.remove(), 2600);
 }
+// 깐족이 '뿅': 커지며 나타났다 사라짐(누를 수 없음, 1~2초). el 이 화면에 보이면 그 가운데, 아니면 화면 가운데
+export function pop(src, el, caption) {
+  const box = document.createElement('div'); box.className = 'kk-pop' + (caption ? ' long' : '');
+  const img = document.createElement('img'); img.src = src; img.alt = ''; box.append(img);
+  if (caption) { const p = document.createElement('p'); p.textContent = caption; box.append(p); }
+  const r = el?.getBoundingClientRect();
+  if (r && r.bottom > 120 && r.top < innerHeight - 120) {
+    const top = Math.max(r.top, 60), bottom = Math.min(r.bottom, innerHeight - 60);
+    box.style.left = `${r.left + r.width / 2}px`; box.style.top = `${(top + bottom) / 2}px`;
+  }
+  document.body.append(box); box.addEventListener('animationend', () => box.remove());
+}
 export function fail(err, fallback = '실패했어요. 잠시 후 다시 시도해 주세요.') {
   console.error(err);
   const m = err?.message || '';
