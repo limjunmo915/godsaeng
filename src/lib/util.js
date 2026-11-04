@@ -61,7 +61,10 @@ export function pop(src, el, caption) {
     const top = Math.max(r.top, 60), bottom = Math.min(r.bottom, innerHeight - 60);
     box.style.left = `${r.left + r.width / 2}px`; box.style.top = `${(top + bottom) / 2}px`;
   }
-  ([...document.querySelectorAll('dialog[open]')].at(-1) || document.body).append(box); box.addEventListener('animationend', () => box.remove());
+  document.querySelectorAll('.kk-pop').forEach(b => b.remove());   // 한 번에 하나만(창 안에 남은 지난 깐족이도 치움)
+  ([...document.querySelectorAll('dialog[open]')].at(-1) || document.body).append(box);
+  box.addEventListener('animationend', () => box.remove());
+  setTimeout(() => box.remove(), 3000);   // 창이 닫혀 움직임이 멈춰도 반드시 사라지게
 }
 export function fail(err, fallback = '실패했어요. 잠시 후 다시 시도해 주세요.') {
   console.error(err);
