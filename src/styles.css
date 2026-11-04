@@ -661,3 +661,7 @@ img[data-act="pp-photo"] { cursor: pointer; }
 .when-time { display: flex; gap: 8px; align-items: flex-end; }
 .when-time .field { flex: 1; }
 .when-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+
+.kk-pics { display: flex; justify-content: center; }
+.kk-pics img:not(:only-child) { width: 96px; height: 96px; }
+.kk-pics img + img { margin-left: -40px; }

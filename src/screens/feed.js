@@ -12,13 +12,17 @@ import { shareWorkout } from './share.js';
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
 
-// 반응한 사람: 각자 누른 깐족이 스티커를 최대 5개 겹쳐서 + "민수, 지은, 나 외 4명이 반응했어요" → 누르면 누가 무슨 반응을 했는지 목록
-function rxWho(w) {
-  const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id)); if (!rs.length) return '';
+// 반응한 사람: 각자 누른 깐족이 스티커를 최대 5개 겹쳐서 + "민수, 지은, 나 외 4명이 반응했어요" → 누르면 다시 '뿅' + 누가 무슨 반응을 했는지 목록
+function rxSummary(w) {
+  const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id)); if (!rs.length) return null;
   const order = [...rs.filter(r => r.user_id === S.uid), ...rs.filter(r => r.user_id !== S.uid)];   // 나는 맨 앞
-  const names = order.slice(0, 3).map(r => r.user_id === S.uid ? '나' : esc(nameOf(r.user_id)) + '님'), more = rs.length - names.length;
+  const names = order.slice(0, 3).map(r => r.user_id === S.uid ? '나' : nameOf(r.user_id) + '님'), more = rs.length - names.length;
   const text = names.length === 1 && order[0].user_id === S.uid ? '내가 반응했어요' : `${names.join(', ')}${more > 0 ? ` 외 ${more}명이` : '이'} 반응했어요`;
-  return `<button type="button" class="rx-who" data-act="rx-who"><span class="rx-stack">${order.slice(0, 5).map(r => `<img src="${kkRx(r.kind)}" alt="">`).join('')}</span>${text}</button>`;
+  return { rs, top: order.slice(0, 5), text };
+}
+function rxWho(w) {
+  const x = rxSummary(w); if (!x) return '';
+  return `<button type="button" class="rx-who" data-act="rx-who"><span class="rx-stack">${x.top.map(r => `<img src="${kkRx(r.kind)}" alt="">`).join('')}</span>${esc(x.text)}</button>`;
 }
 
 export function card(w) {
@@ -169,10 +173,11 @@ new MutationObserver(() => document.querySelectorAll('.memo.clamp:not([data-m])'
 
 export const actions = {
   'rx-who': (b, w) => {
-    const rs = w.reactions.filter(r => !S.blocked.includes(r.user_id));
+    const { rs, top, text } = rxSummary(w);
     $('#rx-list').innerHTML = Object.keys(REACTS).flatMap(k => rs.filter(r => r.kind === k)).map(r =>
       `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${r.user_id}">${avatar(r.user_id, 'sm')}<span>${esc(nameOf(r.user_id))}</span></button><span class="rx-tag">${rxImg(r.kind)}${REACTS[r.kind][1]}</span></div>`).join('');
     $('#rx-dlg').showModal();
+    const c = b.closest('.card'); pop(top.map(r => kkRx(r.kind)), c?.querySelector('.photos') || c, text);   // 목록 창 위로 다시 한 번
   },
   'close-rx': () => $('#rx-dlg').close(),
   'memo-more': (b, w) => { if (w) w._memo = true; b.previousElementSibling.classList.remove('clamp'); b.remove(); },
