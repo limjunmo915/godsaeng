@@ -115,6 +115,8 @@ export function markRxSeen(wid, keys) {
   const m = JSON.parse(lsGet('rxSeen') || '{}'); m[wid] = [...new Set([...(m[wid] || []), ...keys])]; lsSet('rxSeen', JSON.stringify(m));
 }
 let rxObs, popUntil = 0;
+// 깐족이가 떠 있거나 창(반응 목록 등)이 열려 있으면 다른 글 깐족이는 기다림
+const busy = () => Date.now() < popUntil || !!document.querySelector('dialog[open]');
 function markMyRx(list) {
   const mine = list.filter(w => w.user_id === S.uid);
   if (!lsGet('rxSeen')) lsSet('rxSeen', JSON.stringify(Object.fromEntries(mine.map(w => [w.id, w.reactions.map(rxKey)]))));
@@ -123,7 +125,7 @@ function markMyRx(list) {
   rxObs?.disconnect(); if (!todo.size) return;
   rxObs = new IntersectionObserver(es => es.forEach(e => {
     const w = S.feed.find(x => x.id === e.target.dataset.wid);
-    if (!e.isIntersecting || !w || !todo.has(w.id) || Date.now() < popUntil) return;   // 한 번에 하나만
+    if (!e.isIntersecting || !w || !todo.has(w.id) || busy()) return;   // 한 번에 하나만, 창이 열려 있으면 다음에
     const nw = fresh(w); todo.delete(w.id); rxObs.unobserve(e.target); markRxSeen(w.id, w.reactions.map(rxKey));
     if (!nw.length) return;
     popUntil = Date.now() + 2600;
@@ -146,8 +148,9 @@ async function markPoked(list) {
   pokeObs?.disconnect(); if (!todo.size) return;
   pokeObs = new IntersectionObserver(es => es.forEach(e => {
     const w = S.feed.find(x => x.id === e.target.dataset.wid), pid = w && todo.get(w.user_id);
-    if (!e.isIntersecting || !pid) return;
+    if (!e.isIntersecting || !pid || busy()) return;
     todo.delete(w.user_id); lsSet('pokeSeen', JSON.stringify([...seen, pid].slice(-100))); seen.push(pid);
+    popUntil = Date.now() + 2600;
     pop(kkTease(), e.target.querySelector('.photos') || e.target, `${nameOf(w.user_id)}님 약올림 당하는 중`);
   }), { threshold: 0.6 });
   document.querySelectorAll('#v-feed .card[data-wid]').forEach(c => { const w = S.feed.find(x => x.id === c.dataset.wid); if (w && todo.has(w.user_id)) pokeObs.observe(c); });
@@ -177,7 +180,8 @@ export const actions = {
     $('#rx-list').innerHTML = Object.keys(REACTS).flatMap(k => rs.filter(r => r.kind === k)).map(r =>
       `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${r.user_id}">${avatar(r.user_id, 'sm')}<span>${esc(nameOf(r.user_id))}</span></button><span class="rx-tag">${rxImg(r.kind)}${REACTS[r.kind][1]}</span></div>`).join('');
     $('#rx-dlg').showModal();
-    const c = b.closest('.card'); pop(top.map(r => kkRx(r.kind)), c?.querySelector('.photos') || c, text);   // 목록 창 위로 다시 한 번
+    popUntil = Date.now() + 2600;   // 다시 보기 동안 다른 글 깐족이는 안 띄움
+    const c = b.closest('.card'); pop(top.map(r => kkRx(r.kind)), c?.querySelector('.photos') || c, text);   // 목록 창 위로 이 글 반응만 다시 한 번
   },
   'close-rx': () => $('#rx-dlg').close(),
   'memo-more': (b, w) => { if (w) w._memo = true; b.previousElementSibling.classList.remove('clamp'); b.remove(); },
