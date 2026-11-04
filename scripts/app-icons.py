@@ -15,7 +15,7 @@ def icon(size, scale, shape='square', bg=True):
     m = mark.copy(); m.thumbnail((int(size * scale), int(size * scale)), Image.LANCZOS)
     c.alpha_composite(m, ((size - m.width) // 2, (size - m.height) // 2)); return c
 pub = f'{proj}/src/public'
-icon(192, .68).convert('RGB').save(f'{pub}/icon-192.png'); icon(512, .68).convert('RGB').save(f'{pub}/icon-512.png')
+icon(192, .68).convert('RGB').save(f'{pub}/icon-192-v2.png'); icon(512, .68).convert('RGB').save(f'{pub}/icon-512-v2.png')
 res = f'{proj}/android/app/src/main/res'
 for d, n in {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}.items():
     icon(n, .7).save(f'{res}/mipmap-{d}/ic_launcher.png')
