@@ -1,6 +1,6 @@
 // Tabler 선 아이콘. 쓰는 것만 골라 빌드에 포함 (목록에 없는 이름은 activity 로 대체)
 const raw = import.meta.glob(
-  '../../node_modules/@tabler/icons/icons/outline/{run,walk,treadmill,trekking,mountain,wheelchair,bike,bolt,wheel,swimming,kayak,sailboat,wave-sine,wind,ski-jumping,snowboarding,snowflake,ice-skating,roller-skating,skateboarding,barbell,weight,flame,stretching,stretching-2,activity,stairs-up,yoga,music,first-aid-kit,ball-tennis,ping-pong,ball-football,ball-basketball,ball-volleyball,cricket,golf,ball-baseball,sparkles,home,trophy,plus,users,user,bell,search,chevron-right,chevron-left,lock,message-circle,share-2,pencil,trash,x,camera,calendar,calendar-stats,route,trending-up,trending-down,crown,medal,award,shoe,heart-rate-monitor,copy,logout,settings,chart-bar,stopwatch,sun,moon,target,photo,check,eye-off,flag,bulb,dots-vertical,send,current-location,volume,volume-off,player-play,mood-smile}.svg',
+  '../../node_modules/@tabler/icons/icons/outline/{run,walk,treadmill,trekking,mountain,wheelchair,bike,bolt,wheel,swimming,kayak,sailboat,wave-sine,wind,ski-jumping,snowboarding,snowflake,ice-skating,roller-skating,skateboarding,barbell,weight,flame,stretching,stretching-2,activity,stairs-up,yoga,music,first-aid-kit,ball-tennis,ping-pong,ball-football,ball-basketball,ball-volleyball,cricket,golf,ball-baseball,sparkles,home,trophy,plus,users,user,bell,search,chevron-right,chevron-left,lock,message-circle,share-2,pencil,trash,x,camera,calendar,calendar-stats,route,trending-up,trending-down,crown,medal,award,shoe,heart-rate-monitor,copy,logout,settings,chart-bar,stopwatch,sun,moon,target,photo,check,eye-off,flag,bulb,dots-vertical,send,current-location,volume,volume-off,player-play,mood-smile,star}.svg',
   { query: '?raw', import: 'default', eager: true },
 );
 const ICONS = Object.fromEntries(Object.entries(raw).map(([p, svg]) => [
@@ -14,8 +14,14 @@ export const ic = (name, cls = '') => (ICONS[name] || ICONS.activity).replace('c
 export const fillIcons = (root = document) => root.querySelectorAll('[data-ic]').forEach(el => { el.outerHTML = ic(el.dataset.ic, el.className); });
 
 // 사용자가 만든 그림(src/public/img, 10-29): 반응 스티커·종목 아이콘. 그림이 없는 종목은 선 아이콘
-const SPORT = { run: 'run', walk: 'walk', ride: 'ride', gym: 'weight', hike: 'hike', swim: 'swim', yoga: 'yoga', tennis: 'tennis' };
-export const sportIc = (k, icon) => SPORT[k] ? `<img class="sp" src="img/sp-${SPORT[k]}.webp" alt="">` : ic(icon);
+// 종목 아이콘(연두): 전용 그림이 아직 없는 종목은 비슷한 그림으로(종목별 그림이 오면 이 표만 고침), 없으면 선 아이콘
+const SPORT = { run: 'run', trail: 'run', vrun: 'run', walk: 'walk', hike: 'hike', snowshoe: 'hike', ride: 'ride', mtb: 'ride', gravel: 'ride', ebike: 'ride', emtb: 'ride',
+  vride: 'ride', velomobile: 'ride', handcycle: 'ride', swim: 'swim', rowing: 'rowing', vrow: 'rowing', kayak: 'rowing', canoe: 'rowing', sup: 'rowing',
+  alpine: 'ski', backcountry: 'ski', nordic: 'ski', rollerski: 'ski', snowboard: 'snowboard', inline: 'inline', iceskate: 'inline', skateboard: 'inline',
+  gym: 'weight', crossfit: 'weight', hiit: 'jumprope', home: 'stretch', physio: 'stretch', yoga: 'yoga', pilates: 'pilates', dance: 'dance', climbing: 'climb',
+  tennis: 'tennis', squash: 'tennis', racquetball: 'tennis', padel: 'tennis', badminton: 'badminton', tabletennis: 'pingpong', pickleball: 'pingpong',
+  soccer: 'soccer', basketball: 'basketball', volleyball: 'basketball', golf: 'golf', ball: 'baseball', cricket: 'baseball' };
+export const sportIc = (k, icon) => SPORT[k] ? `<img class="sp" src="img/lime/sp-${SPORT[k]}.webp" alt="">` : ic(icon);
 // 깐족이 스티커: 반응 4종(인정·질 수 없다·그게 다야?·누워있음), 약올리기는 8개 중 무작위
 const KK_RX = { fire: 'rx-respect', mad: 'rx-fire', meh: 'tease-shrug', sofa: 'rx-sofa' };
 const TEASE = ['merong', 'snicker', 'rofl', 'chill', 'bye', 'shrug', 'flex', 'trophy'];

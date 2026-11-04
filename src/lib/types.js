@@ -1,5 +1,5 @@
 // 종목·반응·문구 등 고정 데이터
-import { fmtDur, fmtNum } from './util.js';
+import { fmtDur, fmtNum, lsGet, lsSet } from './util.js';
 
 // 스트라바 SportType 56종 + 기존 키(ball, etc). 키는 DB 에 저장되므로 바꾸지 말 것.
 // [키, 이름, 아이콘, MET(성인 운동량 개요 근사), 페이스 표시(km | kmh | 100m, 없으면 거리 없음), 최고속도 km/h(넘으면 차 탄 걸로 보고 거부)]
@@ -25,7 +25,13 @@ export const TYPE_GROUPS = {
 };
 export const TYPES = Object.fromEntries(Object.values(TYPE_GROUPS).flat().map(([k, label, icon, met, pace, vmax]) => [k, { label, icon, met, pace, vmax, dist: !!pace }]));
 export const typeOf = k => TYPES[k] || TYPES.etc;
-export const QUICK_DEFAULT = ['run', 'walk', 'ride', 'swim', 'gym', 'tennis'];
+// 대표 종목 5개: 즐겨찾기(별, 이 폰에 기억, 5개까지) 먼저, 모자라면 기본(달리기·걷기·등산·자전거·피트니스)
+export const QUICK_DEFAULT = ['run', 'walk', 'hike', 'ride', 'gym'];
+export const favTypes = () => { try { return (JSON.parse(lsGet('favTypes')) || []).filter(k => TYPES[k]); } catch { return []; } };
+export const setFavTypes = list => lsSet('favTypes', JSON.stringify(list));
+export const quickTypes = () => [...new Set([...favTypes(), ...QUICK_DEFAULT])].slice(0, 5);
+// GPS 로 재는 종목: 밖에서 거리가 생기는 것. 실내(러닝머신·실내 자전거·로잉)·수영(물속은 GPS 끊김)·스케이트장·거리 없는 종목은 시간만
+export const gpsType = k => !!TYPES[k]?.pace && !['vrun', 'vride', 'vrow', 'swim', 'iceskate'].includes(k);
 
 // 반응: [아이콘, 이름]
 // 반응: [이모티콘, 이름] — 반응은 사용자가 하는 한마디라 이모티콘 허용(디자인 규칙 예외)

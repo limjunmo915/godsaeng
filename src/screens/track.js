@@ -1,15 +1,15 @@
-// GPS 기록 화면 — 시험 중(웹·앱 모두 보임). 주소에 ?gps=sim 을 붙이면 가짜 5km, ?gps=off 로 실제 GPS 로 되돌림
+// 측정 화면(GPS 종목은 지도·거리, 실내·구기 등은 시간만) — 시험 중(웹·앱 모두 보임). 주소에 ?gps=sim 을 붙이면 가짜 5km, ?gps=off 로 실제 GPS 로 되돌림
 // 경로(위치)는 서버에 저장하지 않음. 끝나면 거리·시간·상승고도만 기록 화면에 채우고, 지도·경로 그림은 이 폰 화면에만
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
-import { TYPES } from '../lib/types.js';
+import { TYPES, quickTypes, gpsType } from '../lib/types.js';
+import { openSports } from './sports.js';
 import { dist, accept, summarize, recentPace, trim, routeSvg, fakeTrack } from '../lib/gps.js';
 import { fillAuto } from './log.js';
 
-const KINDS = ['run', 'walk', 'hike', 'ride'];
 // 목표(NRC 식): 거리 또는 시간(움직인 시간)
 const GOALS = [null, { k: 'km', v: 3 }, { k: 'km', v: 5 }, { k: 'km', v: 10 }, { k: 'min', v: 20 }, { k: 'min', v: 30 }, { k: 'min', v: 60 }];
 const goalTxt = g => g ? g.k === 'km' ? `${g.v}km` : `${g.v}분` : '없음';
@@ -23,6 +23,10 @@ const mmss = sec => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padS
 const saySec = sec => `${Math.floor(sec / 60)}분 ${Math.round(sec % 60)}초`;
 const isRide = () => TYPES[R.type].pace === 'kmh';
 const speed = paceSec => paceSec ? (3600 / paceSec).toFixed(1) : '0.0';
+const gps = () => gpsType(R.type);
+// 시간만 재는 종목: 시계로 잼(화면이 꺼져도 시각 차이로 계산되니 안 틀림). 일시정지한 시간은 뺌
+const clockMin = () => (R.clock.ms + (R.clock.at ? Date.now() - R.clock.at : 0)) / 60000;
+const stats = () => gps() ? summarize(R.segs) : { km: 0, minutes: clockMin(), elev: 0, splits: [], paceSec: 0 };
 
 // 위치 입구: 화면을 열면 바로 켜서 지도에 내 위치를 보여 주고, '시작' 뒤의 점만 기록에 씀
 // 앱: 백그라운드 위치 플러그인(알림을 띄운 채 화면을 꺼도 계속 받음). 웹: 브라우저 GPS(화면이 켜져 있을 때만 됨)
@@ -83,7 +87,7 @@ const left = s => !R.goal ? '' : R.goal.k === 'km' ? `${Math.max(0, R.goal.v - s
 function onPoint(p) {
   if (!R) return;
   R.last = p; R.err = null; move(p);
-  if (R.state === 'rec') {
+  if (R.state === 'rec' && gps()) {
     const seg = R.segs.at(-1), prev = seg.at(-1);
     if (accept(prev, p, TYPES[R.type].vmax)) {
       seg.push(p); R.lines?.at(-1)?.addLatLng([p.lat, p.lng]);
@@ -97,9 +101,10 @@ function onPoint(p) {
   info();
 }
 
-// 1km마다 음성 안내 + 목표 달성
+// 1km마다(시간만 종목은 10분마다) 음성 안내 + 목표 달성
 function announce() {
-  const s = summarize(R.segs);
+  const s = stats();
+  if (!gps() && Math.floor(s.minutes / 10) > R.said) { R.said = Math.floor(s.minutes / 10); say(`${R.said * 10}분 운동 중`); }
   const reached = R.goal && !R.done && (R.goal.k === 'km' ? s.km >= R.goal.v : s.minutes >= R.goal.v);
   if (s.splits.length > R.said) {
     R.said = s.splits.length;
@@ -119,49 +124,56 @@ const paceOrSpeed = sec => isRide() ? `${speed(sec)}<small> km/h</small>` : `${s
 // 지도 아래 부분만 다시 그림(지도는 그대로 둠)
 function info() {
   if (!R) return;
-  const s = summarize(R.segs), got = R.segs.some(g => g.length), now = R.auto ? 0 : recentPace(R.segs.at(-1) || []);
+  const s = stats(), g = gps(), got = !g || R.segs.some(x => x.length), now = R.auto ? 0 : recentPace(R.segs.at(-1) || []);
+  const kinds = [...new Set([...quickTypes(), R.type])];
   const pct = R.goal ? Math.min(100, (R.goal.k === 'km' ? s.km : s.minutes) / R.goal.v * 100) : 0;
   const laps = R.laps.map((l, i) => { const p = R.laps[i - 1] || { km: 0, minutes: 0 }; return { km: l.km - p.km, sec: (l.minutes - p.minutes) * 60 }; });
-  $('#trk-info').innerHTML = `<p class="hint trk-sig">${signal()}</p>
-    ${R.state === 'ready' ? `<div class="chips">${KINDS.map(k => `<button type="button" class="chip" data-act="trk-type" data-v="${k}" aria-pressed="${k === R.type}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('')}</div>
-      <p class="trk-lbl">목표</p><div class="chips">${GOALS.map((g, i) => `<button type="button" class="chip" data-act="trk-goal" data-i="${i}" aria-pressed="${goalTxt(g) === goalTxt(R.goal)}">${goalTxt(g)}</button>`).join('')}</div>
-      <p class="hint">GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. ${Capacitor.isNativePlatform() ? '앱에선 화면을 꺼도 기록이 계속돼요(알림창에 기록 중 표시).' : '웹에선 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).'}</p>` : ''}
+  $('#trk-info').innerHTML = `<p class="hint trk-sig">${g ? signal() : '이 종목은 GPS 없이 시간만 재요'}</p>
+    ${R.state === 'ready' ? `<div class="chips">${kinds.map(k => `<button type="button" class="chip" data-act="trk-type" data-v="${k}" aria-pressed="${k === R.type}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('')}<button type="button" class="chip" data-act="trk-more">전체 종목</button></div>
+      <p class="trk-lbl">목표</p><div class="chips">${GOALS.map((x, i) => g || !x || x.k === 'min' ? `<button type="button" class="chip" data-act="trk-goal" data-i="${i}" aria-pressed="${goalTxt(x) === goalTxt(R.goal)}">${goalTxt(x)}</button>` : '').join('')}</div>
+      <p class="hint">${g ? `GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. ${Capacitor.isNativePlatform() ? '앱에선 화면을 꺼도 기록이 계속돼요(알림창에 기록 중 표시).' : '웹에선 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).'}` : '실내·구기처럼 GPS가 의미 없는 종목은 운동 시간만 재요. 화면을 꺼도 시간은 계속 흘러요.'}</p>` : ''}
     ${R.state === 'count' ? `<div class="trk-count num">${R.n}</div>` : `<div class="trk-nums">
       <div class="big"><small>시간</small><b class="num">${fmtClock(s.minutes)}</b></div>
-      <div><small>거리</small><b class="num">${s.km.toFixed(2)}<small> km</small></b></div>
+      ${g ? `<div><small>거리</small><b class="num">${s.km.toFixed(2)}<small> km</small></b></div>
       <div><small>${isRide() ? '지금 속도' : '지금 페이스'}</small><b class="num">${paceOrSpeed(now)}</b></div>
       <div><small>${isRide() ? '평균 속도' : '평균 페이스'}</small><b class="num">${paceOrSpeed(s.paceSec)}</b></div>
-      <div><small>상승고도</small><b class="num">${Math.round(s.elev)}<small> m</small></b></div>
+      <div><small>상승고도</small><b class="num">${Math.round(s.elev)}<small> m</small></b></div>` : ''}
     </div>`}
     ${R.goal && R.state !== 'ready' ? `<div class="trk-goal"><span style="width:${pct}%"></span></div><p class="hint trk-state">${R.done ? `🎉 목표 ${goalTxt(R.goal)} 달성!` : `목표 ${goalTxt(R.goal)}까지 ${left(s)} 남음`}</p>` : ''}
     ${R.state === 'rec' || R.state === 'pause' ? `<p class="hint trk-state">${R.state === 'pause' ? '일시정지' : R.auto ? '<b>자동 일시정지</b> · 움직이면 다시 기록해요' : got ? `기록 중${Capacitor.isNativePlatform() ? '' : ' · 화면을 끄지 마세요'}` : '기록 시작 · 첫 위치 기다리는 중…'}</p>` : ''}
     <div class="trk-btns">${R.state === 'ready' ? `<button class="btn primary wide" data-act="trk-start">시작</button>`
       : R.state === 'count' ? '' : R.state === 'rec' ? `<button class="btn" data-act="trk-lap">랩</button><button class="btn" data-act="trk-pause">일시정지</button>`
       : `<button class="btn primary" data-act="trk-start">계속</button><button class="btn" data-act="trk-end">종료하고 기록하기</button>`}</div>
-    ${laps.length ? `<p class="trk-lbl">랩</p><ol class="splits">${laps.map((l, i) => `<li><span>랩 ${i + 1} · ${l.km.toFixed(2)} km</span><b class="num">${mmss(l.sec)}</b></li>`).join('')}</ol>` : ''}
+    ${laps.length ? `<p class="trk-lbl">랩</p><ol class="splits">${laps.map((l, i) => `<li><span>랩 ${i + 1}${g ? ` · ${l.km.toFixed(2)} km` : ''}</span><b class="num">${mmss(l.sec)}</b></li>`).join('')}</ol>` : ''}
     ${s.splits.length ? `<p class="trk-lbl">1km 구간</p><ol class="splits">${s.splits.map((sec, i) => `<li><span>${i + 1} km</span><b class="num">${mmss(sec)}</b></li>`).join('')}</ol>` : ''}`;
 }
 
 // 기록 시작(처음·일시정지 뒤 계속): 새 구간을 열고 지도에 새 선
 function begin() {
   R.segs.push([]); R.state = 'rec'; R.follow = true; R.moveAt = null; R.auto = false; lock();
+  R.t0 ??= Date.now(); R.clock.at = Date.now();
+  if (!gps()) R.tick = setInterval(() => { announce(); info(); }, 1000);
   if (R.L) R.lines.push(R.L.polyline([], LINE).addTo(R.map));
   info();
 }
 // 끝내기 확인 창(종료·뒤로 가기·닫기): 50m 미만이면 기록은 못 올리고 삭제·계속만
+// 시간만 종목은 1분 미만이면 못 올림
 function ask() {
-  const short = summarize(R.segs).km < 0.05;
-  $('#trk-ask-t').textContent = short ? '50m 미만은 기록할 수 없어요' : '기록을 끝낼까요?';
-  $('#trk-ask-p').textContent = short ? '거리가 너무 짧아 올릴 수 없어요. 더 움직이려면 계속하기를 눌러요.' : '삭제하면 지금까지 기록은 사라져요.';
+  const s = stats(), short = gps() ? s.km < 0.05 : s.minutes < 1;
+  $('#trk-ask-t').textContent = !short ? '기록을 끝낼까요?' : gps() ? '50m 미만은 기록할 수 없어요' : '1분 미만은 기록할 수 없어요';
+  $('#trk-ask-p').textContent = short ? `${gps() ? '거리' : '시간'}가 너무 짧아 올릴 수 없어요. 더 하려면 계속하기를 눌러요.` : '삭제하면 지금까지 기록은 사라져요.';
   $('#trk-ask-end').hidden = short;
   if (!$('#trk-ask').open) $('#trk-ask').showModal();
 }
+function stopClock() { clearInterval(R.tick); if (R.clock.at) R.clock.ms += Date.now() - R.clock.at; R.clock.at = null; }
+// 종목 바꾸기(시작 전): 시간만 종목이면 거리 목표는 지움
+function setKind(k) { R.type = k; if (R.goal?.k === 'km' && !gps()) R.goal = null; info(); }
 const voiceBtn = () => `<button class="icbtn" data-act="trk-voice" aria-label="음성 안내 ${voice ? '끄기' : '켜기'}">${ic(voice ? 'volume' : 'volume-off')}</button>`;
 
 export const actions = {
   'trk-open': () => {
-    R = { type: 'run', goal: null, segs: [], laps: [], said: 0, state: 'ready', follow: true };
-    $('#trk-body').innerHTML = `<header class="pp-top"><button class="icbtn" data-act="trk-close" aria-label="닫기">${ic('x')}</button><h2>GPS 기록 <small class="tag">시험 중</small></h2><div id="trk-vbtn">${voiceBtn()}</div></header>
+    R = { type: quickTypes()[0], goal: null, segs: [], laps: [], said: 0, state: 'ready', follow: true, clock: { ms: 0, at: null } };
+    $('#trk-body').innerHTML = `<header class="pp-top"><button class="icbtn" data-act="trk-close" aria-label="닫기">${ic('x')}</button><h2>측정 <small class="tag">시험 중</small></h2><div id="trk-vbtn">${voiceBtn()}</div></header>
       <div class="trk-mapbox"><div id="trk-map"></div><button type="button" class="icbtn trk-me" data-act="trk-me" aria-label="내 위치로">${ic('current-location')}</button></div>
       <div id="trk-info"></div>`;
     $('#trk').hidden = false; document.body.classList.add('pp-open');
@@ -169,7 +181,8 @@ export const actions = {
     makeMap().catch(e => { console.error(e); toast('지도를 못 불러왔어요. 기록은 그대로 돼요.'); });
     R.stop = source(onPoint);
   },
-  'trk-type': b => { R.type = b.dataset.v; info(); },
+  'trk-type': b => setKind(b.dataset.v),
+  'trk-more': () => openSports(setKind, { forTrack: true, changed: info }),
   'trk-goal': b => { R.goal = GOALS[b.dataset.i]; info(); },
   'trk-me': () => { R.follow = true; if (R.last) move(R.last); else toast('아직 내 위치를 못 찾았어요'); },
   'trk-voice': () => { voice = !voice; lsSet('voice', voice ? 'on' : 'off'); $('#trk-vbtn').innerHTML = voiceBtn(); say('음성 안내를 켰어요'); },
@@ -183,24 +196,25 @@ export const actions = {
     }, 1000);
   },
   'trk-lap': () => {
-    const s = summarize(R.segs), p = R.laps.at(-1) || { km: 0, minutes: 0 };
+    const s = stats(), p = R.laps.at(-1) || { km: 0, minutes: 0 };
     R.laps.push({ km: s.km, minutes: s.minutes });
     say(`랩 ${R.laps.length}. ${saySec((s.minutes - p.minutes) * 60)}`); info();
   },
-  'trk-pause': () => { R.state = 'pause'; R.auto = false; say('일시정지'); info(); },
+  'trk-pause': () => { stopClock(); R.state = 'pause'; R.auto = false; say('일시정지'); info(); },
   'trk-end': async () => {
-    const s = summarize(R.segs), pts = R.segs.flat(), type = R.type;
-    if (s.km < 0.05) return ask();
+    const g = gps(), s = stats(), pts = R.segs.flat(), type = R.type, start = g ? pts[0]?.t : R.t0;
+    if (g ? s.km < 0.05 : s.minutes < 1) return ask();
     actions['trk-close'](true);
-    say(`수고했어요. ${s.km.toFixed(2)}킬로미터, ${saySec(s.minutes * 60)}`);
-    await fillAuto({ type, start: pts[0].t, minutes: s.minutes, km: s.km, elev: s.elev });
-    $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
+    say(`수고했어요. ${g ? `${s.km.toFixed(2)}킬로미터, ` : ''}${saySec(s.minutes * 60)}`);
+    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev });
+    if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
   },
   'trk-drop': () => actions['trk-close'](true),
   'trk-ask-no': () => $('#trk-ask').close(),
   'trk-close': force => {
     if (force !== true && R && R.state !== 'ready') return ask();
     $('#trk-ask').close();
+    if (R) stopClock();
     R?.stop?.(); R?.wake?.release?.().catch(() => {}); R?.map?.remove(); R = null;
     $('#trk').hidden = true;
     if (!document.querySelector('.pp:not([hidden])')) document.body.classList.remove('pp-open');

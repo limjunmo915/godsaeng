@@ -7,7 +7,7 @@ import { REACTS, typeOf } from '../lib/types.js';
 import { nameOf, avatar } from '../lib/calc.js';
 import { NOTICES } from '../lib/notices.js';
 import { loadFollows } from '../lib/data.js';
-import { goToWorkout } from './feed.js';
+import { goToWorkout, markRxSeen } from './feed.js';
 import { openProfile } from './profile.js';
 
 async function fetchNotifs() {
@@ -24,7 +24,7 @@ async function fetchNotifs() {
       html: `<b>${esc(nameOf(id))}</b>님이 ${S.following.includes(id) ? '맞팔로우해서 친구가 됐어요' : '팔로우했어요. 눌러서 맞팔로우하면 친구가 돼요'}` })),
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, pop: kkTease(), cap: `${nameOf(p.from_id)}님이 약올렸어요`, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
     ...cm.map(c => ({ ts: c.created_at, id: c.user_id, wid: c.workout_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(cmText(c.body))}` })),
-    ...rx.map(r => ({ ts: r.created_at, id: r.user_id, wid: r.workout_id, pop: kkRx(r.kind), cap: `${nameOf(r.user_id)}님이 '${REACTS[r.kind]?.[1] || ''}'`, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
+    ...rx.map(r => ({ ts: r.created_at, id: r.user_id, wid: r.workout_id, rk: `${r.user_id}:${r.kind}`, pop: kkRx(r.kind), cap: `${nameOf(r.user_id)}님이 '${REACTS[r.kind]?.[1] || ''}'`, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
   ].filter(n => !S.blocked.includes(n.id)).sort((a, b) => new Date(b.ts) - new Date(a.ts));
 }
 const newNotice = () => NOTICES.length > 0 && NOTICES[0].id !== lsGet('notice');
@@ -35,7 +35,7 @@ export async function loadNotifs() {
     // 받은 반응·약올림이 수십 개 쌓여도 가장 최근 하나만 깐족이로 '뿅'(본 건 다시 안 띄움). 반응은 그 글이 화면에 보이면 그 위에
     const p = list.find(n => n.pop);
     if (p && new Date(p.ts) > new Date(lsGet('popSeen') || 0)) {
-      lsSet('popSeen', p.ts);
+      lsSet('popSeen', p.ts); if (p.rk) markRxSeen(p.wid, [p.rk]);   // 앱 열 때 띄운 반응은 내 글 스크롤 때 다시 안 띄움
       setTimeout(() => { const c = p.wid && document.querySelector(`#v-feed [data-wid="${p.wid}"]`); pop(p.pop, c?.querySelector('.photos') || c, p.cap); }, 700);
     }
   }

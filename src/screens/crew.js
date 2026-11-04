@@ -30,7 +30,7 @@ export async function renderCrew() {
       <header><div><b>${esc(ch.title)}</b><span>${ch.start_date.slice(5).replace('-', '.')} ~ ${ch.end_date.slice(5).replace('-', '.')} · 목표 ${m.fmt(ch.target)}</span></div>
         <span class="state ${live ? 'live' : ''}">${live ? '진행 중' : done ? '종료' : '예정'}</span></header>
       ${ch.bet ? `<p class="bet">${ic('target')}${esc(ch.bet)}</p>` : ''}
-      ${rows.map(([id, val]) => `<div class="prow">${avatar(id, 'sm')}<div><span>${esc(nameOf(id))}${val >= ch.target ? ic('medal', 'gold') : ''}</span><div class="bar"><i style="width:${Math.min(100, val / ch.target * 100)}%"></i></div></div><span class="val">${m.fmt(val)}</span></div>`).join('')}
+      ${rows.map(([id, val]) => `<div class="prow">${avatar(id, 'sm')}<div><span><button type="button" class="nm-link" data-act="profile" data-id="${id}">${esc(nameOf(id))}</button>${val >= ch.target ? ic('medal', 'gold') : ''}</span><div class="bar"><i style="width:${Math.min(100, val / ch.target * 100)}%"></i></div></div><span class="val">${m.fmt(val)}</span></div>`).join('')}
       ${done && rows[0]?.[1] > 0 ? `<p class="hint">우승 ${esc(nameOf(rows[0][0]))}${ch.bet ? ` · 꼴찌 ${esc(nameOf(rows.at(-1)[0]))} 당첨` : ''}</p>` : ''}
       ${ch.created_by === S.uid ? `<button class="linkbtn danger" data-act="del-ch" data-id="${ch.id}">챌린지 삭제</button>` : ''}
     </article>`;
@@ -41,7 +41,7 @@ export async function renderCrew() {
     <section class="crew-card">
       <div class="crew-top"><b>${esc(c.name)}</b><span>${S.members[c.id].length}명</span></div>
       <div class="code-row"><div><span>초대코드</span><code>${esc(c.invite_code)}</code></div><button class="btn" data-act="copy">${ic('copy')}초대 문구 복사</button></div>
-      <div class="members">${S.members[c.id].map(id => `<span>${avatar(id, 'sm')}${esc(nameOf(id))}</span>`).join('')}</div>
+      <div class="members">${S.members[c.id].map(id => `<button type="button" data-act="profile" data-id="${id}">${avatar(id, 'sm')}${esc(nameOf(id))}</button>`).join('')}</div>
     </section>
     <h3 class="sec">챌린지</h3>
     ${blocks.join('') || kkEmpty('crew-arm', '아직 챌린지가 없어요. 내기 하나 걸어 보세요.')}

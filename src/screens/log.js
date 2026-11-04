@@ -2,7 +2,9 @@
 import { S, sb, ok, $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
 import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress } from '../lib/util.js';
-import { TYPE_GROUPS, TYPES, QUICK_DEFAULT, BRAGS } from '../lib/types.js';
+import { TYPE_GROUPS, TYPES, quickTypes, BRAGS } from '../lib/types.js';
+import { openSports } from './sports.js';
+import { whenLabel } from './when.js';
 import { agreeHealth } from './consent.js';
 import { estKcal, latest, age } from '../lib/calc.js';
 import { loadFeed, loadMine } from '../lib/data.js';
@@ -13,15 +15,13 @@ const minutesVal = () => parseDur($('#f-dur').value);
 // 수영은 m, 나머지는 km 가 기본 단위
 const setUnit = u => { $('#f-unit').value = u; $('#f-dist').placeholder = u === 'm' ? '1500' : '5.00'; };
 
-// 빠른 선택: 내가 많이 한 종목 6개 (기록이 적으면 기본 종목으로 채움)
+// 대표 종목 5개(즐겨찾기 먼저) + 지금 고른 종목이 그 밖이면 하나 더
 function drawQuickTypes() {
-  const n = {}; for (const w of S.mine) n[w.type] = (n[w.type] || 0) + 1;
-  const top = [...new Set([...Object.keys(n).filter(k => TYPES[k]).sort((a, b) => n[b] - n[a]), ...QUICK_DEFAULT])].slice(0, 6);
+  const top = [...new Set([...quickTypes(), ...(TYPES[typeVal()] ? [typeVal()] : [])])];
   $('#quick-types').innerHTML = top.map(k => `<button type="button" class="chip" data-type="${k}" aria-pressed="${k === typeVal()}">${sportIc(k, TYPES[k].icon)}${TYPES[k].label}</button>`).join('');
 }
 function setType(k) {
-  $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km'); followAuto();
-  document.querySelectorAll('#quick-types [data-type]').forEach(b => b.setAttribute('aria-pressed', b.dataset.type === k));
+  $('#f-type').value = k; setUnit(k === 'swim' ? 'm' : 'km'); followAuto(); drawQuickTypes();
   syncForm();
 }
 
@@ -31,6 +31,7 @@ export function initForm() {
   if (formReady) return; formReady = true;
   $('#f-type').innerHTML = Object.entries(TYPE_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(([k, label]) => `<option value="${k}">${label}</option>`).join('')}</optgroup>`).join('');
   $('#f-type').onchange = () => setType(typeVal());
+  $('#type-more').onclick = () => openSports(setType, { changed: drawQuickTypes });
   $('#quick-types').onclick = e => { const b = e.target.closest('[data-type]'); if (b) setType(b.dataset.type); };
   $('#brag-presets').innerHTML = BRAGS.map(s => `<button type="button" class="chip" data-brag="${esc(s)}">${esc(s)}</button>`).join('');
   $('#brag-presets').onclick = e => { const b = e.target.closest('[data-brag]'); if (b) $('#f-brag').value = b.dataset.brag; };
@@ -59,6 +60,7 @@ export function initGearSelect() {
 }
 export function syncForm() {
   if (!formReady) return;
+  whenLabel();
   $('#dist-row').hidden = !TYPES[typeVal()].dist;
   const m = minutesVal(), hr = +$('#f-hr').value || null, raw = $('#f-dur').value.trim();
   $('#dur-out').textContent = !raw ? '분:초 또는 시:분:초. "45"만 쓰면 45분' : m ? `= ${fmtDurS(m)}` : '29:44 처럼 입력해 주세요';

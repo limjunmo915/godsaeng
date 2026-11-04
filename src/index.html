@@ -56,7 +56,8 @@
         <fieldset class="group">
           <legend>운동 종류</legend>
           <div class="chips" id="quick-types"></div>
-          <label class="field"><span>전체 종목</span><select id="f-type"></select></label>
+          <select id="f-type" hidden aria-hidden="true"></select>
+          <button type="button" class="btn ghost wide" id="type-more">전체 종목 보기 · 즐겨찾기</button>
         </fieldset>
 
         <fieldset class="group">
@@ -65,7 +66,7 @@
           <label class="field"><span>제목</span><input type="text" id="f-title" maxlength="60" placeholder="퇴근길 한강 런"></label>
           <label class="field"><span>메모 (크루·친구에게 보임)</span><textarea id="f-memo" maxlength="1000" placeholder="코스, 컨디션, 세트 기록"></textarea></label>
           <div class="row">
-            <label class="field"><span>언제</span><input type="datetime-local" id="f-when"></label>
+            <div class="field"><span>언제</span><input type="hidden" id="f-when"><button type="button" class="when-btn" id="when-btn" data-act="when-open"></button></div>
             <label class="field"><span>운동 시간</span><input type="text" id="f-dur" autocomplete="off" inputmode="text" placeholder="29:44"><small class="hint" id="dur-out"></small></label>
           </div>
           <div class="row" id="dist-row">
@@ -138,6 +139,18 @@
   <h2 id="intro-t"></h2><p id="intro-p"></p>
   <div class="intro-dots" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="intro-btns"><button class="btn" data-act="intro-skip">건너뛰기</button><button class="btn primary" data-act="intro-next">다음</button></div>
+</dialog>
+
+<dialog id="sport-dlg" aria-labelledby="sport-t">
+  <div class="sheet-head"><h2 id="sport-t">종목 고르기</h2><button class="icbtn" data-act="sp-close" aria-label="닫기"><i data-ic="x"></i></button></div>
+  <p class="hint sp-help">별을 누르면 즐겨찾기(5개까지). 즐겨찾기는 기록·측정 화면 맨 앞에 나와요.</p>
+  <div id="sport-list" class="sheet-body"></div>
+</dialog>
+
+<dialog id="when-dlg" aria-label="언제 운동했나요">
+  <div class="sheet-body when-body"><div id="when-cal"></div>
+    <div class="when-time"><label class="field"><span>시각</span><input type="time" id="when-time"></label><button type="button" class="btn" data-act="when-now">지금</button></div>
+    <div class="when-btns"><button type="button" class="btn" data-act="when-cancel">취소</button><button type="button" class="btn primary" data-act="when-ok">확인</button></div></div>
 </dialog>
 
 <dialog id="trk-ask" aria-labelledby="trk-ask-t">

@@ -257,7 +257,7 @@ dd { margin: 0; }
 .code-row span { display: block; font-size: 12px; color: var(--muted); }
 .code-row code { font: 800 24px/1.1 var(--font); letter-spacing: .14em; }
 .members { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-.members span { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.members span, .members button { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 .ch { background: var(--surface); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; }
 .ch header { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 .ch header div { display: grid; }
@@ -564,10 +564,11 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .fab:active { transform: scale(.94); }
 main:has(#v-log:not([hidden])) ~ .fab { display: none; }
 main { padding-bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom, 0px)); }
-/* 상단 띠(피드 빼고): 앱 이름 + 흐르는 응원 문구 */
+/* 상단 띠(피드 빼고): 앱 이름 + 흐르는 응원 문구. 광고가 오면 이 칸 안에 그대로 넣음
+   광고 그림은 색이 제각각이라 바탕은 흰색 + 옅은 테두리·그림자로 두고, 높이는 휴대폰 표준 띠 광고(320×50)에 맞춰 50px */
 #ad-top { padding-top: 12px; }
-.ad-top { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-text); overflow: hidden; }
-.ad-top b { flex: none; font-size: 13px; font-weight: 800; }
+.ad-top { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); overflow: hidden; }
+.ad-top b { flex: none; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 999px; background: var(--brand); color: var(--brand-ink); }
 .ad-run { flex: 1; overflow: hidden; white-space: nowrap; }
 .ad-run span { display: inline-block; padding-left: 100%; font-size: 14px; font-weight: 600; animation: ad-run 11s linear infinite; }
 @keyframes ad-run { to { transform: translateX(-100%); } }
@@ -628,3 +629,35 @@ body::after { content: ""; position: fixed; inset: auto 0 0; height: env(safe-ar
 .rx-stack { display: inline-flex; flex: none; }
 .rx-stack img { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(20, 26, 11, .2)); }
 .rx-stack img + img { margin-left: -12px; }
+
+.rival { cursor: pointer; }
+.nm-link { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; }
+.members button { padding: 0; border: 0; background: none; color: inherit; }
+img[data-act="pp-photo"] { cursor: pointer; }
+
+/* 종목 고르기 창 */
+#sport-dlg { max-height: 85vh; }
+.sp-help { margin: -4px 20px 8px; }
+.sp-g { margin: 16px 0 4px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.sp-row { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); }
+.sp-name { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 4px; border: 0; background: none; color: var(--ink); font: inherit; font-size: 15px; text-align: left; }
+.sp-name .sp, .sp-name .ic { width: 32px; height: 32px; flex: none; }
+.sp-name .tag { margin-left: auto; }
+.sp-star { color: var(--faint); }
+.sp-star[aria-pressed="true"] { color: var(--brand-text); }
+.sp-star[aria-pressed="true"] svg { fill: var(--brand); }
+@media (prefers-color-scheme: dark) { .sp { background: #F0FCD9; border-radius: 8px; padding: 2px; } }
+
+/* '언제' 달력 */
+.when-btn { height: 48px; width: 100%; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--fill); color: var(--ink); font: inherit; font-size: 15px; text-align: left; }
+.when-body { padding-top: 16px; display: grid; gap: 14px; }
+.when-head { display: flex; align-items: center; justify-content: space-between; }
+.when-head b { font-size: 17px; }
+#when-dlg { width: min(420px, 100%); }
+#when-dlg .cal { padding: 4px 0; box-shadow: none; }
+#when-dlg .cal .d { border: 0; background: none; font-size: 15px; color: var(--ink); font-weight: 600; }
+#when-dlg .cal .d:disabled { color: var(--faint); opacity: .45; }
+#when-dlg .cal .d.sel { background: var(--brand); color: var(--brand-ink); font-weight: 800; }
+.when-time { display: flex; gap: 8px; align-items: flex-end; }
+.when-time .field { flex: 1; }
+.when-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }

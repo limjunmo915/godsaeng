@@ -8,7 +8,7 @@ import { typeOf, points } from '../lib/types.js';
 import { avatar, hue, nameOf, sum, streaks, badges, bests } from '../lib/calc.js';
 import { signAvatars, signPhotos, isFriend, loadBlocks, loadFollows, loadFeed, FEED_SEL } from '../lib/data.js';
 import { relBtn } from './friends.js';
-import { card } from './feed.js';
+import { card, goToWorkout } from './feed.js';
 import { lineChart } from './body.js';
 import { show, refresh } from '../nav.js';
 
@@ -54,7 +54,7 @@ function mainPage() {
   const months = Array.from({ length: 12 }, (_, i) => { const d = new Date(mo); d.setMonth(d.getMonth() - 11 + i); return d; });
   const pts = months.map((d, i) => { const end = i < 11 ? +months[i + 1] : Infinity;
     return { t: +d, v: sum(list.filter(w => { const x = +new Date(w.started_at); return x >= +d && x < end; })).minutes / 60 }; });
-  const photos = list.flatMap(w => w.photos), st = streaks(list), bg = badges(list, st), on = bg.filter(b => b[2]);
+  const photos = list.flatMap(w => w.photos), pw = list.flatMap(w => w.photos.map(() => w.id)), st = streaks(list), bg = badges(list, st), on = bg.filter(b => b[2]);
   const mainGear = gear.find(g => !g.retired), gearKm = g => list.filter(w => w.gear_id === g.id).reduce((a, w) => a + +w.distance_km, 0);
   const crews = S.crews.filter(c => me || S.members[c.id]?.includes(id));
   const crewPoke = !friend && sharedCrew(id);
@@ -80,7 +80,7 @@ function mainPage() {
     <div class="pp-actions">${actions}</div>
     ${mutual.length ? `<button type="button" class="pp-mutual" data-act="pp-go" data-page="mutual"><span class="stack">${mutual.slice(0, 5).map(m => avatar(m.id, 'sm')).join('')}</span>
       <span>함께 아는 친구 ${mutual.length}명</span><b>모두 보기</b></button>` : ''}
-    ${open ? (photos.length ? `<div class="pp-media">${photos.slice(0, 3).map(ph => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy">`).join('')}
+    ${open ? (photos.length ? `<div class="pp-media">${photos.slice(0, 3).map((ph, i) => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy" data-act="pp-photo" data-wid="${pw[i]}">`).join('')}
         <button type="button" data-act="pp-go" data-page="media" style="${photos[3] ? `background-image:url('${esc(S.urls[photos[3]] || '')}')` : ''}"><span>사진 전체</span></button></div>` : '')
       : lockCard(p, '맞팔로우하면 사진·운동 기록·통계를 볼 수 있어요')}
     <section class="pp-month">
@@ -128,9 +128,9 @@ function mediaPage() {
   const tabs = `<div class="st-tabs two"><button type="button" data-act="pp-media" data-v="grid" aria-pressed="${grid}">${ic('photo')}<span>바둑판</span></button><button type="button" data-act="pp-media" data-v="list" aria-pressed="${!grid}">${ic('route')}<span>목록</span></button></div>`;
   const withPh = list.filter(w => w.photos.length);
   return top('사진 전체') + `<div class="pp-head center">${avatar(S.pp.id, 'xl')}<b>${esc(S.pp.p.nickname)}</b></div>${tabs}` + (grid
-    ? `<div class="pp-grid">${withPh.flatMap(w => w.photos).map(ph => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy">`).join('')}</div>`
+    ? `<div class="pp-grid">${withPh.flatMap(w => w.photos.map(ph => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy" data-act="pp-photo" data-wid="${w.id}">`)).join('')}</div>`
     : withPh.map(w => `<div class="pp-mlist"><b>${esc(w.title || typeOf(w.type).label)}</b><small>${fmtDate(w.started_at)}</small>
-        <div>${w.photos.map(ph => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy">`).join('')}</div></div>`).join(''));
+        <div>${w.photos.map(ph => `<img alt="" src="${esc(S.urls[ph] || '')}" loading="lazy" data-act="pp-photo" data-wid="${w.id}">`).join('')}</div></div>`).join(''));
 }
 
 async function peoplePage(kind) {
@@ -187,6 +187,8 @@ export const actions = {
   'pp-go': b => { S.pp.page = b.dataset.page; renderPP(); $('#pp').scrollTo(0, 0); },
   'pp-stat': b => { S.pp.statType = b.dataset.v; renderPP(); },
   'pp-media': b => { S.pp.media = b.dataset.v; renderPP(); },
+  // 사진 누르면 프로필을 닫고 피드의 그 기록으로
+  'pp-photo': b => { closeProfile(); return goToWorkout(b.dataset.wid); },
   'pp-back': async () => {
     if (S.pp.page !== 'main') { S.pp.page = 'main'; return renderPP(); }
     S.ppStack.pop();

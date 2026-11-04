@@ -61,7 +61,7 @@ export function card(w) {
     <div class="actbar">
       ${Object.entries(REACTS).map(([k, [, label]]) => {
         const n = w.reactions.filter(r => r.kind === k).length;
-        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" ${mine ? 'disabled' : ''} aria-label="${label}${n ? ' ' + n : ''}">${rxImg(k)}<span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
+        return `<button class="rx" data-act="react" data-k="${k}" aria-pressed="${myRx === k}" aria-label="${label}${n ? ' ' + n : ''}">${rxImg(k)}<span>${label}</span>${n ? `<b>${n}</b>` : ''}</button>`;
       }).join('')}
     </div>
     ${rxWho(w)}
@@ -83,7 +83,7 @@ export async function renderFeed() {
     const i = board.findIndex(([id]) => id === S.uid);
     if (board.length > 1 && i >= 0) {
       const mine = board[i][1], P = METRIC.points.fmt;
-      head.push(`<section class="rival">
+      head.push(`<section class="rival" data-act="go" data-tab="rank" role="button" tabindex="0" aria-label="크루 랭킹 보기">
         <div><span>${esc(crew().name)} · 이번 주 ${i + 1}위 / ${board.length}명</span><b>${P(mine)}</b></div>
         <em>${i === 0 ? `2위보다 ${P(mine - board[1][1])} 앞섬` : `${esc(nameOf(board[i - 1][0]))}까지 ${P(board[i - 1][1] - mine)}`}</em>
       </section>`);
@@ -102,7 +102,31 @@ export async function renderFeed() {
     : `<div class="empty"><img class="kk-big" src="img/kk/${S.crews.length ? 'empty-feed' : 'empty-crew'}.webp" alt=""><b>${S.crews.length ? '아직 아무도 운동 안 함' : '먼저 크루에 들어가세요'}</b>
       <p>${S.crews.length ? '지금 기록하면 자동으로 1등이에요.' : '크루를 만들거나 초대코드로 들어가면 친구들 기록이 여기 떠요.'}</p>
       <button class="btn primary" data-act="go" data-tab="${S.crews.length ? 'log' : 'crew'}">${S.crews.length ? '첫 기록 올리기' : '크루로 가기'}</button></div>`);
-  markPoked(list).catch(console.error);
+  markPoked(list).catch(console.error); markMyRx(list);
+}
+
+// 내 글이 화면에 들어오면 지난번 본 뒤 새로 받은 반응을 깐족이로(글마다 이 폰에서 한 번). 처음엔 지금 반응을 다 본 걸로 침
+const rxKey = r => `${r.user_id}:${r.kind}`;
+export function markRxSeen(wid, keys) {
+  const m = JSON.parse(lsGet('rxSeen') || '{}'); m[wid] = [...new Set([...(m[wid] || []), ...keys])]; lsSet('rxSeen', JSON.stringify(m));
+}
+let rxObs, popUntil = 0;
+function markMyRx(list) {
+  const mine = list.filter(w => w.user_id === S.uid);
+  if (!lsGet('rxSeen')) lsSet('rxSeen', JSON.stringify(Object.fromEntries(mine.map(w => [w.id, w.reactions.map(rxKey)]))));
+  const fresh = w => { const seen = JSON.parse(lsGet('rxSeen'))[w.id] || []; return w.reactions.filter(r => r.user_id !== S.uid && !S.blocked.includes(r.user_id) && !seen.includes(rxKey(r))); };
+  const todo = new Set(mine.filter(w => fresh(w).length).map(w => w.id));
+  rxObs?.disconnect(); if (!todo.size) return;
+  rxObs = new IntersectionObserver(es => es.forEach(e => {
+    const w = S.feed.find(x => x.id === e.target.dataset.wid);
+    if (!e.isIntersecting || !w || !todo.has(w.id) || Date.now() < popUntil) return;   // 한 번에 하나만
+    const nw = fresh(w); todo.delete(w.id); rxObs.unobserve(e.target); markRxSeen(w.id, w.reactions.map(rxKey));
+    if (!nw.length) return;
+    popUntil = Date.now() + 2600;
+    const names = nw.slice(0, 2).map(r => nameOf(r.user_id) + '님');
+    pop(kkRx(nw[0].kind), e.target.querySelector('.photos') || e.target, `${names.join(', ')}${nw.length > 2 ? ` 외 ${nw.length - 2}명이` : '이'} 반응했어요`);
+  }), { threshold: 0.6 });
+  document.querySelectorAll('#v-feed .card[data-wid]').forEach(c => { if (todo.has(c.dataset.wid)) rxObs.observe(c); });
 }
 
 // 24시간 안에 약올림 당한 크루원·친구의 글이 화면에 들어오면 깐족이 뿅(SQL 013). 약올림 하나당 이 폰에서 한 번만, 누가 했는지는 안 보임
