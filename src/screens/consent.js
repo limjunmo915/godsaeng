@@ -1,10 +1,10 @@
 // 약관·건강정보 동의 (supabase/008). 약관이 바뀌면 TERMS_VER 를 올리고 privacy.html·terms.html 변경 이력에 추가
 import { S, sb, ok, $ } from '../state.js';
-import { toast } from '../lib/util.js';
+import { toast, lsGet, lsSet } from '../lib/util.js';
 import { loadBody, loadMine } from '../lib/data.js';
 import { refresh } from '../nav.js';
 
-export const TERMS_VER = '2026-10-25', HEALTH_VER = '2026-10-25';
+export const TERMS_VER = '2026-10-25', HEALTH_VER = '2026-10-25', LOCATION_VER = '2026-11-05';
 
 // 만 나이 14세 이상인가 (생년월일 'YYYY-MM-DD')
 export function over14(bd) {
@@ -41,7 +41,31 @@ export async function agreeHealth(ask = true) {
   return true;
 }
 
+// 위치정보(경로 저장) 동의 창: 동의하면 true. 한 번 '동의 안 함'을 누르면 다시 묻지 않음(설정에서 켤 수 있음)
+let locDone;
+export function askLocation(force = false) {
+  if (S.consents.location) return Promise.resolve(true);
+  if (!force && lsGet('locAsked')) return Promise.resolve(false);
+  $('#loc-dlg').showModal();
+  return new Promise(r => { locDone = r; });
+}
+async function setLocation(yes) {
+  lsSet('locAsked', '1');
+  if (yes) { ok(await sb.from('consents').upsert({ user_id: S.uid, kind: 'location', version: LOCATION_VER })); S.consents.location = LOCATION_VER; toast('동의했어요. 이제 경로가 저장돼요'); }
+  $('#loc-dlg').close(); locDone?.(yes); locDone = null;
+}
+$('#loc-dlg').addEventListener('cancel', () => { locDone?.(false); locDone = null; });
+
 export const actions = {
+  'loc-agree': () => setLocation(true).catch(e => toast(e.message)),
+  'loc-no': () => setLocation(false),
+  'loc-on': async () => { if (await askLocation(true)) return refresh(); },
+  // 철회: 동의 기록과 저장된 경로 전부 삭제(supabase/015)
+  'loc-withdraw': async () => {
+    if (!confirm('위치정보 동의를 철회할까요?\n저장된 운동 경로가 모두 바로 지워지고 되돌릴 수 없어요. 기록(거리·시간)은 남아요.')) return;
+    ok(await sb.rpc('withdraw_location')); delete S.consents.location; S.routes = {};
+    toast('철회하고 경로를 모두 지웠어요'); return refresh();
+  },
   'health-agree': async b => { if (await agreeHealth(!b.dataset.noask)) { toast('동의했어요'); return refresh(); } },
   // 철회: 신체 기록·기본 정보·운동 기록의 평균 심박을 지우고 동의 기록 삭제
   'health-withdraw': async () => {

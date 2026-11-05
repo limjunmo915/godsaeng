@@ -1,6 +1,6 @@
 // GPS 계산 확인: node src/lib/gps.check.js  (아무것도 안 나오고 'ok' 면 통과)
 import assert from 'node:assert';
-import { dist, accept, summarize, trim, fakeTrack, recentPace } from './gps.js';
+import { dist, accept, summarize, trim, fakeTrack, recentPace, slim, encodePoly, decodePoly } from './gps.js';
 
 // 위도 0.01도 ≈ 1.11km
 assert(Math.abs(dist({ lat: 37.5, lng: 127 }, { lat: 37.51, lng: 127 }) - 1112) < 5);
@@ -30,4 +30,9 @@ assert(tr.length && tr.every(p => dist(p, pts[0]) > 200 && dist(p, pts.at(-1)) >
 // 지금 페이스: 끝부분 30초로 5:30 근처, 멈춰 있으면 0
 assert(Math.abs(recentPace(pts) - 330) < 30, `지금 페이스 ${recentPace(pts)}`);
 assert(recentPace(still) === 0);
+// 저장용 경로: 줄이기 + 인코딩 왕복이 1m 안쪽으로 같음
+const sl = slim(tr);
+assert(sl.length > 10 && sl.length <= 1000 && sl.length < tr.length);
+const back = decodePoly(encodePoly(sl));
+assert(back.length === sl.length && back.every((p, i) => dist(p, sl[i]) < 1.5), '폴리라인 왕복');
 console.log('ok');

@@ -164,6 +164,24 @@
   <div id="watch-list" class="sheet-body"></div>
 </dialog>
 
+<dialog id="loc-dlg" aria-labelledby="loc-t">
+  <div class="stack sheet-body loc-body"><h2 id="loc-t">운동 경로를 저장할까요?</h2>
+    <p>동의하면 GPS로 잰 경로가 기록과 함께 저장되고, <b>크루·친구 공개</b> 기록이면 크루원·친구 피드에 경로 그림·지도로 보여요.</p>
+    <ul class="loc-list"><li>집·회사가 드러나지 않게 <b>출발·도착 200m는 잘라내고</b> 저장해요</li>
+      <li>누가 내 경로를 봤는지 법에 따라 자동 기록돼요(1년 보관)</li>
+      <li>설정에서 언제든 철회할 수 있고, 철회하면 경로를 모두 지워요</li>
+      <li>동의하지 않아도 측정·기록은 그대로 돼요(경로는 내 폰 화면에만)</li></ul>
+    <p class="hint"><a href="location-terms.html" target="_blank" rel="noopener">위치기반서비스 이용약관</a> 전체 보기</p>
+    <button class="btn primary wide" data-act="loc-agree">동의하고 경로 저장</button>
+    <button class="btn wide" data-act="loc-no">동의 안 함</button></div>
+</dialog>
+
+<dialog id="map-dlg" class="map-dlg" aria-label="경로 지도">
+  <div class="sheet-head"><h2>경로 지도</h2><button class="icbtn" data-act="map-close" aria-label="닫기"><i data-ic="x"></i></button></div>
+  <div id="map-full"></div>
+  <p class="hint map-note">출발·도착 주변 200m는 가려져 있어요</p>
+</dialog>
+
 <dialog id="trk-ask" aria-labelledby="trk-ask-t">
   <div class="stack sheet-body"><h2 id="trk-ask-t"></h2><p class="hint" id="trk-ask-p"></p>
     <button class="btn primary wide" data-act="trk-end" id="trk-ask-end">종료하고 기록하기</button>

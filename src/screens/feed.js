@@ -5,6 +5,7 @@ import { esc, fmtNum, fmtClock, fmtDist, fmtDate, fmtTime, ago, startOf, pick, t
 import { typeOf, REACTS, POKES, points, METRIC } from '../lib/types.js';
 import { sum, pace, effort, nameOf, crew, avatar } from '../lib/calc.js';
 import { loadFeed, loadMine, crewTotals } from '../lib/data.js';
+import { routeSvg } from '../lib/gps.js';
 import { show } from '../nav.js';
 import { editWorkout } from './log.js';
 import { shareWorkout } from './share.js';
@@ -39,6 +40,7 @@ export function card(w) {
   const main = all.slice(0, 3), rest = all.slice(3);
 
   const myRx = w.reactions.find(r => r.user_id === S.uid)?.kind;
+  const rt = S.routes?.[w.id];   // 저장된 경로(출발·도착 200m 잘린 것): 사진보다 앞, 첫 장
   const gear = mine && S.gear.find(g => g.id === w.gear_id);
   const tags = [
     w.visibility === 'private' ? `<span class="tag">${ic('lock')}나만 보기</span>` : '',
@@ -60,7 +62,7 @@ export function card(w) {
     ${rest.length ? `<dl class="sub">${rest.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
     ${tags ? `<div class="tags">${tags}</div>` : ''}
     ${w.brag ? `<p class="brag">${esc(w.brag)}</p>` : ''}
-    ${w.photos?.length ? `<div class="photos ${w.photos.length > 1 ? 'multi' : ''}">${w.photos.map((p, i) => `<img alt="${esc(nameOf(w.user_id))}의 운동 사진 ${i + 1}" src="${esc(S.urls[p] || '')}" loading="lazy">`).join('')}</div>` : ''}
+    ${rt || w.photos?.length ? `<div class="photos ${(rt ? 1 : 0) + w.photos.length > 1 ? 'multi' : ''}">${rt ? `<button type="button" class="route-slide" data-act="route-map" aria-label="경로 지도로 보기">${routeSvg(rt, 400, 500, 36)}<span>${ic('route')}지도로 보기</span></button>` : ''}${w.photos.map((p, i) => `<img alt="${esc(nameOf(w.user_id))}의 운동 사진 ${i + 1}" src="${esc(S.urls[p] || '')}" loading="lazy">`).join('')}</div>` : ''}
     ${mine && S.notes[w.id] ? `<p class="note">${ic('lock')}${esc(S.notes[w.id])}</p>` : ''}
     <div class="actbar">
       ${Object.entries(REACTS).map(([k, [, label]]) => {
@@ -114,7 +116,7 @@ const rxKey = r => `${r.user_id}:${r.kind}`;
 export function markRxSeen(wid, keys) {
   const m = JSON.parse(lsGet('rxSeen') || '{}'); m[wid] = [...new Set([...(m[wid] || []), ...keys])]; lsSet('rxSeen', JSON.stringify(m));
 }
-let rxObs, popUntil = 0;
+let rxObs, popUntil = 0, mapFull = null;
 // 깐족이가 떠 있거나 창(반응 목록 등)이 열려 있으면 다른 글 깐족이는 기다림
 const busy = () => Date.now() < popUntil || !!document.querySelector('dialog[open]');
 function markMyRx(list) {
@@ -175,6 +177,17 @@ new MutationObserver(() => document.querySelectorAll('.memo.clamp:not([data-m])'
 })).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
 
 export const actions = {
+  // 경로 그림을 누르면 전체 화면 지도(이때만 지도 그림을 불러와서 무료 한도 안)
+  'route-map': async (b, w) => {
+    const pts = S.routes[w.id]; $('#map-dlg').showModal();
+    const [{ default: L }] = await Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]);
+    mapFull?.remove();
+    mapFull = L.map('map-full', { zoomControl: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapFull);
+    const line = L.polyline(pts.map(p => [p.lat, p.lng]), { color: '#141A0B', weight: 5, opacity: 0.9 }).addTo(mapFull);
+    mapFull.fitBounds(line.getBounds(), { padding: [24, 24] });
+  },
+  'map-close': () => { $('#map-dlg').close(); mapFull?.remove(); mapFull = null; },
   'rx-who': (b, w) => {
     const { rs, top, text } = rxSummary(w);
     $('#rx-list').innerHTML = Object.keys(REACTS).flatMap(k => rs.filter(r => r.kind === k)).map(r =>

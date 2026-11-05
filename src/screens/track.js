@@ -8,6 +8,7 @@ import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
 import { TYPES, quickTypes, gpsType } from '../lib/types.js';
 import { openSports } from './sports.js';
+import { askLocation } from './consent.js';
 import { dist, accept, summarize, recentPace, trim, routeSvg, fakeTrack } from '../lib/gps.js';
 import { fillAuto } from './log.js';
 
@@ -220,8 +221,9 @@ export const actions = {
   'trk-me': () => { R.follow = true; if (R.last) move(R.last); else toast('아직 내 위치를 못 찾았어요'); },
   'trk-voice': () => { voice = !voice; lsSet('voice', voice ? 'on' : 'off'); $('#trk-vbtn').innerHTML = voiceBtn(); say('음성 안내를 켰어요'); },
   // 처음 시작은 3-2-1 카운트다운(NRC 식), 일시정지 뒤 '계속'은 바로
-  'trk-start': () => {
+  'trk-start': async () => {
     if (R.state === 'pause') { say('다시 시작'); return begin(); }
+    if (gps()) await askLocation();   // 경로 저장 동의(처음 한 번). 안 해도 측정은 됨
     if (lsGet('countdown') === 'off') { say(`시작! ${R.goal ? `목표 ${goalTxt(R.goal).replace('km', '킬로미터')}` : ''}`); return begin(); }
     R.state = 'count'; R.n = 3; say('3'); info();
     const h = setInterval(() => {
@@ -241,7 +243,7 @@ export const actions = {
     const hr = R.hrs.length ? R.hrs.reduce((a, b) => a + b, 0) / R.hrs.length : 0;   // 기록 화면에선 건강정보 동의한 사람만 채움
     actions['trk-close'](true);
     say(`수고했어요. ${g ? `${s.km.toFixed(2)}킬로미터, ` : ''}${saySec(s.minutes * 60)}`);
-    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, hr, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
+    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, hr, route: g ? trim(pts) : null, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
     if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
   },
   'trk-drop': () => actions['trk-close'](true),

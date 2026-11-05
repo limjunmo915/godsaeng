@@ -1,4 +1,5 @@
 // 서버에서 데이터 불러오기
+import { decodePoly } from './gps.js';
 import { S, sb, ok } from '../state.js';
 import { DAY, lsGet, lsSet } from './util.js';
 
@@ -57,9 +58,15 @@ export async function loadFeed(reset) {
     .order('started_at', { ascending: false }).order('created_at', { referencedTable: 'comments' })
     .range(S.feed.length, S.feed.length + 19));
   S.feed.push(...rows); S.feedEnd = rows.length < 20;
-  await signPhotos(rows.flatMap(w => w.photos));
+  await Promise.all([signPhotos(rows.flatMap(w => w.photos)), loadRoutes(rows.map(w => w.id))]);
 }
 // ponytail: 내 기록 전체를 한 번에 가져옴(기본 상한 1000건). 수년치 쌓이면 기간별 조회로 변경
+// 경로(supabase/015 routes_of): 볼 수 있는 기록 것만, 남의 경로는 서버가 '제공 사실'을 기록. SQL 실행 전이면 조용히 넘어감
+export async function loadRoutes(ids) {
+  S.routes ??= {}; if (!ids.length) return;
+  const { data } = await sb.rpc('routes_of', { ids });
+  for (const r of data || []) S.routes[r.workout_id] = decodePoly(r.poly);
+}
 export async function loadMine() {
   const [mine, notes] = await Promise.all([
     sb.from('workouts').select('id,type,title,memo,brag,started_at,duration_min,distance_km,elev_m,kcal,avg_hr,rpe,gear_id,photos').eq('user_id', S.uid).order('started_at', { ascending: false }).then(ok),

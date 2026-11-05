@@ -6,6 +6,7 @@ import { TYPE_GROUPS, TYPES, quickTypes, BRAGS } from '../lib/types.js';
 import { openSports } from './sports.js';
 import { whenLabel } from './when.js';
 import { markImported, watchReady } from './watch.js';
+import { slim, encodePoly } from '../lib/gps.js';
 import { agreeHealth } from './consent.js';
 import { estKcal, latest, age } from '../lib/calc.js';
 import { loadFeed, loadMine } from '../lib/data.js';
@@ -155,6 +156,8 @@ async function saveWorkout(e) {
     else if (S.notes[saved.id]) ok(await sb.from('private_notes').delete().eq('workout_id', saved.id));
     const wasEdit = !!S.editing, city = gpsCity;
     if (extId) markImported(extId);
+    if (route && !wasEdit && S.consents.location) ok(await sb.from('workout_routes').insert({ workout_id: saved.id, poly: encodePoly(slim(route)) }));
+    route = null;
     resetForm(); gpsCity = null; extId = null;
     city?.then(c => c && updateRegion(c)).catch(console.error);
     await Promise.all([loadFeed(true), loadMine()]);
@@ -176,7 +179,8 @@ function followAuto() { if (auto !== null && $('#f-title').value === auto) $('#f
 // d: { type, start(시각), minutes, km, elev, kcal, hr, memo, photos[blob] }
 // 활동 지역: GPS 로 잰 기록을 올릴 때마다 그 나라·도시를 세어(이 폰에 기억) 가장 많은 곳을 프로필에 보임
 let gpsCity = null;   // 측정 화면에서 넘어온 동네 이름(Promise)
-let extId = null;     // 워치(Health Connect)에서 불러온 운동 id: 올리면 다시 안 보이게 기억
+let extId = null;
+let route = null;      // 측정 화면에서 넘어온 경로(출발·도착 200m 자른 것). 위치 동의했으면 올릴 때 저장     // 워치(Health Connect)에서 불러온 운동 id: 올리면 다시 안 보이게 기억
 async function updateRegion(c) {
   const n = JSON.parse(lsGet('cities') || '{}'); n[c] = (n[c] || 0) + 1; lsSet('cities', JSON.stringify(n));
   const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0][0];
@@ -184,7 +188,7 @@ async function updateRegion(c) {
 }
 export async function fillAuto(d) {
   resetForm();
-  gpsCity = d.city || null; extId = d.extId || null;
+  gpsCity = d.city || null; extId = d.extId || null; route = d.route?.length > 1 ? d.route : null;
   if (d.type && TYPES[d.type]) setType(d.type);
   if (d.start) $('#f-when').value = toLocalInput(d.start);
   if (d.minutes) $('#f-dur').value = fmtClock(d.minutes);

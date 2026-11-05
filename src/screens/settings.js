@@ -51,6 +51,11 @@ export function renderSettings() {
     <h3 class="set-h">알림</h3>
     <p class="hint">휴대폰 알림(반응·댓글·약올림)은 곧 나와요. 지금은 위쪽 종에서 확인해요.</p>
 
+    <h3 class="set-h">위치정보</h3>
+    <div class="consent-row"><span>운동 경로 저장 동의 ${S.consents.location ? '함' : '안 함'}</span>${S.consents.location
+      ? '<button class="linkbtn danger" data-act="loc-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="loc-on">동의하기</button>'}</div>
+    <p class="hint">동의하면 GPS로 잰 경로가 저장돼 크루·친구 피드에 경로 그림으로 보여요(출발·도착 200m는 잘라내요). 철회하면 저장된 경로를 모두 지워요.</p>
+
     <h3 class="set-h">건강정보</h3>
     <div class="consent-row"><span>건강정보(심박·신체 기록) 동의 ${S.consents.health ? '함' : '안 함'}</span>${S.consents.health
       ? '<button class="linkbtn danger" data-act="health-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="health-agree">동의하기</button>'}</div>
@@ -60,6 +65,7 @@ export function renderSettings() {
     ${link('feedback', 'bulb', '건의·버그 제보')}
     ${page('terms.html', 'lock', '이용약관')}
     ${page('privacy.html', 'lock', '개인정보처리방침')}
+    ${page('location-terms.html', 'current-location', '위치기반서비스 이용약관')}
     ${page('licenses.html', 'copy', '오픈소스 라이선스')}
 
     <h3 class="set-h">계정</h3>

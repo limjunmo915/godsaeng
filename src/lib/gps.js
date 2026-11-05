@@ -53,6 +53,27 @@ export function trim(pts, r = 200) {
   return pts.filter(p => dist(p, s) > r && dist(p, e) > r);
 }
 
+// 서버에 저장할 경로: 출발·도착 200m 를 자른 점에서 10m 이내로 붙은 점은 빼고, 1,000개까지만(위치기반서비스 이용약관 제4조)
+export function slim(pts, gap = 10, max = 1000) {
+  const out = [];
+  for (const p of pts) if (!out.length || dist(out.at(-1), p) >= gap) out.push(p);
+  const step = Math.ceil(out.length / max);
+  return step > 1 ? out.filter((_, i) => i % step === 0 || i === out.length - 1) : out;
+}
+// Google encoded polyline(소수 5자리 ≈ 1m): 점 1,000개가 약 5KB
+export function encodePoly(pts) {
+  let s = '', la = 0, ln = 0;
+  const enc = v => { v = v < 0 ? ~(v << 1) : v << 1; let o = ''; while (v >= 0x20) { o += String.fromCharCode((0x20 | (v & 0x1f)) + 63); v >>= 5; } return o + String.fromCharCode(v + 63); };
+  for (const p of pts) { const a = Math.round(p.lat * 1e5), b = Math.round(p.lng * 1e5); s += enc(a - la) + enc(b - ln); la = a; ln = b; }
+  return s;
+}
+export function decodePoly(s) {
+  const pts = []; let i = 0, la = 0, ln = 0;
+  const dec = () => { let r = 0, sh = 0, b; do { b = s.charCodeAt(i++) - 63; r |= (b & 0x1f) << sh; sh += 5; } while (b >= 0x20); return r & 1 ? ~(r >> 1) : r >> 1; };
+  while (i < s.length) { la += dec(); ln += dec(); pts.push({ lat: la / 1e5, lng: ln / 1e5 }); }
+  return pts;
+}
+
 // 경로 선 그림(지도 없이). 위도에 따라 경도 간격을 줄여 모양이 찌그러지지 않게
 export function routeSvg(pts, w = 320, h = 200, pad = 12) {
   if (pts.length < 2) return '';

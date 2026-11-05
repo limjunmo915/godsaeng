@@ -693,3 +693,15 @@ img[data-act="pp-photo"] { cursor: pointer; }
 .set-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 15px; text-align: left; text-decoration: none; }
 .set-row span { flex: 1; }
 .set-row .ic { width: 20px; height: 20px; color: var(--muted); }
+
+/* 피드 첫 장 경로 그림(지도 대신 선만 → 무료), 누르면 전체 화면 지도 */
+.route-slide { flex: 0 0 100%; position: relative; padding: 0; border: 0; aspect-ratio: 4 / 5; max-height: 520px; scroll-snap-align: start; overflow: hidden;
+  background: radial-gradient(120% 90% at 0% 0%, #F4FFD6 0%, transparent 60%), linear-gradient(160deg, #E9FBC4, #D6F59A); }
+.photos.multi .route-slide { flex-basis: 86%; }
+.route-slide .route { width: 100%; height: 100%; max-height: none; background: none; border-radius: 0; }
+.route-slide .route path { stroke: #141A0B; stroke-width: 5; }
+.route-slide span { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 999px; background: #141A0B; color: #C6FF3D; font-size: 12px; font-weight: 700; }
+.route-slide span .ic { width: 14px; height: 14px; }
+dialog.map-dlg { margin: auto; width: min(640px, 100%); max-height: 92vh; border-radius: 20px; }
+#map-full { height: 70vh; }
+.map-note { margin: 8px 16px 14px; }
