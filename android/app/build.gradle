@@ -25,11 +25,20 @@ android {
             keyAlias 'test'
             keyPassword 'godsaeng-test'
         }
+        // Play 스토어 업로드 키: GitHub 비밀(Secrets)에 넣어 둔 경우에만(Actions 가 upload.p12 로 풀어 놓음)
+        if (System.getenv('UPLOAD_STORE_PASSWORD')) {
+            upload {
+                storeFile file('upload.p12')
+                storePassword System.getenv('UPLOAD_STORE_PASSWORD')
+                keyAlias System.getenv('UPLOAD_KEY_ALIAS') ?: 'upload'
+                keyPassword System.getenv('UPLOAD_STORE_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug { signingConfig signingConfigs.test }
         release {
-            signingConfig signingConfigs.test
+            signingConfig System.getenv('UPLOAD_STORE_PASSWORD') ? signingConfigs.upload : signingConfigs.test
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

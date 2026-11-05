@@ -3,3 +3,4 @@ dist/
 prototype-artifact.html
 _dbcheck/
 .claude/settings.local.json
+android/app/upload.p12

@@ -14,6 +14,8 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      HAS_UPLOAD_KEY: ${{ secrets.UPLOAD_KEYSTORE_B64 != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,6 +35,23 @@ jobs:
         env:
           VERSION_CODE: ${{ github.run_number }}
       - run: cp android/app/build/outputs/apk/release/app-release.apk godsaeng.apk
+      # Play 스토어용 AAB: 업로드 키(비밀)를 넣어 둔 뒤부터 자동으로 만들어 Actions 결과물(godsaeng-aab)로 올림
+      - name: 스토어용 AAB(업로드 키 서명)
+        if: ${{ env.HAS_UPLOAD_KEY == 'true' }}
+        env:
+          UPLOAD_KEYSTORE_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          VERSION_CODE: ${{ github.run_number }}
+        working-directory: android
+        run: |
+          echo "$UPLOAD_KEYSTORE_B64" | base64 -d > app/upload.p12
+          ./gradlew bundleRelease --no-daemon
+          rm app/upload.p12
+      - uses: actions/upload-artifact@v4
+        if: ${{ env.HAS_UPLOAD_KEY == 'true' }}
+        with:
+          name: godsaeng-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
       - name: 릴리스에 올리기
         env:
           GH_TOKEN: ${{ github.token }}
