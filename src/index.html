@@ -58,6 +58,7 @@
 
         <fieldset class="group">
           <legend>운동 종류</legend>
+          <button type="button" class="btn wide watch-btn" id="watch-btn" data-act="watch-open" hidden>⌚ 워치·삼성 헬스에서 불러오기</button>
           <div class="chips" id="quick-types"></div>
           <select id="f-type" hidden aria-hidden="true"></select>
           <button type="button" class="btn ghost wide" id="type-more">전체 종목 보기 · 즐겨찾기</button>
@@ -154,6 +155,12 @@
   <div class="sheet-body when-body"><div id="when-cal"></div>
     <div class="when-time"><label class="field"><span>시각</span><input type="time" id="when-time"></label><button type="button" class="btn" data-act="when-now">지금</button></div>
     <div class="when-btns"><button type="button" class="btn" data-act="when-cancel">취소</button><button type="button" class="btn primary" data-act="when-ok">확인</button></div></div>
+</dialog>
+
+<dialog id="watch-dlg" aria-labelledby="watch-t">
+  <div class="sheet-head"><h2 id="watch-t">워치 기록 불러오기</h2><button class="icbtn" data-act="watch-close" aria-label="닫기"><i data-ic="x"></i></button></div>
+  <p class="hint sp-help">최근 14일 운동 중 아직 안 올린 것만 보여요. 누르면 기록 화면에 채워져요.</p>
+  <div id="watch-list" class="sheet-body"></div>
 </dialog>
 
 <dialog id="trk-ask" aria-labelledby="trk-ask-t">

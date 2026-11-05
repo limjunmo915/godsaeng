@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -24,6 +24,25 @@
 
         </activity>
 
+        <!-- Health Connect(갤럭시워치·삼성 헬스 운동 불러오기): 권한 설명 화면(안드로이드 13 이하 / 14 이상) -->
+        <activity
+            android:name="com.fit_up.health.capacitor.PermissionsRationaleActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity="com.fit_up.health.capacitor.PermissionsRationaleActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -44,4 +63,13 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <!-- 음성 안내(text-to-speech 플러그인, 안드로이드 11+) -->
     <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
+    <!-- Health Connect: 운동(종목·시간)·거리·칼로리·심박만 읽음(쓰기 없음). 심박은 건강정보 동의한 사람만 요청 -->
+    <queries><package android:name="com.google.android.apps.healthdata" /></queries>
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <!-- 블루투스 심박 센서: 위치를 알아내는 데 쓰지 않음 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
 </manifest>

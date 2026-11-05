@@ -2,6 +2,7 @@
 // 경로(위치)는 서버에 저장하지 않음. 끝나면 거리·시간·상승고도만 기록 화면에 채우고, 지도·경로 그림은 이 폰 화면에만
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor, registerPlugin } from '@capacitor/core';
+import { BleClient } from '@capacitor-community/bluetooth-le';
 import { $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
@@ -134,6 +135,7 @@ function info() {
       <p class="hint">${g ? `GPS 위치와 거리는 실제와 몇 m~수십 m 다를 수 있어요. 건물 사이·실내·터널·숲속에선 더 크게 틀려요. ${Capacitor.isNativePlatform() ? '앱에선 화면을 꺼도 기록이 계속돼요(알림창에 기록 중 표시).' : '웹에선 화면을 켜 둔 채로 기록해요(화면이 꺼지면 기록이 멈춰요).'}` : '실내·구기처럼 GPS가 의미 없는 종목은 운동 시간만 재요. 화면을 꺼도 시간은 계속 흘러요.'}</p>` : ''}
     ${R.state === 'count' ? `<div class="trk-count num">${R.n}</div>` : `<div class="trk-nums">
       <div class="big"><small>시간</small><b class="num">${fmtClock(s.minutes)}</b></div>
+      ${R.hr ? `<div><small>심박</small><b class="num"><span id="trk-hr">${R.hr}</span><small> bpm</small></b></div>` : ''}
       ${g ? `<div><small>거리</small><b class="num">${s.km.toFixed(2)}<small> km</small></b></div>
       <div><small>${isRide() ? '지금 속도' : '지금 페이스'}</small><b class="num">${paceOrSpeed(now)}</b></div>
       <div><small>${isRide() ? '평균 속도' : '평균 페이스'}</small><b class="num">${paceOrSpeed(s.paceSec)}</b></div>
@@ -172,6 +174,24 @@ async function cityOf(p) {
   const city = short(a.city || a.town || a.county || a.province || a.state);
   return [a.country, city].filter(Boolean).join(' ').slice(0, 20) || null;
 }
+// 블루투스 심박 센서(가슴 벨트·심박 방송 시계): 표준 심박 서비스로 연결해 실시간 심박. 기록 중 값만 모아 평균을 기록 화면에 넘김
+// 앱은 안드로이드 블루투스, 웹은 크롬의 웹 블루투스(플러그인이 알아서 고름)
+const HR_SVC = '0000180d-0000-1000-8000-00805f9b34fb', HR_CHR = '00002a37-0000-1000-8000-00805f9b34fb';
+let hrDev = null;
+async function hrConnect() {
+  await BleClient.initialize({ androidNeverForLocation: true });
+  const d = await BleClient.requestDevice({ services: [HR_SVC] });
+  await BleClient.connect(d.deviceId, () => { hrDev = null; if (R) { R.hr = null; info(); hrBtn(); } toast('심박 센서 연결이 끊겼어요'); });
+  await BleClient.startNotifications(d.deviceId, HR_SVC, HR_CHR, v => {
+    if (!R) return;
+    R.hr = v.getUint8(0) & 1 ? v.getUint16(1, true) : v.getUint8(1);   // 첫 바이트 0번 비트: 심박이 2바이트인지
+    if (R.state === 'rec' && R.hr > 0) R.hrs.push(R.hr);
+    const el = $('#trk-hr'); if (el) el.textContent = R.hr; else info();
+  });
+  hrDev = d; toast(`${d.name || '심박 센서'} 연결됐어요`);
+}
+const hrOff = () => { if (hrDev) BleClient.disconnect(hrDev.deviceId).catch(() => {}); hrDev = null; };
+const hrBtn = () => { const b = $('#trk-hrbtn'); if (b) b.setAttribute('aria-pressed', !!hrDev); };
 function stopClock() { clearInterval(R.tick); if (R.clock.at) R.clock.ms += Date.now() - R.clock.at; R.clock.at = null; }
 // 종목 바꾸기(시작 전): 시간만 종목이면 거리 목표는 지움
 function setKind(k) { R.type = k; if (R.goal?.k === 'km' && !gps()) R.goal = null; info(); }
@@ -179,8 +199,8 @@ const voiceBtn = () => `<button class="icbtn" data-act="trk-voice" aria-label="�
 
 export const actions = {
   'trk-open': () => {
-    R = { type: quickTypes()[0], goal: null, segs: [], laps: [], said: 0, state: 'ready', follow: true, clock: { ms: 0, at: null } };
-    $('#trk-body').innerHTML = `<header class="pp-top"><button class="icbtn" data-act="trk-close" aria-label="닫기">${ic('x')}</button><h2>측정 <small class="tag">시험 중</small></h2><div id="trk-vbtn">${voiceBtn()}</div></header>
+    R = { type: quickTypes()[0], goal: null, segs: [], laps: [], said: 0, state: 'ready', follow: true, clock: { ms: 0, at: null }, hrs: [] };
+    $('#trk-body').innerHTML = `<header class="pp-top"><button class="icbtn" data-act="trk-close" aria-label="닫기">${ic('x')}</button><h2>측정 <small class="tag">시험 중</small></h2><div class="trk-tools"><button class="icbtn" id="trk-hrbtn" data-act="trk-hr" aria-pressed="${!!hrDev}" aria-label="심박 센서 연결">${ic('heart-rate-monitor')}</button><div id="trk-vbtn">${voiceBtn()}</div></div></header>
       <div class="trk-mapbox"><div id="trk-map"></div><button type="button" class="icbtn trk-me" data-act="trk-me" aria-label="내 위치로">${ic('current-location')}</button></div>
       <div id="trk-info"></div>`;
     $('#trk').hidden = false; document.body.classList.add('pp-open');
@@ -189,6 +209,11 @@ export const actions = {
     R.stop = source(onPoint);
   },
   'trk-type': b => setKind(b.dataset.v),
+  'trk-hr': async () => {
+    if (hrDev) { hrOff(); R.hr = null; hrBtn(); info(); return toast('심박 센서 연결을 끊었어요'); }
+    try { await hrConnect(); hrBtn(); }
+    catch (err) { if (!/cancel/i.test(err?.message || '')) toast('심박 센서를 못 찾았어요. 센서를 켜고(가슴 벨트는 착용), 시계는 심박 방송을 켜 주세요.'); }
+  },
   'trk-more': () => openSports(setKind, { forTrack: true, changed: info }),
   'trk-goal': b => { R.goal = GOALS[b.dataset.i]; info(); },
   'trk-me': () => { R.follow = true; if (R.last) move(R.last); else toast('아직 내 위치를 못 찾았어요'); },
@@ -211,9 +236,10 @@ export const actions = {
   'trk-end': async () => {
     const g = gps(), s = stats(), pts = R.segs.flat(), type = R.type, start = g ? pts[0]?.t : R.t0;
     if (g ? s.km < 0.05 : s.minutes < 1) return ask();
+    const hr = R.hrs.length ? R.hrs.reduce((a, b) => a + b, 0) / R.hrs.length : 0;   // 기록 화면에선 건강정보 동의한 사람만 채움
     actions['trk-close'](true);
     say(`수고했어요. ${g ? `${s.km.toFixed(2)}킬로미터, ` : ''}${saySec(s.minutes * 60)}`);
-    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
+    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, hr, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
     if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
   },
   'trk-drop': () => actions['trk-close'](true),
@@ -222,6 +248,7 @@ export const actions = {
     if (force !== true && R && R.state !== 'ready') return ask();
     $('#trk-ask').close();
     if (R) stopClock();
+    hrOff();
     R?.stop?.(); R?.wake?.release?.().catch(() => {}); R?.map?.remove(); R = null;
     $('#trk').hidden = true;
     if (!document.querySelector('.pp:not([hidden])')) document.body.classList.remove('pp-open');
