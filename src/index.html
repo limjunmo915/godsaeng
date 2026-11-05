@@ -182,6 +182,17 @@
   <p class="hint map-note">출발·도착 주변 200m는 가려져 있어요</p>
 </dialog>
 
+<dialog id="auto-dlg" aria-labelledby="auto-t">
+  <div class="stack sheet-body loc-body"><h2 id="auto-t">⌚ 워치 운동이 자동으로 올라가요</h2>
+    <p>갤럭시워치 등으로 운동을 끝내면 <b>15분 안에 자동으로 기록이 올라가고</b>, 휴대폰에 <b>'기록 올리기 성공'</b> 알림이 와요. 알림을 누르면 사진·한마디를 더할 수 있어요.</p>
+    <ul class="loc-list"><li>공개 범위는 설정의 '새 기록 기본 공개 범위'를 따라요</li>
+      <li>심박은 건강정보 동의, 경로는 위치정보 동의한 경우에만 같이 올라가요</li>
+      <li>다음 화면에서 Health Connect 권한(앱을 안 쓸 때도 읽기 포함)과 알림을 허용해 주세요</li>
+      <li>설정 → 워치·센서에서 언제든 끌 수 있어요</li></ul>
+    <button class="btn primary wide" data-act="auto-on">자동 올리기 켜기</button>
+    <button class="btn wide" data-act="auto-later">나중에</button></div>
+</dialog>
+
 <dialog id="trk-ask" aria-labelledby="trk-ask-t">
   <div class="stack sheet-body"><h2 id="trk-ask-t"></h2><p class="hint" id="trk-ask-p"></p>
     <button class="btn primary wide" data-act="trk-end" id="trk-ask-end">종료하고 기록하기</button>

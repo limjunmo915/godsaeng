@@ -151,7 +151,7 @@ async function saveWorkout(e) {
       saved = ok(await sb.from('workouts').update(row).eq('id', S.editing.id).select().single());
       const removed = S.editing.photos.filter(p => !paths.includes(p));
       if (removed.length) await sb.storage.from('photos').remove(removed);
-    } else saved = ok(await sb.from('workouts').insert(row).select().single());
+    } else saved = ok(await sb.from('workouts').insert(extId ? { ...row, ext_id: extId } : row).select().single());   // 워치 기록 id: 자동 올리기와 두 번 안 올라가게
     if (note) ok(await sb.from('private_notes').upsert({ workout_id: saved.id, note }));
     else if (S.notes[saved.id]) ok(await sb.from('private_notes').delete().eq('workout_id', saved.id));
     const wasEdit = !!S.editing, city = gpsCity;

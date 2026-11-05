@@ -5,6 +5,7 @@ import { S, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
 import { esc, lsGet, lsSet, toast, COUNTRIES } from '../lib/util.js';
 import { avatar, nameOf } from '../lib/calc.js';
+import { autoOn, enableAuto, disableAuto } from './autosync.js';
 
 const on = (k, def = true) => (lsGet(k) ?? (def ? 'on' : 'off')) !== 'off';
 const sw = (k, label, hint, def = true) => `<label class="set-sw"><span><b>${label}</b>${hint ? `<small>${hint}</small>` : ''}</span><input type="checkbox" data-pref="${k}" ${on(k, def) ? 'checked' : ''}></label>`;
@@ -44,9 +45,10 @@ export function renderSettings() {
     ${sw('autopause', '자동 일시정지', '10초 넘게 멈추면 기록을 잠깐 멈춰요(GPS 종목)')}
 
     ${native ? `<h3 class="set-h">워치·센서</h3>
+    <label class="set-sw"><span><b>워치 자동 올리기</b><small>워치로 운동을 끝내면 15분 안에 자동으로 올리고 '기록 올리기 성공' 알림</small></span><input type="checkbox" id="auto-sw" ${autoOn() ? 'checked' : ''}></label>
     ${link('watch-open', 'activity', '워치·삼성 헬스에서 기록 불러오기')}
     ${link('hc-settings', 'settings', 'Health Connect 권한 관리')}
-    <p class="hint">심박 센서는 측정 화면 오른쪽 위 심박 버튼으로 연결해요. 워치로 운동을 끝내면 자동으로 올라가는 기능은 곧 나와요.</p>` : ''}
+    <p class="hint">심박 센서는 측정 화면 오른쪽 위 심박 버튼으로 연결해요.</p>` : ''}
 
     <h3 class="set-h">알림</h3>
     <p class="hint">휴대폰 알림(반응·댓글·약올림)은 곧 나와요. 지금은 위쪽 종에서 확인해요.</p>
@@ -74,7 +76,12 @@ export function renderSettings() {
 }
 
 // 이 폰에 기억하는 설정은 누르는 즉시 저장
-document.addEventListener('change', e => {
+document.addEventListener('change', async e => {
+  if (e.target.id === 'auto-sw') {
+    try { if (e.target.checked) { await enableAuto(); toast('켰어요! 워치 운동이 자동으로 올라가요'); } else { await disableAuto(); toast('껐어요'); } }
+    catch (err) { e.target.checked = !e.target.checked; toast('바꾸지 못했어요. 권한을 확인해 주세요'); console.error(err); }
+    return;
+  }
   const k = e.target.dataset?.pref; if (k) { lsSet(k, e.target.checked ? 'on' : 'off'); return toast('저장했어요'); }
   const s = e.target.dataset?.prefSel; if (s) { lsSet(s, e.target.value); toast('저장했어요'); }
 });

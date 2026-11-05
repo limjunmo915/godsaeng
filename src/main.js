@@ -27,9 +27,10 @@ import * as sports from './screens/sports.js';
 import * as when from './screens/when.js';
 import * as watch from './screens/watch.js';
 import * as settings from './screens/settings.js';
+import * as autosync from './screens/autosync.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); },
   'intro-next': () => introAt < INTRO.length - 1 ? intro(introAt + 1) : $('#intro').close(),
   'intro-skip': () => $('#intro').close() };
@@ -117,6 +118,7 @@ async function boot() {
     notif.loadNotifs(); msg.loadMsgs().catch(console.error); msg.listen();
     await friends.acceptInvite();
     if (!lsGet('intro') && !document.querySelector('dialog[open]')) intro(0);
+    else autosync.checkAuto().catch(console.error);
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
 }
 
@@ -157,7 +159,7 @@ document.addEventListener('submit', async e => {
   if (S.pp && f.closest('#pp')) profile.renderPP();
   if (f.closest('#srch')) search.rerender();
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); autosync.checkAuto().catch(console.error); } });
 
 /* 휴대폰 뒤로 가기: 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 지나온 탭을 거꾸로 → 피드(홈)
    → 홈에서 누르면 '한 번 더 누르면 종료' → 2초 안에 또 누르면 종료

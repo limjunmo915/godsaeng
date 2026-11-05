@@ -2,7 +2,7 @@
 // 읽기만 함(쓰기 없음). 심박은 건강정보 동의한 사람만 요청. 이미 올린 운동은 이 폰에 기억해서 다시 안 보임
 import { Capacitor } from '@capacitor/core';
 import { Health } from 'capacitor-health';
-import { S, $ } from '../state.js';
+import { S, sb, $ } from '../state.js';
 import { sportIc } from '../lib/icons.js';
 import { DAY, esc, fmtDate, fmtTime, fmtClock, lsGet, lsSet, toast, fail } from '../lib/util.js';
 import { TYPES } from '../lib/types.js';
@@ -28,7 +28,9 @@ async function load() {
   const hr = !!S.consents.health;
   await Health.requestHealthPermissions({ permissions: ['READ_WORKOUTS', 'READ_DISTANCE', 'READ_TOTAL_CALORIES', 'READ_ACTIVE_CALORIES', ...(hr ? ['READ_HEART_RATE'] : [])] });
   const end = new Date(), { workouts } = await Health.queryWorkouts({ startDate: new Date(end - 14 * DAY).toISOString(), endDate: end.toISOString(), includeHeartRate: hr, includeRoute: false, includeSteps: false });
-  const seen = done();
+  // 이미 올린 워치 운동(자동 올리기 포함, supabase/016 ext_id)은 빼기. SQL 실행 전이면 이 폰 기억만
+  const { data: up } = await sb.from('workouts').select('ext_id').eq('user_id', S.uid).not('ext_id', 'is', null);
+  const seen = [...done(), ...(up || []).map(x => x.ext_id)];
   list = workouts.filter(w => !seen.includes(w.id)).map(w => ({
     id: w.id, type: HC[w.workoutType] || 'etc', start: w.startDate, minutes: (w.duration || 0) / 60, km: (w.distance || 0) / 1000, kcal: w.calories || 0,
     hr: w.heartRate?.length ? w.heartRate.reduce((a, b) => a + b.bpm, 0) / w.heartRate.length : 0,

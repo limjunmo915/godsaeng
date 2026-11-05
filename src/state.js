@@ -2,10 +2,9 @@
 // anon 키는 공개용. 실제 보안은 schema.sql 의 RLS 규칙이 담당.
 import { createClient } from '@supabase/supabase-js';
 
-export const sb = createClient(
-  'https://ghrjtbznjnvzwqthiahm.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdocmp0Ynpuam52endxdGhpYWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4Mzc1NDAsImV4cCI6MjEwNzQxMzU0MH0.Q2M1w4dzgmfc28voCetOP4UyOjEwF6ZDqOnC5hC5FMc',
-);
+export const SUPA_URL = 'https://ghrjtbznjnvzwqthiahm.supabase.co';
+export const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdocmp0Ynpuam52endxdGhpYWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4Mzc1NDAsImV4cCI6MjEwNzQxMzU0MH0.Q2M1w4dzgmfc28voCetOP4UyOjEwF6ZDqOnC5hC5FMc';
+export const sb = createClient(SUPA_URL, SUPA_ANON);
 
 export const S = {
   uid: undefined, me: null, crews: [], crewId: null, people: {}, members: {}, blocked: [], consents: {}, following: [], followers: [], crewTab: 'crew',
