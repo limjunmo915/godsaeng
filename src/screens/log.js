@@ -92,6 +92,7 @@ export function resetForm() {
   $('#log-form').reset();
   S.newPhotos.forEach(p => URL.revokeObjectURL(p.url)); S.newPhotos = []; S.keptPhotos = [];
   $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5;
+  $('#vis-' + (lsGet('defVis') === 'private' ? 'private' : 'crew')).checked = true;   // 설정의 '새 기록 기본 공개 범위'
   drawQuickTypes(); setType($('#quick-types [data-type]').dataset.type);
   $('#log-heading').textContent = '운동 기록'; $('#f-submit').textContent = '올리고 약올리기'; $('#f-cancel').textContent = '기록 안 올리기';
   initGearSelect(); drawThumbs(); syncForm();

@@ -26,9 +26,10 @@ import * as track from './screens/track.js';
 import * as sports from './screens/sports.js';
 import * as when from './screens/when.js';
 import * as watch from './screens/watch.js';
+import * as settings from './screens/settings.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); },
   'intro-next': () => introAt < INTRO.length - 1 ? intro(introAt + 1) : $('#intro').close(),
   'intro-skip': () => $('#intro').close() };
@@ -171,6 +172,7 @@ function back() {   // 'exit' = 종료, 'armed' = 종료 안내 띄움
   else if (dlg) { /* 약관 동의 창은 뒤로 가기로 못 닫음 */ }
   else if (menu) menu.open = false;
   else if (!$('#pp').hidden) profile.actions['pp-back']();
+  else if (!$('#set').hidden) settings.actions['set-close']();
   else if (!$('#trk').hidden) track.actions['trk-close']();
   else if (!$('#msg').hidden) msg.actions['msg-back']();
   else if (!$('#srch').hidden) search.actions['search-close']();

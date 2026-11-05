@@ -11,6 +11,7 @@ import { goToWorkout } from './feed.js';
 import { shareRecap } from './share.js';
 import { initGearSelect } from './log.js';
 import { renderBody } from './body.js';
+import { renderSettings } from './settings.js';
 
 export const meHead = sub => `
   <div class="profile">${avatar(S.uid, 'lg')}<div><b>${esc(S.me.nickname)}</b><span>${sub}</span></div>
@@ -106,33 +107,7 @@ export async function renderMe() {
         <label class="field"><span>종류</span><select name="kind"><option value="shoes">신발</option><option value="bike">자전거</option><option value="etc">기타</option></select></label>
         <label class="field"><span>교체 알림 (km)</span><input type="number" name="km" min="1" inputmode="numeric" placeholder="700"></label>
       </div><button class="btn">추가</button></form></details>
-    <button class="btn wide" data-act="feedback">${ic('bulb')}건의·버그 제보</button>
-    <details class="panel"><summary>설정</summary>
-      <div class="avatar-row">${avatar(S.uid, 'lg')}
-        <label class="btn">${ic('camera')}사진 바꾸기<input type="file" id="avatar-file" accept="image/*" hidden></label>
-        ${me.avatar_url ? '<button class="btn" data-act="avatar-del">사진 빼기</button>' : ''}</div>
-      <form class="stack" data-form="settings">
-      <div class="row">
-        <label class="field"><span>성</span><input type="text" name="family" maxlength="20" value="${esc(me.family_name || '')}"></label>
-        <label class="field"><span>이름</span><input type="text" name="given" maxlength="30" value="${esc(me.given_name || '')}"></label>
-        <label class="field"><span>나라</span><select name="country">${COUNTRIES.map(([k, v]) => `<option value="${k}" ${k === (me.country || 'KR') ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-      </div>
-      ${me.family_name ? '' : `<label class="field"><span>닉네임 (성·이름을 넣으면 실명으로 바뀌어요)</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>`}
-      <div class="row">
-        <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
-        <label class="field"><span>한 줄 소개 (선택)</span><input type="text" name="bio" maxlength="40" value="${esc(me.bio || '')}" placeholder="주 3회 5km 목표!"></label>
-      </div>
-      <p class="hint">활동 지역은 GPS로 기록한 운동에서 가장 많이 운동한 나라·도시로 자동으로 보여요.</p>
-      <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원·친구가 나를 약올릴 수 없어요)</label>
-      <label class="check"><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}>닉네임 검색에 나 표시</label>
-      <button class="btn">저장</button></form>
-      ${S.blocked.length ? `<h4 class="sec">차단한 사람</h4>${S.blocked.map(id => `<div class="blk">${avatar(id, 'sm')}<span>${esc(nameOf(id))}</span><button class="linkbtn" data-act="unblock" data-id="${id}">차단 풀기</button></div>`).join('')}` : ''}
-      <p class="hint">닉네임·프로필 사진·활동 지역·소개는 검색한 사람에게도 보여요(검색 노출을 끄면 안 보여요). 닉네임과 주간 목표는 크루원에게 보여요. 키·체중 같은 신체 정보는 내 몸 탭에 따로 저장돼요.</p>
-      <div class="consent-row"><span>건강정보 동의 ${S.consents.health ? '함' : '안 함'}</span>${S.consents.health
-        ? '<button class="linkbtn danger" data-act="health-withdraw">동의 철회</button>' : '<button class="linkbtn" data-act="health-agree">동의하기</button>'}</div>
-      <p class="legal left"><a href="terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="licenses.html" target="_blank" rel="noopener">오픈소스 라이선스</a> · 문의 ijm09@naver.com</p>
-      <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button>
-      <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button></details>`;
+    <button class="btn wide" data-act="set-open">${ic('settings')}설정(프로필·공개 범위·측정·계정)</button>`;
 }
 
 // 프로필 사진: 가운데 정사각형 160px(약 7KB) = <내 id>/avatar-시각.jpg, 크게 보기용 480px(약 30KB) = …-l.jpg
@@ -196,6 +171,6 @@ export const forms = {
     if (!!d.family !== !!d.given) return toast('성과 이름을 둘 다 적거나 둘 다 비워 주세요.');
     S.me = ok(await sb.from('profiles').update({ family_name: d.family || null, given_name: d.given || null, country: d.country,
       nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, bio: d.bio || null }).eq('id', S.uid).select().single());
-    S.people[S.uid] = S.me; toast('저장했어요'); return refresh();
+    S.people[S.uid] = S.me; toast('저장했어요'); if (!$('#set').hidden) renderSettings(); return refresh();
   },
 };

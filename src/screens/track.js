@@ -95,7 +95,7 @@ function onPoint(p) {
       if (!prev || dist(prev, p) / ((p.t - prev.t) / 1000) >= 0.5) R.moveAt = p.t;   // 초속 0.5m 이상 = 움직이는 중
     }
     // 자동 일시정지(스트라바 식): 10초 넘게 안 움직이면. 멈춘 시간은 원래 기록에서 빠짐(gps.js summarize)
-    const auto = R.moveAt != null && p.t - R.moveAt > 10000;
+    const auto = lsGet('autopause') !== 'off' && R.moveAt != null && p.t - R.moveAt > 10000;
     if (auto !== R.auto) { R.auto = auto; say(auto ? '자동 일시정지' : '다시 출발'); }
     announce();
   }
@@ -199,6 +199,7 @@ const voiceBtn = () => `<button class="icbtn" data-act="trk-voice" aria-label="�
 
 export const actions = {
   'trk-open': () => {
+    voice = lsGet('voice') !== 'off';
     R = { type: quickTypes()[0], goal: null, segs: [], laps: [], said: 0, state: 'ready', follow: true, clock: { ms: 0, at: null }, hrs: [] };
     $('#trk-body').innerHTML = `<header class="pp-top"><button class="icbtn" data-act="trk-close" aria-label="닫기">${ic('x')}</button><h2>측정 <small class="tag">시험 중</small></h2><div class="trk-tools"><button class="icbtn" id="trk-hrbtn" data-act="trk-hr" aria-pressed="${!!hrDev}" aria-label="심박 센서 연결">${ic('heart-rate-monitor')}</button><div id="trk-vbtn">${voiceBtn()}</div></div></header>
       <div class="trk-mapbox"><div id="trk-map"></div><button type="button" class="icbtn trk-me" data-act="trk-me" aria-label="내 위치로">${ic('current-location')}</button></div>
@@ -221,6 +222,7 @@ export const actions = {
   // 처음 시작은 3-2-1 카운트다운(NRC 식), 일시정지 뒤 '계속'은 바로
   'trk-start': () => {
     if (R.state === 'pause') { say('다시 시작'); return begin(); }
+    if (lsGet('countdown') === 'off') { say(`시작! ${R.goal ? `목표 ${goalTxt(R.goal).replace('km', '킬로미터')}` : ''}`); return begin(); }
     R.state = 'count'; R.n = 3; say('3'); info();
     const h = setInterval(() => {
       if (!R || R.state !== 'count') return clearInterval(h);
