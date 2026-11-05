@@ -1,5 +1,6 @@
 # 안드로이드 시험용 APK: main 에 push 하면 빌드 → 릴리스 'android' 에 godsaeng.apk 로 올림
 # 받는 주소: https://github.com/limjunmo915/godsaeng/releases/download/android/godsaeng.apk
+# 업로드 키(Secrets: UPLOAD_KEYSTORE_B64, UPLOAD_STORE_PASSWORD)가 있으면 Play 스토어용 AAB 도 만들어 Actions 결과물 godsaeng-aab 로 올림
 name: android
 on:
   push:
