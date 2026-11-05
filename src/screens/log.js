@@ -170,7 +170,7 @@ function followAuto() { if (auto !== null && $('#f-title').value === auto) $('#f
 
 // 밖에서 넘어온 운동(공유 글·워치·GPS)을 새 기록 화면에 채움. 없는 값은 비워 둠
 // d: { type, start(시각), minutes, km, elev, kcal, hr, memo, photos[blob] }
-// 활동 지역: GPS 로 잰 기록을 올릴 때마다 그 동네를 세어(이 폰에 기억) 가장 많은 동네를 프로필에 보임
+// 활동 지역: GPS 로 잰 기록을 올릴 때마다 그 나라·도시를 세어(이 폰에 기억) 가장 많은 곳을 프로필에 보임
 let gpsCity = null;   // 측정 화면에서 넘어온 동네 이름(Promise)
 async function updateRegion(c) {
   const n = JSON.parse(lsGet('cities') || '{}'); n[c] = (n[c] || 0) + 1; lsSet('cities', JSON.stringify(n));

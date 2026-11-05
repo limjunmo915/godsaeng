@@ -63,6 +63,8 @@ $('#l-toggle').onclick = () => {
 // 가입 화면: 나라에 맞춰 이름 순서 미리 보기
 const nameOut = () => { const f = $('#l-family').value.trim(), g = $('#l-given').value.trim(); $('#l-name-out').textContent = f && g ? `크루·친구에게 "${fullName(f, g, $('#l-country').value)}"(으)로 보여요` : '크루·친구에게 실명으로 보여요'; };
 ['#l-family', '#l-given', '#l-country'].forEach(s => $(s).addEventListener('input', nameOut));
+// 예시도 나라에 맞춰: 한국 등은 김 / 갓생, 그 밖은 Saeng / God(→ God Saeng)
+$('#l-country').addEventListener('change', () => { const ko = ['KR', 'JP', 'CN', 'TW'].includes($('#l-country').value); $('#l-family').placeholder = ko ? '김' : 'Saeng'; $('#l-given').placeholder = ko ? '갓생' : 'God'; nameOut(); });
 $('#login-form').onsubmit = async e => {
   e.preventDefault();
   const email = $('#l-email').value.trim(), password = $('#l-pw').value;

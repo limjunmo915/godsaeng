@@ -122,7 +122,7 @@ export async function renderMe() {
         <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
         <label class="field"><span>한 줄 소개 (선택)</span><input type="text" name="bio" maxlength="40" value="${esc(me.bio || '')}" placeholder="주 3회 5km 목표!"></label>
       </div>
-      <p class="hint">활동 지역은 GPS로 기록한 운동에서 가장 많이 운동한 동네(시·구)로 자동으로 보여요.</p>
+      <p class="hint">활동 지역은 GPS로 기록한 운동에서 가장 많이 운동한 나라·도시로 자동으로 보여요.</p>
       <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원·친구가 나를 약올릴 수 없어요)</label>
       <label class="check"><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}>닉네임 검색에 나 표시</label>
       <button class="btn">저장</button></form>

@@ -1,7 +1,7 @@
 -- 014: 가입할 때 닉네임 대신 성·이름 + 나라(11-05). 화면에 보이는 이름(nickname)은 나라에 맞춰 자동으로 만듦
---   한국·일본·중국·대만: 성+이름(한글·한자는 붙여서 '임준모'), 그 밖: 이름 성('John Smith')
+--   한국·일본·중국·대만: 성+이름(한글·한자는 붙여서 '김갓생'), 그 밖: 이름 성('God Saeng')
 --   이미 가입한 사람은 그대로(닉네임). 설정에서 성·이름을 넣으면 그때부터 실명 표시
--- 활동 지역(region)은 이제 GPS 기록으로 앱이 자동으로 채움(시·구 이름만). 직접 쓰던 값은 처음 한 번 비움
+-- 활동 지역(region)은 이제 GPS 기록으로 앱이 자동으로 채움(나라+도시 이름만). 직접 쓰던 값은 처음 한 번 비움
 -- 여러 번 실행해도 안전
 alter table profiles add column if not exists family_name text check (char_length(family_name) <= 20);
 alter table profiles add column if not exists given_name text check (char_length(given_name) <= 30);
