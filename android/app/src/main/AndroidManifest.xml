@@ -70,6 +70,10 @@
     <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <!-- 워치 자동 올리기: 앱이 꺼져 있을 때 읽기, 워치 경로 읽기, 올리기 성공 알림 -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 블루투스 심박 센서: 위치를 알아내는 데 쓰지 않음 -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
 </manifest>
