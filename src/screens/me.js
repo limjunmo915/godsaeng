@@ -1,7 +1,7 @@
 // 나: 운동 통계·캘린더·검색·배지·장비·설정 (내 몸 탭은 body.js)
 import { S, sb, ok, $ } from '../state.js';
 import { ic } from '../lib/icons.js';
-import { DAY, esc, fmtNum, fmtDur, fmtDurS, fmtDist, fmtDate, startOf, dayKey, toast, fail, compress } from '../lib/util.js';
+import { DAY, esc, fmtNum, fmtDur, fmtDurS, fmtDist, fmtDate, startOf, dayKey, toast, fail, compress, COUNTRIES } from '../lib/util.js';
 import { typeOf } from '../lib/types.js';
 import { sum, pace, effort, streaks, badges, bests, avatar, nameOf } from '../lib/calc.js';
 import { loadGear, signAvatars } from '../lib/data.js';
@@ -111,14 +111,18 @@ export async function renderMe() {
       <div class="avatar-row">${avatar(S.uid, 'lg')}
         <label class="btn">${ic('camera')}사진 바꾸기<input type="file" id="avatar-file" accept="image/*" hidden></label>
         ${me.avatar_url ? '<button class="btn" data-act="avatar-del">사진 빼기</button>' : ''}</div>
-      <form class="stack" data-form="settings"><div class="row">
-        <label class="field"><span>닉네임</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>
-        <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
-      </div>
+      <form class="stack" data-form="settings">
       <div class="row">
-        <label class="field"><span>활동 지역 (선택)</span><input type="text" name="region" maxlength="20" value="${esc(me.region || '')}" placeholder="서울 마포구"></label>
+        <label class="field"><span>성</span><input type="text" name="family" maxlength="20" value="${esc(me.family_name || '')}"></label>
+        <label class="field"><span>이름</span><input type="text" name="given" maxlength="30" value="${esc(me.given_name || '')}"></label>
+        <label class="field"><span>나라</span><select name="country">${COUNTRIES.map(([k, v]) => `<option value="${k}" ${k === (me.country || 'KR') ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      </div>
+      ${me.family_name ? '' : `<label class="field"><span>닉네임 (성·이름을 넣으면 실명으로 바뀌어요)</span><input type="text" name="nick" maxlength="20" value="${esc(me.nickname)}"></label>`}
+      <div class="row">
+        <label class="field"><span>주간 목표 (분)</span><input type="number" name="goal" min="0" max="5000" value="${me.weekly_goal_min}"></label>
         <label class="field"><span>한 줄 소개 (선택)</span><input type="text" name="bio" maxlength="40" value="${esc(me.bio || '')}" placeholder="주 3회 5km 목표!"></label>
       </div>
+      <p class="hint">활동 지역은 GPS로 기록한 운동에서 가장 많이 운동한 동네(시·구)로 자동으로 보여요.</p>
       <label class="check"><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}>약올리기 받기 (끄면 크루원·친구가 나를 약올릴 수 없어요)</label>
       <label class="check"><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}>닉네임 검색에 나 표시</label>
       <button class="btn">저장</button></form>
@@ -189,7 +193,9 @@ export const forms = {
     await loadGear(); initGearSelect(); return refresh();
   },
   settings: async (f, d) => {
-    S.me = ok(await sb.from('profiles').update({ nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, region: d.region || null, bio: d.bio || null }).eq('id', S.uid).select().single());
+    if (!!d.family !== !!d.given) return toast('성과 이름을 둘 다 적거나 둘 다 비워 주세요.');
+    S.me = ok(await sb.from('profiles').update({ family_name: d.family || null, given_name: d.given || null, country: d.country,
+      nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, bio: d.bio || null }).eq('id', S.uid).select().single());
     S.people[S.uid] = S.me; toast('저장했어요'); return refresh();
   },
 };

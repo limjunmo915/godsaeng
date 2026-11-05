@@ -1,7 +1,7 @@
 // 기록하기 / 기록 수정 폼
 import { S, sb, ok, $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
-import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress } from '../lib/util.js';
+import { esc, fmtDurS, fmtClock, parseDur, toLocalInput, toast, fail, compress, lsGet, lsSet } from '../lib/util.js';
 import { TYPE_GROUPS, TYPES, quickTypes, BRAGS } from '../lib/types.js';
 import { openSports } from './sports.js';
 import { whenLabel } from './when.js';
@@ -150,8 +150,9 @@ async function saveWorkout(e) {
     } else saved = ok(await sb.from('workouts').insert(row).select().single());
     if (note) ok(await sb.from('private_notes').upsert({ workout_id: saved.id, note }));
     else if (S.notes[saved.id]) ok(await sb.from('private_notes').delete().eq('workout_id', saved.id));
-    const wasEdit = !!S.editing;
-    resetForm();
+    const wasEdit = !!S.editing, city = gpsCity;
+    resetForm(); gpsCity = null;
+    city?.then(c => c && updateRegion(c)).catch(console.error);
     await Promise.all([loadFeed(true), loadMine()]);
     show('feed');
     toast(wasEdit ? '수정했어요' : '올렸다! 이제 다들 약오를 차례 😝');
@@ -169,8 +170,16 @@ function followAuto() { if (auto !== null && $('#f-title').value === auto) $('#f
 
 // 밖에서 넘어온 운동(공유 글·워치·GPS)을 새 기록 화면에 채움. 없는 값은 비워 둠
 // d: { type, start(시각), minutes, km, elev, kcal, hr, memo, photos[blob] }
+// 활동 지역: GPS 로 잰 기록을 올릴 때마다 그 동네를 세어(이 폰에 기억) 가장 많은 동네를 프로필에 보임
+let gpsCity = null;   // 측정 화면에서 넘어온 동네 이름(Promise)
+async function updateRegion(c) {
+  const n = JSON.parse(lsGet('cities') || '{}'); n[c] = (n[c] || 0) + 1; lsSet('cities', JSON.stringify(n));
+  const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0][0];
+  if (top !== S.me.region) { S.me = ok(await sb.from('profiles').update({ region: top }).eq('id', S.uid).select().single()); S.people[S.uid] = S.me; }
+}
 export async function fillAuto(d) {
   resetForm();
+  gpsCity = d.city || null;
   if (d.type && TYPES[d.type]) setType(d.type);
   if (d.start) $('#f-when').value = toLocalInput(d.start);
   if (d.minutes) $('#f-dur').value = fmtClock(d.minutes);

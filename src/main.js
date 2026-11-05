@@ -5,7 +5,7 @@ import '@fontsource/archivo/latin-900-italic.css';
 import './styles.css';
 import { S, sb, ok, $, WEB } from './state.js';
 import { fillIcons } from './lib/icons.js';
-import { toast, fail, lsGet, lsSet } from './lib/util.js';
+import { toast, fail, lsGet, lsSet, fullName } from './lib/util.js';
 import { loadCore, loadFeed, loadMine, loadBody } from './lib/data.js';
 import { show, refresh, backTab } from './nav.js';
 import { Capacitor, SystemBars, SystemBarsStyle, SystemBarType } from '@capacitor/core';
@@ -60,6 +60,9 @@ $('#l-toggle').onclick = () => {
   $('#l-toggle').textContent = up ? '이미 계정이 있어요 · 로그인' : '처음이에요 · 회원가입';
   $('#l-pw').autocomplete = up ? 'new-password' : 'current-password';
 };
+// 가입 화면: 나라에 맞춰 이름 순서 미리 보기
+const nameOut = () => { const f = $('#l-family').value.trim(), g = $('#l-given').value.trim(); $('#l-name-out').textContent = f && g ? `크루·친구에게 "${fullName(f, g, $('#l-country').value)}"(으)로 보여요` : '크루·친구에게 실명으로 보여요'; };
+['#l-family', '#l-given', '#l-country'].forEach(s => $(s).addEventListener('input', nameOut));
 $('#login-form').onsubmit = async e => {
   e.preventDefault();
   const email = $('#l-email').value.trim(), password = $('#l-pw').value;
@@ -67,11 +70,12 @@ $('#login-form').onsubmit = async e => {
   $('#l-submit').disabled = true;
   try {
     if (S.loginMode === 'up') {
-      const nickname = $('#l-nick').value.trim() || email.split('@')[0], birthdate = $('#l-bd').value;
+      const family_name = $('#l-family').value.trim(), given_name = $('#l-given').value.trim(), country = $('#l-country').value, birthdate = $('#l-bd').value;
+      if (!family_name || !given_name) return toast('성과 이름을 모두 적어 주세요. 크루·친구가 알아볼 수 있게 실명으로 보여요.');
       if (!consent.over14(birthdate)) return toast('만 14세 이상만 가입할 수 있어요. 생년월일을 확인해 주세요.');
       if (!$('#l-agree').checked) return toast('이용약관과 개인정보처리방침에 동의해 주세요.');
       // 생년월일은 서버가 나이만 확인하고 지움(supabase/008)
-      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname, birthdate, terms_version: consent.TERMS_VER },
+      const data = ok(await sb.auth.signUp({ email, password, options: { data: { nickname: fullName(family_name, given_name, country), family_name, given_name, country, birthdate, terms_version: consent.TERMS_VER },
         // 초대받은 사람은 확인 메일 링크에도 초대 코드를 실어 다른 브라우저에서 열어도 친구가 되게
         emailRedirectTo: WEB + (lsGet('invite') ? '?f=' + lsGet('invite') : '') } }));
       if (!data.session) toast('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.');

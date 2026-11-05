@@ -22,7 +22,10 @@
     <p class="invited" id="l-invited" hidden>친구 초대를 받았어요! 가입하거나 로그인하면 바로 친구가 돼요.</p>
     <label class="field"><span>이메일</span><input type="email" id="l-email" autocomplete="email" required></label>
     <label class="field"><span>비밀번호 (6자 이상)</span><input type="password" id="l-pw" autocomplete="current-password" minlength="6" required></label>
-    <label class="field up-only" hidden><span>닉네임</span><input type="text" id="l-nick" maxlength="20" placeholder="크루에 보일 이름"></label>
+    <label class="field up-only" hidden><span>나라</span><select id="l-country"><option value="KR">대한민국</option><option value="US">미국</option><option value="JP">일본</option><option value="CN">중국</option><option value="TW">대만</option><option value="CA">캐나다</option><option value="GB">영국</option><option value="AU">호주</option><option value="ETC">기타</option></select></label>
+    <div class="row up-only" hidden><label class="field"><span>성</span><input type="text" id="l-family" maxlength="20" autocomplete="family-name" placeholder="임"></label>
+      <label class="field"><span>이름</span><input type="text" id="l-given" maxlength="30" autocomplete="given-name" placeholder="준모"></label></div>
+    <p class="hint up-only" hidden id="l-name-out">크루·친구에게 실명으로 보여요</p>
     <label class="field up-only" hidden><span>생년월일 (만 14세 이상 확인용, 저장하지 않아요)</span><input type="date" id="l-bd" min="1900-01-01"></label>
     <label class="check up-only" hidden><input type="checkbox" id="l-agree"><span><a href="terms.html" target="_blank" rel="noopener">이용약관</a>과 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>(국외 이전 포함)에 동의합니다</span></label>
     <button class="btn primary wide" id="l-submit">로그인</button>

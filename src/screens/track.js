@@ -165,6 +165,14 @@ function ask() {
   $('#trk-ask-end').hidden = short;
   if (!$('#trk-ask').open) $('#trk-ask').showModal();
 }
+// 동네 이름(시·구): 출발점(약 100m 단위로 뭉갠 좌표)을 OpenStreetMap 에 물어봄. 좌표는 저장 안 하고 이름만 프로필 활동 지역 계산에 씀
+async function cityOf(p) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=ko&lat=${p.lat.toFixed(3)}&lon=${p.lng.toFixed(3)}`);
+  const a = (await r.json()).address || {}, short = s => (s || '').replace(/(특별자치시|특별자치도|특별시|광역시|시|도)$/, '');
+  const base = a.city ? short(a.city) : short(a.province || a.state), d = a.borough || a.city_district || '';
+  const sub = a.city ? (/[구군]$/.test(d) ? d : '') : a.county || a.town || a.village || '';   // 시 안에서는 구까지만(동은 너무 자세함)
+  return [base, sub].filter(Boolean).join(' ').slice(0, 20) || null;
+}
 function stopClock() { clearInterval(R.tick); if (R.clock.at) R.clock.ms += Date.now() - R.clock.at; R.clock.at = null; }
 // 종목 바꾸기(시작 전): 시간만 종목이면 거리 목표는 지움
 function setKind(k) { R.type = k; if (R.goal?.k === 'km' && !gps()) R.goal = null; info(); }
@@ -206,7 +214,7 @@ export const actions = {
     if (g ? s.km < 0.05 : s.minutes < 1) return ask();
     actions['trk-close'](true);
     say(`수고했어요. ${g ? `${s.km.toFixed(2)}킬로미터, ` : ''}${saySec(s.minutes * 60)}`);
-    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev });
+    await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
     if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
   },
   'trk-drop': () => actions['trk-close'](true),

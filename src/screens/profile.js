@@ -69,7 +69,7 @@ function mainPage() {
        ${(friend || sharedCrew(id)) && !S.blocked.includes(id) ? `<button class="btn" data-act="msg-to" data-id="${id}">${ic('send')}메시지</button>` : ''}`;
 
   return top('', menu) + `
-    <section class="pp-head">${avatar(id, 'xxl')}<div><h1>${esc(p.nickname)}</h1>${p.region ? `<span>${esc(p.region)}</span>` : ''}</div></section>
+    <section class="pp-head">${avatar(id, 'xxl')}<div><h1>${esc(p.nickname)}</h1><span class="pp-region">${ic('current-location')}${p.region ? esc(p.region) : '아직 활동지역 없음'}</span></div></section>
     ${p.bio ? `<p class="pp-bio">${esc(p.bio)}</p>` : ''}
     <div class="pp-nums">
       <button type="button" data-act="pp-go" data-page="following"><small>팔로잉</small><b>${p.following_count}</b></button>

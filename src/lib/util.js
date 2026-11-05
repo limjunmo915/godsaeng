@@ -45,6 +45,10 @@ export function startOf(kind, d = new Date()) {
 export const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
 export const toLocalInput = ts => new Date(new Date(ts) - new Date(ts).getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
 
+export const COUNTRIES = [['KR', '대한민국'], ['US', '미국'], ['JP', '일본'], ['CN', '중국'], ['TW', '대만'], ['CA', '캐나다'], ['GB', '영국'], ['AU', '호주'], ['ETC', '기타']];
+// 실명 표시 순서(서버 supabase/014 와 같은 규칙): 한국·일본·중국·대만은 성+이름(한글·한자면 붙여서), 그 밖은 이름 성
+export const fullName = (family, given, country) => ['KR', 'JP', 'CN', 'TW'].includes(country)
+  ? (/[A-Za-z]/.test(family + given) ? `${family} ${given}` : family + given) : `${given} ${family}`;
 export function toast(msg) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
   document.body.append(t); setTimeout(() => t.remove(), 2600);

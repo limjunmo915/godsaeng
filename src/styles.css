@@ -665,3 +665,7 @@ img[data-act="pp-photo"] { cursor: pointer; }
 .kk-pics { display: flex; justify-content: center; }
 .kk-pics img:not(:only-child) { width: 96px; height: 96px; }
 .kk-pics img + img { margin-left: -40px; }
+
+/* 프로필 이름 밑 활동 지역(GPS 기록에서 가장 많이 운동한 동네) */
+.pp-region { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); }
+.pp-region .ic { width: 14px; height: 14px; }
