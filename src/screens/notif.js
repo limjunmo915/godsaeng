@@ -12,11 +12,12 @@ import { openProfile } from './profile.js';
 
 async function fetchNotifs() {
   const since = new Date(Date.now() - 14 * DAY).toISOString();
-  const [, pk, cm, rx] = await Promise.all([
+  const [, pk, cm, rx, tg] = await Promise.all([
     loadFollows(),
     sb.from('pokes').select('from_id,text,created_at').eq('to_id', S.uid).gte('created_at', since).order('created_at', { ascending: false }).limit(30).then(ok),
     sb.from('comments').select('user_id,body,created_at,workout_id,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
     sb.from('reactions').select('user_id,kind,created_at,workout_id,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
+    sb.rpc('together_asks').then(r => r.data || []),   // 함께했나요?(SQL 017 실행 전이면 빈 목록)
   ]);
   const what = w => esc(w.title || typeOf(w.type).label);
   return [
@@ -25,6 +26,8 @@ async function fetchNotifs() {
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, pop: kkTease(), cap: `${nameOf(p.from_id)}님이 약올렸어요`, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
     ...cm.map(c => ({ ts: c.created_at, id: c.user_id, wid: c.workout_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(cmText(c.body))}` })),
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, wid: r.workout_id, rk: `${r.user_id}:${r.kind}`, pop: kkRx(r.kind), cap: `${nameOf(r.user_id)}님이 '${REACTS[r.kind]?.[1] || ''}'`, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
+    ...tg.map(t => ({ ts: t.created_at, id: t.other, tg: t.id,
+      html: `<b>${esc(nameOf(t.other))}</b>님${t.manual ? '이' : '과'} "${what(t)}" 운동을 ${t.manual ? '함께 했다고 해요' : '함께했나요?'}` })),
   ].filter(n => !S.blocked.includes(n.id)).sort((a, b) => new Date(b.ts) - new Date(a.ts));
 }
 const newNotice = () => NOTICES.length > 0 && NOTICES[0].id !== lsGet('notice');
@@ -52,7 +55,7 @@ async function openNotifs() {
   if (NOTICES.length) lsSet('notice', NOTICES[0].id);
   const list = await fetchNotifs();
   lsSet('seen', new Date().toISOString()); $('#notif-dot').hidden = true;
-  $('#notif-list').innerHTML = head + (list.map(n => `<button type="button" class="nt" data-act="${n.wid ? 'notif-goto' : 'notif-profile'}" data-id="${n.wid || n.id}">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></button>`).join('') || kkEmpty('empty-notif', '최근 2주간 알림이 없어요. 먼저 약올려 보세요.'));
+  $('#notif-list').innerHTML = head + (list.map(n => n.tg ? `<div class="nt">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small><span class="tg-btns"><button class="btn sm primary" data-act="tg-yes" data-id="${n.tg}">맞아요</button><button class="btn sm" data-act="tg-no" data-id="${n.tg}">아니에요</button></span></p></div>` : `<button type="button" class="nt" data-act="${n.wid ? 'notif-goto' : 'notif-profile'}" data-id="${n.wid || n.id}">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></button>`).join('') || kkEmpty('empty-notif', '최근 2주간 알림이 없어요. 먼저 약올려 보세요.'));
 }
 
 export const actions = {

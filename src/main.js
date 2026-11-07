@@ -28,9 +28,10 @@ import * as when from './screens/when.js';
 import * as watch from './screens/watch.js';
 import * as settings from './screens/settings.js';
 import * as autosync from './screens/autosync.js';
+import * as together from './screens/together.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions, ...together.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); },
   'intro-next': () => introAt < INTRO.length - 1 ? intro(introAt + 1) : $('#intro').close(),
   'intro-skip': () => $('#intro').close() };
@@ -50,7 +51,7 @@ fillIcons();
   if (f || q.has('share') || q.has('gps')) history.replaceState(null, '', location.pathname); }   // ?share=1 = 공유받기(sw.js)
 $('#terms-gate').addEventListener('cancel', e => e.preventDefault());
 // 보기용 창(반응한 사람·알림·종목 고르기)은 바깥(어두운 부분)을 눌러도 닫힘
-document.addEventListener('click', e => { if (e.target.matches?.('dialog#rx-dlg, dialog#notif, dialog#sport-dlg, dialog#when-dlg, dialog#watch-dlg')) e.target.close(); });  // Esc 로 닫고 넘어가지 못하게
+document.addEventListener('click', e => { if (e.target.matches?.('dialog#rx-dlg, dialog#notif, dialog#sport-dlg, dialog#when-dlg, dialog#watch-dlg, dialog#tg-dlg')) e.target.close(); });  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
 const showLogin = () => { $('#app').hidden = true; $('#login').hidden = false; };

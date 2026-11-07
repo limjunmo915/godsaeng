@@ -705,3 +705,11 @@ img[data-act="pp-photo"] { cursor: pointer; }
 dialog.map-dlg { margin: auto; width: min(640px, 100%); max-height: 92vh; border-radius: 20px; }
 #map-full { height: 70vh; }
 .map-note { margin: 8px 16px 14px; }
+
+/* 함께한 운동(017) */
+.tg { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); justify-self: start; text-align: left; margin-top: -4px; }
+.tg b { color: var(--ink); font-weight: 600; }
+.tg-ask { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 0; font-size: 13px; color: var(--muted); }
+.tg-ask > span { flex: 1 1 140px; }
+.tg-add { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: -8px; }
+.tg-btns { display: flex; gap: 6px; margin-top: 6px; }

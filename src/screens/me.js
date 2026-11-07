@@ -170,7 +170,7 @@ export const forms = {
   settings: async (f, d) => {
     if (!!d.family !== !!d.given) return toast('성과 이름을 둘 다 적거나 둘 다 비워 주세요.');
     S.me = ok(await sb.from('profiles').update({ family_name: d.family || null, given_name: d.given || null, country: d.country,
-      nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, bio: d.bio || null }).eq('id', S.uid).select().single());
+      nickname: d.nick || S.me.nickname, weekly_goal_min: +d.goal || 0, poke_off: !d.poke_on, searchable: !!d.searchable, bio: d.bio || null, ...('together_off' in S.me ? { together_off: !d.tg_on } : {}) }).eq('id', S.uid).select().single());
     S.people[S.uid] = S.me; toast('저장했어요'); if (!$('#set').hidden) renderSettings(); return refresh();
   },
 };

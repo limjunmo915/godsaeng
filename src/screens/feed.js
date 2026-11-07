@@ -9,6 +9,7 @@ import { routeSvg } from '../lib/gps.js';
 import { show } from '../nav.js';
 import { editWorkout } from './log.js';
 import { shareWorkout } from './share.js';
+import { tgLine } from './together.js';
 
 // "8.42 km" → 숫자는 크게, 단위는 작게
 const big = v => esc(v).replace(/ ([^\d\s]+)$/, ' <small>$1</small>');
@@ -61,6 +62,7 @@ export function card(w) {
     <dl class="stats">${main.map(([k, v]) => `<div><dt>${k}</dt><dd>${big(v)}</dd></div>`).join('')}</dl>
     ${rest.length ? `<dl class="sub">${rest.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
     ${tags ? `<div class="tags">${tags}</div>` : ''}
+    ${tgLine(w)}
     ${w.brag ? `<p class="brag">${esc(w.brag)}</p>` : ''}
     ${rt || w.photos?.length ? `<div class="photos ${(rt ? 1 : 0) + w.photos.length > 1 ? 'multi' : ''}">${rt ? `<button type="button" class="route-slide" data-act="route-map" aria-label="경로 지도로 보기">${routeSvg(rt, 400, 500, 36)}<span>${ic('route')}지도로 보기</span></button>` : ''}${w.photos.map((p, i) => `<img alt="${esc(nameOf(w.user_id))}의 운동 사진 ${i + 1}" src="${esc(S.urls[p] || '')}" loading="lazy">`).join('')}</div>` : ''}
     ${mine && S.notes[w.id] ? `<p class="note">${ic('lock')}${esc(S.notes[w.id])}</p>` : ''}

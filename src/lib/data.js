@@ -58,7 +58,7 @@ export async function loadFeed(reset) {
     .order('started_at', { ascending: false }).order('created_at', { referencedTable: 'comments' })
     .range(S.feed.length, S.feed.length + 19));
   S.feed.push(...rows); S.feedEnd = rows.length < 20;
-  await Promise.all([signPhotos(rows.flatMap(w => w.photos)), loadRoutes(rows.map(w => w.id))]);
+  await Promise.all([signPhotos(rows.flatMap(w => w.photos)), loadRoutes(rows.map(w => w.id)), loadTogether(rows.map(w => w.id))]);
 }
 // ponytail: 내 기록 전체를 한 번에 가져옴(기본 상한 1000건). 수년치 쌓이면 기간별 조회로 변경
 // 경로(supabase/015 routes_of): 볼 수 있는 기록 것만, 남의 경로는 서버가 '제공 사실'을 기록. SQL 실행 전이면 조용히 넘어감
@@ -66,6 +66,13 @@ export async function loadRoutes(ids) {
   S.routes ??= {}; if (!ids.length) return;
   const { data } = await sb.rpc('routes_of', { ids });
   for (const r of data || []) S.routes[r.workout_id] = decodePoly(r.poly);
+}
+// 함께한 사람(supabase/017 together_of): 기록 id → [{ id, partner, name, status, asked_by }]. SQL 실행 전이면 조용히 넘어감
+export async function loadTogether(ids) {
+  S.tg ??= {}; if (!ids.length) return;
+  const { data, error } = await sb.rpc('together_of', { ids }); if (error) return;
+  for (const id of ids) S.tg[id] = [];
+  for (const r of data) S.tg[r.workout_id].push(r);
 }
 export async function loadMine() {
   const [mine, notes] = await Promise.all([

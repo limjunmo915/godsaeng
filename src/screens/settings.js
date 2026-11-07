@@ -34,6 +34,7 @@ export function renderSettings() {
       <h3 class="set-h">공개 범위·개인정보</h3>
       <label class="set-sw"><span><b>약올리기 받기</b><small>끄면 크루원·친구가 나를 약올릴 수 없어요</small></span><input type="checkbox" name="poke_on" ${me.poke_off ? '' : 'checked'}></label>
       <label class="set-sw"><span><b>검색에 나 표시</b><small>끄면 이름 검색에 안 나와요</small></span><input type="checkbox" name="searchable" ${me.searchable === false ? '' : 'checked'}></label>
+      ${'together_off' in me ? `<label class="set-sw"><span><b>함께한 운동 자동으로 찾기</b><small>같은 시간에 경로가 겹치거나 같은 곳에서 같은 운동을 한 크루원·친구를 '함께'로 보여 줘요</small></span><input type="checkbox" name="tg_on" ${me.together_off ? '' : 'checked'}></label>` : ''}
       <button class="btn primary">프로필·공개 범위 저장</button>
     </form>
     <label class="field set-gap"><span>새 기록 기본 공개 범위</span><select data-pref-sel="defVis"><option value="crew" ${priv ? '' : 'selected'}>크루·친구 공개</option><option value="private" ${priv ? 'selected' : ''}>나만 보기</option></select></label>
