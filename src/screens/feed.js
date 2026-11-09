@@ -76,6 +76,7 @@ export function card(w) {
     <div class="comments">
       ${!open ? `<button class="linkbtn" data-act="more-cm">댓글 ${cms.length}개 모두 보기</button>` : ''}
       ${shown.map(c => `<div class="cm">${avatar(c.user_id, 'sm')}<p><b>${esc(nameOf(c.user_id))}</b>${stickerOf(c.body) ? `<img class="cm-sticker" src="img/kk/${stickerOf(c.body)}.webp" alt="깐족이 스티커">` : esc(c.body)}<small>${ago(c.created_at)}</small></p>
+        ${S.cl?.[c.id] ? `<button class="cm-like" data-act="cm-like" data-cid="${c.id}" aria-pressed="${S.cl[c.id].includes(S.uid)}" aria-label="댓글 하트">${ic('heart')}<span>${S.cl[c.id].length || ''}</span></button>` : ''}
         ${c.user_id !== S.uid ? `<button class="icbtn sm" data-act="report-cm" data-cid="${c.id}" aria-label="댓글 신고">${ic('flag')}</button>` : ''}
         ${c.user_id === S.uid || mine ? `<button class="icbtn sm" data-act="del-cm" data-cid="${c.id}" aria-label="댓글 삭제">${ic('x')}</button>` : ''}</div>`).join('')}
       <form class="cform" data-form="comment"><button type="button" class="stk-btn" data-act="stk" aria-label="깐족이 스티커">${ic('mood-smile')}</button><input type="text" maxlength="300" placeholder="댓글 달기" aria-label="댓글"><button aria-label="댓글 등록">${ic('message-circle')}</button></form>
@@ -222,6 +223,14 @@ export const actions = {
     } else pk.hidden = !pk.hidden;
   },
   'stk-send': (b, w) => { const c = b.closest('.card'); pop(`img/kk/${b.dataset.s}.webp`, c?.querySelector('.photos') || c); return addComment(w, `[kk:${b.dataset.s}]`); },
+  // 댓글 하트: 화면 전체를 다시 그리지 않고 이 버튼만 바꿈(피드·프로필·검색 어디서든)
+  'cm-like': async b => {
+    const cid = b.dataset.cid, l = S.cl[cid] || [], on = l.includes(S.uid);
+    b.disabled = true;
+    ok(on ? await sb.from('comment_likes').delete().eq('comment_id', cid).eq('user_id', S.uid) : await sb.from('comment_likes').insert({ comment_id: cid }));
+    S.cl[cid] = on ? l.filter(x => x !== S.uid) : [...l, S.uid];
+    b.setAttribute('aria-pressed', !on); b.querySelector('span').textContent = S.cl[cid].length || ''; b.disabled = false;
+  },
   'del-cm': async (b, w) => {
     ok(await sb.from('comments').delete().eq('id', b.dataset.cid));
     w.comments = w.comments.filter(c => c.id !== b.dataset.cid);
@@ -246,7 +255,7 @@ export const actions = {
 
 async function addComment(w, body) {
   const c = ok(await sb.from('comments').insert({ workout_id: w.id, body }).select().single());
-  w.comments.push(c); w._open = true; return renderFeed();
+  w.comments.push(c); w._open = true; if (S.cl) S.cl[c.id] = []; return renderFeed();
 }
 
 export const forms = {

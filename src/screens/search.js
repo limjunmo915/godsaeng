@@ -5,7 +5,7 @@ import { ic, kkEmpty } from '../lib/icons.js';
 import { esc, fail } from '../lib/util.js';
 import { TYPES } from '../lib/types.js';
 import { avatar } from '../lib/calc.js';
-import { signAvatars, signPhotos, FEED_SEL } from '../lib/data.js';
+import { signAvatars, signPhotos, loadCmLikes, FEED_SEL } from '../lib/data.js';
 import { relBtn } from './friends.js';
 import { card } from './feed.js';
 
@@ -34,7 +34,7 @@ async function run(q) {
   if (S.srch.q !== q) return;   // 그 사이 검색어가 바뀜
   for (const p of people) S.people[p.id] = { ...S.people[p.id], ...p };
   const filtered = recs.filter(w => !S.blocked.includes(w.user_id));
-  await Promise.all([signAvatars().catch(console.error), signPhotos(filtered.flatMap(w => w.photos))]);
+  await Promise.all([signAvatars().catch(console.error), signPhotos(filtered.flatMap(w => w.photos)), loadCmLikes(filtered)]);
   Object.assign(S.srch, { people, recs: filtered, tab: S.srch.tab || (people.length || !filtered.length ? 'people' : 'recs') });
   S.searchList = filtered;
   render();

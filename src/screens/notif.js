@@ -12,12 +12,13 @@ import { openProfile } from './profile.js';
 
 async function fetchNotifs() {
   const since = new Date(Date.now() - 14 * DAY).toISOString();
-  const [, pk, cm, rx, tg] = await Promise.all([
+  const [, pk, cm, rx, tg, cl] = await Promise.all([
     loadFollows(),
     sb.from('pokes').select('from_id,text,created_at').eq('to_id', S.uid).gte('created_at', since).order('created_at', { ascending: false }).limit(30).then(ok),
     sb.from('comments').select('user_id,body,created_at,workout_id,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
     sb.from('reactions').select('user_id,kind,created_at,workout_id,workouts!inner(user_id,title,type)').eq('workouts.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(ok),
-    sb.rpc('together_asks').then(r => r.data || []),   // 함께했나요?(SQL 017 실행 전이면 빈 목록)
+    sb.rpc('together_asks').then(r => r.data || []),
+    sb.from('comment_likes').select('user_id,created_at,comments!inner(user_id,body,workout_id)').eq('comments.user_id', S.uid).neq('user_id', S.uid).gte('created_at', since).limit(30).then(r => r.data || []),   // SQL 018 전이면 빈 목록   // 함께했나요?(SQL 017 실행 전이면 빈 목록)
   ]);
   const what = w => esc(w.title || typeOf(w.type).label);
   return [
@@ -26,6 +27,7 @@ async function fetchNotifs() {
     ...pk.map(p => ({ ts: p.created_at, id: p.from_id, pop: kkTease(), cap: `${nameOf(p.from_id)}님이 약올렸어요`, html: `<b>${esc(nameOf(p.from_id))}</b>님이 약올림 <mark>${esc(p.text)}</mark>` })),
     ...cm.map(c => ({ ts: c.created_at, id: c.user_id, wid: c.workout_id, html: `<b>${esc(nameOf(c.user_id))}</b>님이 "${what(c.workouts)}"에 댓글: ${esc(cmText(c.body))}` })),
     ...rx.map(r => ({ ts: r.created_at, id: r.user_id, wid: r.workout_id, rk: `${r.user_id}:${r.kind}`, pop: kkRx(r.kind), cap: `${nameOf(r.user_id)}님이 '${REACTS[r.kind]?.[1] || ''}'`, html: `<b>${esc(nameOf(r.user_id))}</b>님이 "${what(r.workouts)}"에 '${REACTS[r.kind]?.[1] || ''}'` })),
+    ...cl.map(l => ({ ts: l.created_at, id: l.user_id, wid: l.comments.workout_id, html: `<b>${esc(nameOf(l.user_id))}</b>님이 내 댓글에 하트: ${esc(cmText(l.comments.body))}` })),
     ...tg.map(t => ({ ts: t.created_at, id: t.other, tg: t.id,
       html: `<b>${esc(nameOf(t.other))}</b>님${t.manual ? '이' : '과'} "${what(t)}" 운동을 ${t.manual ? '함께 했다고 해요' : '함께했나요?'}` })),
   ].filter(n => !S.blocked.includes(n.id)).sort((a, b) => new Date(b.ts) - new Date(a.ts));

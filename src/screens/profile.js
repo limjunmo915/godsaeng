@@ -6,7 +6,7 @@ import { ic } from '../lib/icons.js';
 import { DAY, esc, ago, toast, fmtNum, fmtDur, fmtDate, startOf } from '../lib/util.js';
 import { typeOf, points } from '../lib/types.js';
 import { avatar, hue, nameOf, sum, streaks, badges, bests } from '../lib/calc.js';
-import { signAvatars, signPhotos, isFriend, loadBlocks, loadFollows, loadFeed, FEED_SEL } from '../lib/data.js';
+import { signAvatars, signPhotos, loadCmLikes, isFriend, loadBlocks, loadFollows, loadFeed, FEED_SEL } from '../lib/data.js';
 import { relBtn } from './friends.js';
 import { card, goToWorkout } from './feed.js';
 import { lineChart } from './body.js';
@@ -29,7 +29,7 @@ export async function openProfile(id, again) {
     id === S.uid ? [] : sb.rpc('mutual_friends', { uid: id }).then(ok),
   ]);
   for (const m of mutual) S.people[m.id] = { ...S.people[m.id], ...m };
-  await Promise.all([signAvatars().catch(console.error), signPhotos(list.flatMap(w => w.photos))]);
+  await Promise.all([signAvatars().catch(console.error), signPhotos(list.flatMap(w => w.photos)), loadCmLikes(list)]);
   if (!again) S.ppStack = [...(S.pp ? S.ppStack : []), id];
   S.pp = { id, p, open, list, gear, mutual, page: S.pp?.id === id ? S.pp.page : 'main', statType: 'all', media: 'grid' };
   S.ppList = list;

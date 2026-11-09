@@ -713,3 +713,9 @@ dialog.map-dlg { margin: auto; width: min(640px, 100%); max-height: 92vh; border
 .tg-ask > span { flex: 1 1 140px; }
 .tg-add { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: -8px; }
 .tg-btns { display: flex; gap: 6px; margin-top: 6px; }
+
+/* 댓글 하트(018) */
+.cm-like { display: flex; align-items: center; gap: 2px; color: var(--faint); font-size: 12px; padding: 4px; flex: none; }
+.cm-like .ic { width: 16px; height: 16px; }
+.cm-like[aria-pressed="true"] { color: var(--down); }
+.cm-like[aria-pressed="true"] .ic { fill: currentColor; }
