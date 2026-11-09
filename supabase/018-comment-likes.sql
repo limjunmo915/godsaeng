@@ -16,3 +16,6 @@ create policy cl_ins on comment_likes for insert to authenticated
   with check (user_id = auth.uid() and exists (select 1 from comments c where c.id = comment_id
     and can_interact(c.workout_id) and not is_blocked(auth.uid(), c.user_id)));
 create policy cl_del on comment_likes for delete to authenticated using (user_id = auth.uid());
+
+-- 앱이 새 표를 바로 알아보도록 목록 새로고침
+notify pgrst, 'reload schema';
