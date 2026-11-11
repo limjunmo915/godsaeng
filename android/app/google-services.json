@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "94121692750",
+    "project_id": "godsaeng-ec705",
+    "storage_bucket": "godsaeng-ec705.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:94121692750:android:a5b6db1ef02c48d16ebd1f",
+        "android_client_info": {
+          "package_name": "com.godsaeng.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqsIs15SnRbwjyVLgZMvkPW4zX0KxvxT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
