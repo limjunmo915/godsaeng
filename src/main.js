@@ -141,7 +141,10 @@ function intro(i) {
 /* 공통 처리: 탭, 세그먼트, data-act 버튼, data-form 폼 */
 document.addEventListener('click', async e => {
   const tab = e.target.closest('.tabs [data-tab]');
-  if (tab) { if (tab.dataset.tab === 'log' && !S.editing) resetForm(); return show(tab.dataset.tab); }
+  if (tab) {
+    if (tab.dataset.tab === 'feed' && S.tab === 'feed') { scrollTo({ top: 0 }); return feed.freshen(true).catch(fail); }   // 피드에서 피드 탭을 또 누르면 새로 고침
+    if (tab.dataset.tab === 'log' && !S.editing) resetForm(); return show(tab.dataset.tab);
+  }
   const sg = e.target.closest('[data-seg] [data-v]');
   if (sg) { S[sg.closest('[data-seg]').dataset.seg] = sg.dataset.v; return refresh(); }
   const b = e.target.closest('[data-act]'); if (!b || !actions[b.dataset.act]) return;
@@ -160,7 +163,7 @@ document.addEventListener('submit', async e => {
   if (S.pp && f.closest('#pp')) profile.renderPP();
   if (f.closest('#srch')) search.rerender();
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); autosync.checkAuto().catch(console.error); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.uid && S.me) { notif.loadNotifs(); msg.loadMsgs().catch(console.error); autosync.checkAuto().catch(console.error); feed.freshen().catch(console.error); } });
 
 /* 휴대폰 뒤로 가기: 맨 위 것부터 닫음: 열린 창 → 프로필·검색 페이지 → 지나온 탭을 거꾸로 → 피드(홈)
    → 홈에서 누르면 '한 번 더 누르면 종료' → 2초 안에 또 누르면 종료

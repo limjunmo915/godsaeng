@@ -52,7 +52,7 @@ export async function signPhotos(paths) {
 }
 export const FEED_SEL = '*, reactions(user_id,kind), comments(id,user_id,body,created_at)';
 export async function loadFeed(reset) {
-  if (reset) { S.feed = []; S.feedEnd = false; }
+  if (reset) { S.feed = []; S.feedEnd = false; S.feedAt = Date.now(); }
   // 남의 기록은 crew_workouts(서버가 숨긴 심박·칼로리를 빈칸으로 보냄)로만 읽음 → supabase/004
   const rows = ok(await sb.rpc('crew_workouts').select(FEED_SEL)
     .order('started_at', { ascending: false }).order('created_at', { referencedTable: 'comments' })

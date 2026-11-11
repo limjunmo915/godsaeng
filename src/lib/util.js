@@ -51,7 +51,7 @@ export const fullName = (family, given, country) => ['KR', 'JP', 'CN', 'TW'].inc
   ? (/[A-Za-z]/.test(family + given) ? `${family} ${given}` : family + given) : `${given} ${family}`;
 export function toast(msg) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
-  document.body.append(t); setTimeout(() => t.remove(), 2600);
+  ([...document.querySelectorAll('dialog[open]')].at(-1) || document.body).append(t); setTimeout(() => t.remove(), 2600);   // 열린 창이 있으면 그 위에
 }
 // 깐족이 '뿅': 커지며 나타났다 사라짐(누를 수 없음, 1~2초). el 이 화면에 보이면 그 가운데, 아니면 화면 가운데
 // src 가 여러 개면 겹쳐서. 열린 창(반응한 사람 목록 등)이 있으면 그 창 위에 보이도록 창 안에 넣음

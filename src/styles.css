@@ -17,6 +17,9 @@
   --num: Archivo, var(--font);
   --shadow: 0 1px 2px rgba(20, 26, 11, .05), 0 10px 28px rgba(20, 26, 11, .06);
   color-scheme: light;
+  /* 화면 위(상태 표시줄)·아래(뒤로 가기 버튼 줄) 여백. 안드로이드 앱은 Capacitor 가 넣어 주는 --safe-area-inset-* 가 정확하고
+     (WebView 가 주는 env() 는 기기·버전에 따라 0 이거나 늦게 옴), 웹·아이폰은 env() */
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px)); --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -49,7 +52,7 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 mark { background: var(--taunt); color: var(--taunt-ink); padding: 1px 6px; border-radius: 4px; }
 
 /* 상단바·하단 탭 */
-.topbar { position: sticky; top: 0; z-index: 10; background: var(--top); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding-top: env(safe-area-inset-top, 0px); }
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--top); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding-top: var(--sat); }
 .topbar .wrap { height: 52px; display: flex; align-items: center; justify-content: space-between; }
 .wordmark { font-size: 19px; font-weight: 800; letter-spacing: -0.04em; display: flex; align-items: center; gap: 4px; }
 .wordmark i { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-text); margin-top: 6px; }
@@ -61,9 +64,9 @@ mark { background: var(--taunt); color: var(--taunt-ink); padding: 1px 6px; bord
 .wordmark.lg { font-size: 44px; gap: 10px; }
 .wordmark.lg .app-ic { width: 56px; height: 56px; border-radius: 16px; box-shadow: 0 8px 20px var(--glow); }
 .wordmark.lg i { width: 14px; height: 14px; margin-top: 16px; background: var(--taunt); }
-main { padding-bottom: calc(var(--nav-h) + 24px + env(safe-area-inset-bottom, 0px)); }
+main { padding-bottom: calc(var(--nav-h) + 24px + var(--sab)); }
 .view.wrap { padding-block: 16px; display: grid; gap: 14px; align-content: start; }
-.tabs { position: fixed; inset: auto 0 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabs { position: fixed; inset: auto 0 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: var(--sab); }
 .tabs .wrap { height: var(--nav-h); display: grid; grid-template-columns: repeat(5, 1fr); padding-inline: 4px; }
 .tabs button { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--faint); font-size: 11px; font-weight: 600; }
 .tabs button .ic { width: 23px; height: 23px; }
@@ -139,7 +142,7 @@ input[type=range] { width: 100%; accent-color: var(--brand-text); }
 /* 로그인 */
 /* 첫 화면(10-29): 오로라 그라데이션이 천천히 흐르고, 위엔 흰 글씨 소개, 아래엔 떠 있는 입력 카드 */
 .login { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
-  padding: calc(40px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: calc(40px + var(--sat)) 16px calc(24px + var(--sab));
   background: var(--aurora); background-size: 160% 160%; animation: aurora 18s ease-in-out infinite alternate; position: relative; overflow: hidden; }
 @keyframes aurora { to { background-position: 100% 100%; } }
 .login::before, .login::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(20, 26, 11, .12); pointer-events: none; }
@@ -298,9 +301,9 @@ dd { margin: 0; }
 .av.xl { width: 88px; height: 88px; font-size: 32px; }
 .av.xxl { width: 112px; height: 112px; font-size: 40px; }
 /* 전체 화면 프로필 페이지(스트라바 프로필 배치) */
-.pp { position: fixed; inset: 0; z-index: 30; background: var(--surface); overflow-y: auto; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+.pp { position: fixed; inset: 0; z-index: 30; background: var(--surface); overflow-y: auto; padding-bottom: calc(24px + var(--sab)); }
 body.pp-open { overflow: hidden; }
-.pp-top { position: sticky; top: 0; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 8px; height: 52px; margin: 0 -16px; padding: env(safe-area-inset-top, 0px) 8px 0; }
+.pp-top { position: sticky; top: 0; z-index: 2; background: var(--surface); display: flex; align-items: center; gap: 8px; height: calc(52px + var(--sat)); margin: 0 -16px; padding: var(--sat) 8px 0; }
 .pp-top h2 { flex: 1; margin: 0; font-size: 18px; }
 .pp-top > span { flex: 1; }
 .pp-top .grow-in { flex: 1; margin-right: 8px; }
@@ -473,13 +476,13 @@ em.up { color: var(--up); } em.down { color: var(--down); }
 .loglist b { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* 알림 시트·토스트 */
-dialog { border: 0; padding: 0; width: min(560px, 100%); max-height: 80vh; margin: auto auto 0; border-radius: 20px 20px 0 0; background: var(--surface); color: var(--ink); }
+dialog { border: 0; padding: 0; width: min(560px, 100%); max-height: calc(80vh - var(--sab)); margin: auto auto var(--sab); border-radius: 20px 20px 0 0; background: var(--surface); color: var(--ink); }
 @media (min-width: 600px) { dialog { margin: auto; border-radius: 20px; } }
 dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .sheet-head { position: sticky; top: 0; background: var(--surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 12px 8px 20px; }
 .sheet-head h2 { margin: 0; font-size: 18px; }
-.sheet-body { padding: 0 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
-#notif-list { padding: 0 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+.sheet-body { padding: 0 20px 20px; }
+#notif-list { padding: 0 20px 20px; }
 .nt { display: flex; gap: 10px; padding: 10px 0; font-size: 14px; width: 100%; text-align: left; }
 .nt + .nt { border-top: 1px solid var(--line); }
 .nt p { margin: 0; overflow-wrap: anywhere; }
@@ -491,12 +494,12 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .notices summary { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 14px; cursor: pointer; }
 .notices summary small { color: var(--faint); font-size: 12px; flex: none; }
 .notices ul { margin: 0 0 8px; padding-left: 18px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
-.toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; max-width: calc(100% - 32px);
+.toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px + var(--sab)); transform: translateX(-50%); z-index: 30; max-width: calc(100% - 32px);
   background: var(--ink); color: var(--surface); padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; }
 @media (prefers-reduced-motion: no-preference) { .toast { animation: rise .2s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } } }
 
 /* 홈에서 뒤로 가기 한 번: 한 번 더 누르면 닫힘 안내(반투명 배경) */
-.exit-hint { position: fixed; inset: 0; z-index: 60; background: rgba(13, 15, 26, .45); display: flex; align-items: flex-end; justify-content: center; padding-bottom: calc(var(--nav-h) + 32px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.exit-hint { position: fixed; inset: 0; z-index: 60; background: rgba(13, 15, 26, .45); display: flex; align-items: flex-end; justify-content: center; padding-bottom: calc(var(--nav-h) + 32px + var(--sab)); pointer-events: none; }
 .exit-hint p { margin: 0; background: rgba(16, 18, 31, .92); color: #fff; padding: 14px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; }
 
 /* 메시지: 대화 목록 · 말풍선 */
@@ -519,7 +522,7 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .bub.mine > div { justify-items: end; }
 .bub.mine p { background: var(--brand); color: var(--brand-ink); border-radius: 16px 16px 4px 16px; cursor: pointer; }
 .av-gap { width: 28px; flex: none; }
-.msg-form { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: flex-end; background: var(--surface); padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); margin: 0; }
+.msg-form { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: flex-end; background: var(--surface); padding: 8px 0 calc(8px + var(--sab)); margin: 0; }
 .msg-form textarea { flex: 1; min-height: 44px; max-height: 120px; resize: none; border: 0; border-radius: 22px; background: var(--bg); padding: 11px 16px; font: inherit; color: var(--ink); }
 .msg-form .icbtn { color: var(--brand-text); }
 #msg .pp-top .who-nm { font-size: 18px; font-weight: 700; }
@@ -557,13 +560,13 @@ dialog::backdrop { background: rgba(13, 15, 26, .5); }
 .trk-goal span { display: block; height: 100%; background: var(--brand); transition: width .3s; }
 .trk-lbl { font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 4px; }
 /* 실시간 측정 떠 있는 버튼(오른쪽 아래, 탭 바 위). 기록 입력 탭에선 숨김 */
-.fab { position: fixed; z-index: 11; right: max(16px, calc((100vw - 640px) / 2 + 16px)); bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px));
+.fab { position: fixed; z-index: 11; right: max(16px, calc((100vw - 640px) / 2 + 16px)); bottom: calc(var(--nav-h) + 16px + var(--sab));
   width: 56px; height: 56px; border-radius: 18px; background: var(--grad); color: var(--brand-ink); box-shadow: 0 10px 24px var(--glow);
   display: grid; place-items: center; align-content: center; gap: 0; font-size: 10px; font-weight: 700; }
 .fab .ic { width: 22px; height: 22px; }
 .fab:active { transform: scale(.94); }
 main:has(#v-log:not([hidden])) ~ .fab { display: none; }
-main { padding-bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom, 0px)); }
+main { padding-bottom: calc(var(--nav-h) + 88px + var(--sab)); }
 /* 상단 띠(피드 빼고): 앱 이름 + 흐르는 응원 문구. 광고가 오면 이 칸 안에 그대로 넣음
    광고 그림은 색이 제각각이라 바탕은 흰색 + 옅은 테두리·그림자로 두고, 높이는 휴대폰 표준 띠 광고(320×50)에 맞춰 50px */
 #ad-top { padding-top: 12px; }
@@ -623,7 +626,7 @@ dialog.intro { margin: auto; width: min(380px, calc(100% - 32px)); border-radius
 .intro-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
 
 /* 안드로이드 맨 아래 뒤로 가기 버튼 줄 자리: 검정 띠(웹 브라우저는 높이 0이라 안 보임) */
-body::after { content: ""; position: fixed; inset: auto 0 0; height: env(safe-area-inset-bottom, 0px); background: #141A0B; z-index: 70; pointer-events: none; }
+body::after { content: ""; position: fixed; inset: auto 0 0; height: var(--sab); background: #141A0B; z-index: 70; pointer-events: none; }
 
 /* 반응한 사람: 깐족이 스티커 최대 5개 겹치기 */
 .rx-stack { display: inline-flex; flex: none; }
@@ -715,7 +718,7 @@ dialog.map-dlg { margin: auto; width: min(640px, 100%); max-height: 92vh; border
 .tg-btns { display: flex; gap: 6px; margin-top: 6px; }
 
 /* 댓글 하트(018) */
-.cm-like { display: flex; align-items: center; gap: 2px; color: var(--faint); font-size: 12px; padding: 4px; flex: none; }
+.cm-like { display: flex; align-items: center; justify-content: center; gap: 2px; color: var(--faint); font-size: 12px; min-width: 32px; min-height: 32px; margin: -4px 0; flex: none; }
 .cm-like .ic { width: 16px; height: 16px; }
 .cm-like[aria-pressed="true"] { color: var(--down); }
 .cm-like[aria-pressed="true"] .ic { fill: currentColor; }

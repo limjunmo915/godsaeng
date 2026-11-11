@@ -55,7 +55,7 @@ async function openNotifs() {
   $('#notif-list').innerHTML = head + '<p class="hint">불러오는 중…</p>';
   $('#notif').showModal();
   if (NOTICES.length) lsSet('notice', NOTICES[0].id);
-  const list = await fetchNotifs();
+  let list; try { list = await fetchNotifs(); } catch (err) { console.error(err); $('#notif-list').innerHTML = head + '<p class="hint">알림을 불러오지 못했어요. 잠시 후 다시 열어 주세요.</p>'; return; }
   lsSet('seen', new Date().toISOString()); $('#notif-dot').hidden = true;
   $('#notif-list').innerHTML = head + (list.map(n => n.tg ? `<div class="nt">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small><span class="tg-btns"><button class="btn sm primary" data-act="tg-yes" data-id="${n.tg}">맞아요</button><button class="btn sm" data-act="tg-no" data-id="${n.tg}">아니에요</button></span></p></div>` : `<button type="button" class="nt" data-act="${n.wid ? 'notif-goto' : 'notif-profile'}" data-id="${n.wid || n.id}">${avatar(n.id, 'sm')}<p>${n.html}<small>${ago(n.ts)}</small></p></button>`).join('') || kkEmpty('empty-notif', '최근 2주간 알림이 없어요. 먼저 약올려 보세요.'));
 }

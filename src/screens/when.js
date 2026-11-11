@@ -9,11 +9,11 @@ const same = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b
 export const whenLabel = () => { const v = $('#f-when').value; $('#when-btn').textContent = v ? `${fmtDate(v)} ${fmtTime(v)}` : '언제 했나요?'; };
 
 function draw() {
-  const y = view.getFullYear(), m = view.getMonth(), now = new Date(), blank = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+  const y = view.getFullYear(), m = view.getMonth(), now = new Date(), blank = (new Date(y, m, 1).getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate();
   const last = y === now.getFullYear() && m === now.getMonth();
   $('#when-cal').innerHTML = `<div class="when-head"><button type="button" class="icbtn" data-act="when-month" data-v="-1" aria-label="이전 달">${ic('chevron-left')}</button>
       <b>${y}년 ${m + 1}월</b><button type="button" class="icbtn" data-act="when-month" data-v="1" aria-label="다음 달" ${last ? 'disabled' : ''}>${ic('chevron-right')}</button></div>
-    <div class="cal">${'일월화수목금토'.split('').map(d => `<span class="h">${d}</span>`).join('')}${'<span></span>'.repeat(blank)}${Array.from({ length: days }, (_, i) => {
+    <div class="cal">${'월화수목금토일'.split('').map(d => `<span class="h">${d}</span>`).join('')}${'<span></span>'.repeat(blank)}${Array.from({ length: days }, (_, i) => {
       const d = new Date(y, m, i + 1);
       return `<button type="button" class="d${same(d, cur) ? ' sel' : ''}${same(d, now) ? ' today' : ''}" data-act="when-day" data-v="${i + 1}" ${d > now ? 'disabled' : ''}>${i + 1}</button>`;
     }).join('')}</div>`;

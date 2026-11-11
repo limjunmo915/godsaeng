@@ -3,7 +3,7 @@
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { BleClient } from '@capacitor-community/bluetooth-le';
-import { $ } from '../state.js';
+import { S, $ } from '../state.js';
 import { ic, sportIc } from '../lib/icons.js';
 import { fmtClock, toast, lsGet, lsSet } from '../lib/util.js';
 import { TYPES, quickTypes, gpsType } from '../lib/types.js';
@@ -244,7 +244,7 @@ export const actions = {
     actions['trk-close'](true);
     say(`수고했어요. ${g ? `${s.km.toFixed(2)}킬로미터, ` : ''}${saySec(s.minutes * 60)}`);
     await fillAuto({ type, start, minutes: s.minutes, km: s.km, elev: s.elev, hr, route: g ? trim(pts) : null, city: g && pts[0] ? cityOf(pts[0]).catch(() => null) : null });
-    if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.</p>`;
+    if (g) $('#route-prev').innerHTML = `${routeSvg(trim(pts))}<p class="hint">${S.consents.location ? '올리면 이 경로 그림이 크루·친구 피드에 보여요(출발·도착 200m는 가림). 나만 보기로 올리면 나만 봐요.' : '경로 그림은 이 폰에서만 보여요(출발·도착 200m는 가림). 저장되는 건 거리·시간·상승고도예요.'}</p>`;
   },
   'trk-drop': () => actions['trk-close'](true),
   'trk-ask-no': () => $('#trk-ask').close(),

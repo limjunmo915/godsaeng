@@ -112,6 +112,16 @@ export async function renderFeed() {
       <p>${S.crews.length ? '지금 기록하면 자동으로 1등이에요.' : '크루를 만들거나 초대코드로 들어가면 친구들 기록이 여기 떠요.'}</p>
       <button class="btn primary" data-act="go" data-tab="${S.crews.length ? 'log' : 'crew'}">${S.crews.length ? '첫 기록 올리기' : '크루로 가기'}</button></div>`);
   markPoked(list).catch(console.error); markMyRx(list);
+  // 끝까지 내리면 다음 글을 알아서 불러옴('더 보기'를 안 눌러도)
+  const more = $('#v-feed [data-act="more-feed"]'); moreObs?.disconnect();
+  if (more) { moreObs = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { moreObs.disconnect(); more.click(); } }, { rootMargin: '600px' }); moreObs.observe(more); }
+}
+let moreObs;
+// 남이 올린 새 글 받기: 앱으로 돌아왔을 때(1분 넘게 지났고 맨 위 근처를 보고 있을 때)·피드 탭을 한 번 더 누를 때(force)
+export async function freshen(force) {
+  if (!force && (Date.now() - (S.feedAt || 0) < 60000 || scrollY > 300)) return;
+  if (S.tab !== 'feed' || document.querySelector('dialog[open], .pp:not([hidden])') || document.activeElement?.closest('.cform')) return;   // 뭔가 하는 중이면 그대로
+  await Promise.all([loadFeed(true), loadMine()]); return renderFeed();
 }
 
 // 내 글이 화면에 들어오면 지난번 본 뒤 새로 받은 반응을 깐족이로(글마다 이 폰에서 한 번). 처음엔 지금 반응을 다 본 걸로 침

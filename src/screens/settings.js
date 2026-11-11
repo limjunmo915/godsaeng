@@ -69,6 +69,7 @@ export function renderSettings() {
     ${page('terms.html', 'lock', '이용약관')}
     ${page('privacy.html', 'lock', '개인정보처리방침')}
     ${page('location-terms.html', 'current-location', '위치기반서비스 이용약관')}
+    ${page('delete-account.html', 'trash', '계정·데이터 삭제 안내')}
     ${page('licenses.html', 'copy', '오픈소스 라이선스')}
 
     <h3 class="set-h">계정</h3>

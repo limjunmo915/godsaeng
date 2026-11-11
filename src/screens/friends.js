@@ -33,13 +33,13 @@ export async function renderFriends() {
       <p class="hint">링크를 받은 사람이 가입하거나 로그인하면 바로 친구가 돼요.</p>
       <button class="btn wide" data-act="invite-link">${ic('copy')}초대 링크 복사</button>
     </section>
-    <label class="field"><span>닉네임으로 찾기</span><input type="search" id="f-search" placeholder="2자 이상" autocomplete="off"></label>
+    <label class="field"><span>이름으로 찾기</span><input type="search" id="f-search" placeholder="2자 이상" autocomplete="off"></label>
     <div id="f-results"></div>
     ${incoming.length ? `<h3 class="sec">나를 팔로우한 사람 <small>맞팔로우하면 친구가 돼요</small></h3>
       ${incoming.map(id => row(id, `<button class="btn sm primary" data-act="follow" data-id="${id}">맞팔로우</button><button class="linkbtn" data-act="remove-follower" data-id="${id}">삭제</button>`)).join('')}` : ''}
     <h3 class="sec">친구 ${friends.length}명</h3>
     ${friends.map(id => row(id, `${S.people[id]?.poke_off ? '' : `<button class="taunt-btn sm" data-act="poke-friend" data-to="${id}">약올리기</button>`}<button class="linkbtn" data-act="unfriend" data-id="${id}">끊기</button>`)).join('')
-      || kkEmpty('empty-crew', '아직 친구가 없어요. 초대 링크를 보내거나 닉네임으로 찾아 팔로우해 보세요.')}
+      || kkEmpty('empty-crew', '아직 친구가 없어요. 초대 링크를 보내거나 이름으로 찾아 팔로우해 보세요.')}
     ${sent.length ? `<h3 class="sec">보낸 팔로우 <small>상대가 맞팔로우하면 친구</small></h3>${sent.map(id => row(id, relBtn(id))).join('')}` : ''}`;
 }
 

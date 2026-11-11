@@ -13,7 +13,7 @@ function render() {
   const { q, tab, people, recs } = S.srch;
   $('#srch-tabs').innerHTML = q.length < 2 ? '' : [['people', `사람 ${people.length}`], ['recs', `기록 ${recs.length}`]].map(([k, l]) =>
     `<button type="button" data-act="srch-tab" data-v="${k}" aria-pressed="${tab === k}">${l}</button>`).join('');
-  $('#srch-list').innerHTML = q.length < 2 ? '<p class="hint">2자 이상 입력하면 사람과 기록을 함께 찾아요.<br>예: 닉네임, 한강, 테니스, 아침</p>'
+  $('#srch-list').innerHTML = q.length < 2 ? '<p class="hint">2자 이상 입력하면 사람과 기록을 함께 찾아요.<br>예: 이름, 한강, 테니스, 아침</p>'
     : tab === 'people'
       ? people.map(u => `<div class="frow"><button type="button" class="nm" data-act="profile" data-id="${u.id}">${avatar(u.id, 'sm')}<span>${esc(u.nickname)}${u.region ? `<small>${esc(u.region)}</small>` : ''}</span></button>${u.id === S.uid ? '' : relBtn(u.id)}</div>`).join('') || kkEmpty('empty-search', '찾는 사람이 없어요.')
       : `<div class="feed">${recs.map(card).join('') || kkEmpty('empty-search', '찾는 기록이 없어요.')}</div>`;

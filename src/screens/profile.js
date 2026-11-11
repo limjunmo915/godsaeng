@@ -10,7 +10,8 @@ import { signAvatars, signPhotos, loadCmLikes, isFriend, loadBlocks, loadFollows
 import { relBtn } from './friends.js';
 import { card, goToWorkout } from './feed.js';
 import { lineChart } from './body.js';
-import { show, refresh } from '../nav.js';
+import { refresh } from '../nav.js';
+import { actions as setActions } from './settings.js';
 
 const inCrew = id => S.crews.some(c => S.members[c.id]?.includes(id));
 const sharedCrew = id => S.crews.find(c => S.members[c.id]?.includes(id))?.id;
@@ -195,7 +196,7 @@ export const actions = {
     if (!S.ppStack.length) return closeProfile();
     S.pp = null; const prev = S.ppStack.at(-1); S.ppStack = S.ppStack.slice(0, -1); return openProfile(prev);
   },
-  'pp-edit': () => { closeProfile(); S.meTab = 'stats'; show('me'); setTimeout(() => { const d = document.querySelector('#v-me details.panel:last-of-type'); if (d) { d.open = true; d.scrollIntoView(); } }, 300); },
+  'pp-edit': () => { closeProfile(); setActions['set-open'](); },   // 프로필 편집 = 설정 화면(프로필 칸이 맨 위)
   'pp-block': async () => {
     const id = S.pp.id;
     if (!confirm(`${nameOf(id)}님을 차단할까요?\n서로 약올리기·댓글·반응을 할 수 없고 팔로우도 끊겨요. 설정에서 풀 수 있어요.`)) return;

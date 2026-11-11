@@ -89,7 +89,7 @@ async function addPhotos(e) {
 }
 export function resetForm() {
   if (!formReady) return;
-  S.editing = null; auto = null; $('#route-prev').innerHTML = '';
+  S.editing = null; auto = null; route = null; gpsCity = null; extId = null; $('#route-prev').innerHTML = '';   // 측정·워치에서 넘어온 값도 비움(취소한 경로가 다음 기록에 붙지 않게)
   $('#log-form').reset();
   S.newPhotos.forEach(p => URL.revokeObjectURL(p.url)); S.newPhotos = []; S.keptPhotos = [];
   $('#f-when').value = toLocalInput(Date.now()); $('#rpe-out').textContent = 5;
@@ -157,8 +157,7 @@ async function saveWorkout(e) {
     const wasEdit = !!S.editing, city = gpsCity;
     if (extId) markImported(extId);
     if (route && !wasEdit && S.consents.location) ok(await sb.from('workout_routes').insert({ workout_id: saved.id, poly: encodePoly(slim(route)) }));
-    route = null;
-    resetForm(); gpsCity = null; extId = null;
+    resetForm();
     city?.then(c => c && updateRegion(c)).catch(console.error);
     await Promise.all([loadFeed(true), loadMine()]);
     show('feed');
