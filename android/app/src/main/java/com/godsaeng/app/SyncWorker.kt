@@ -95,7 +95,7 @@ class SyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, 
         val open = Intent(ctx, MainActivity::class.java).putExtra("wid", wid).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pi = PendingIntent.getActivity(ctx, wid.hashCode(), open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val what = (if (km > 0.05) "%.2fkm · ".format(km) else "") + "${sec / 60}분"
-        val n = NotificationCompat.Builder(ctx, CHANNEL).setSmallIcon(R.mipmap.ic_launcher)
+        val n = NotificationCompat.Builder(ctx, CHANNEL).setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle("$label 기록 올리기 성공!").setContentText("$what · 눌러서 사진·한마디 추가하기")
             .setContentIntent(pi).setAutoCancel(true).build()
         try { NotificationManagerCompat.from(ctx).notify(wid.hashCode(), n) } catch (e: SecurityException) { /* 알림 권한 없음 */ }

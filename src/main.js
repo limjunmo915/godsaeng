@@ -29,6 +29,7 @@ import * as watch from './screens/watch.js';
 import * as settings from './screens/settings.js';
 import * as autosync from './screens/autosync.js';
 import * as together from './screens/together.js';
+import * as push from './screens/push.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
 const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions, ...together.actions,
@@ -118,8 +119,10 @@ async function boot() {
     await takeShared();
     notif.loadNotifs(); msg.loadMsgs().catch(console.error); msg.listen();
     await friends.acceptInvite();
-    if (!lsGet('intro') && !document.querySelector('dialog[open]')) intro(0);
+    const first = !lsGet('intro');
+    if (first && !document.querySelector('dialog[open]')) intro(0);
     else autosync.checkAuto().catch(console.error);
+    push.initPush(!first).catch(console.error);   // 알림 권한은 첫 안내를 본 다음 번 실행부터 물음
   } catch (err) { fail(err, '불러오지 못했어요. 새로고침해 주세요.'); }
 }
 

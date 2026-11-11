@@ -6,6 +6,7 @@ import { ic } from '../lib/icons.js';
 import { esc, lsGet, lsSet, toast, COUNTRIES } from '../lib/util.js';
 import { avatar, nameOf } from '../lib/calc.js';
 import { autoOn, enableAuto, disableAuto } from './autosync.js';
+import { pushReady, pushOn, setPush } from './push.js';
 
 const on = (k, def = true) => (lsGet(k) ?? (def ? 'on' : 'off')) !== 'off';
 const sw = (k, label, hint, def = true) => `<label class="set-sw"><span><b>${label}</b>${hint ? `<small>${hint}</small>` : ''}</span><input type="checkbox" data-pref="${k}" ${on(k, def) ? 'checked' : ''}></label>`;
@@ -52,7 +53,8 @@ export function renderSettings() {
     <p class="hint">심박 센서는 측정 화면 오른쪽 위 심박 버튼으로 연결해요.</p>` : ''}
 
     <h3 class="set-h">알림</h3>
-    <p class="hint">휴대폰 알림(반응·댓글·약올림)은 곧 나와요. 지금은 위쪽 종에서 확인해요.</p>
+    ${pushReady() ? `<label class="set-sw"><span><b>휴대폰 알림</b><small>반응·댓글·약올리기·팔로우·메시지·함께한 운동이 오면 알려 줘요(앱을 보고 있을 땐 안 울려요)</small></span><input type="checkbox" id="push-sw" ${pushOn() ? 'checked' : ''}></label>`
+      : `<p class="hint">${native ? '휴대폰 알림은 곧 나와요.' : '휴대폰 알림은 안드로이드 앱에서 받을 수 있어요.'} 지금은 위쪽 종에서 확인해요.</p>`}
 
     <h3 class="set-h">위치정보</h3>
     <div class="consent-row"><span>운동 경로 저장 동의 ${S.consents.location ? '함' : '안 함'}</span>${S.consents.location
@@ -82,6 +84,11 @@ document.addEventListener('change', async e => {
   if (e.target.id === 'auto-sw') {
     try { if (e.target.checked) { await enableAuto(); toast('켰어요! 워치 운동이 자동으로 올라가요'); } else { await disableAuto(); toast('껐어요'); } }
     catch (err) { e.target.checked = !e.target.checked; toast('바꾸지 못했어요. 권한을 확인해 주세요'); console.error(err); }
+    return;
+  }
+  if (e.target.id === 'push-sw') {
+    try { await setPush(e.target.checked); toast(e.target.checked ? '휴대폰 알림을 켰어요' : '휴대폰 알림을 껐어요'); }
+    catch (err) { e.target.checked = false; toast(err.message); }
     return;
   }
   const k = e.target.dataset?.pref; if (k) { lsSet(k, e.target.checked ? 'on' : 'off'); return toast('저장했어요'); }

@@ -12,6 +12,7 @@ import { shareRecap } from './share.js';
 import { initGearSelect } from './log.js';
 import { renderBody } from './body.js';
 import { renderSettings } from './settings.js';
+import { dropPush } from './push.js';
 
 export const meHead = sub => `
   <div class="profile">${avatar(S.uid, 'lg')}<div><b>${esc(S.me.nickname)}</b><span>${sub}</span></div>
@@ -144,7 +145,7 @@ export const actions = {
     ok(await sb.from('gear').update({ retired: !g.retired }).eq('id', g.id)); g.retired = !g.retired; initGearSelect(); return refresh();
   },
   recap: () => shareRecap(),
-  logout: async () => { await sb.auth.signOut(); location.reload(); },
+  logout: async () => { await dropPush(); await sb.auth.signOut(); location.reload(); },
   // 탈퇴: 사진 파일 먼저(저장소 API로만 지울 수 있음) → 계정과 모든 기록(supabase/006 delete_me)
   'delete-me': async b => {
     if (prompt('탈퇴하면 운동 기록·사진·신체 기록·댓글·반응이 모두 바로 지워지고 되돌릴 수 없어요.\n내가 만든 크루는 남은 크루원에게 넘어가요.\n\n계속하려면 "탈퇴"라고 입력해 주세요.')?.trim() !== '탈퇴') return toast('탈퇴를 취소했어요');
