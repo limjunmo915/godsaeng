@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- 상태 표시줄·버튼 줄 자리 색(웹 화면은 그 안쪽에만 그림, MainActivity) -->
+        <item name="android:windowBackground">@color/colorPrimaryDark</item>
         <!-- 아래 뒤로 가기 버튼 줄: 검정 바탕 + 밝은 버튼(안드로이드 14 이하. 15 이상은 웹 화면의 검정 띠가 대신함) -->
         <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
