@@ -9,7 +9,7 @@ import { sb, ok, WEB } from '../state.js';
 import { toast, fail } from '../lib/util.js';
 
 // Supabase 대시보드에서 켠 것만(켜지 않은 걸 누르면 오류 화면이 나옴). 사용자가 켜면 여기에 추가
-export const PROVIDERS = [];
+export const PROVIDERS = ['kakao', 'google'];
 const NATIVE = Capacitor.isNativePlatform(), BACK = 'com.godsaeng.app://auth';
 
 export async function signInWith(provider) {
