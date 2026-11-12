@@ -23,6 +23,7 @@ let gateDone;
 export function termsGate() {
   if (S.consents.terms === TERMS_VER) return;
   $('#t-bd-wrap').hidden = !!S.consents.terms;   // 처음 동의하는 사람만 나이 확인
+  $('#t-name-wrap').hidden = !!S.consents.terms || !!S.me?.family_name;   // 간편 가입(카카오·구글)한 사람은 실명도
   $('#terms-gate').showModal();
   return new Promise(r => { gateDone = r; });
 }
@@ -84,7 +85,10 @@ export const forms = {
   terms: async (f, d) => {
     if (!d.agree) return toast('동의해야 계속 쓸 수 있어요.');
     if (!S.consents.terms && !over14(d.birthdate)) return toast('만 14세 이상만 이용할 수 있어요.');
+    const needName = !$('#t-name-wrap').hidden;
+    if (needName && (!d.family || !d.given)) return toast('성과 이름을 모두 적어 주세요.');
     ok(await sb.rpc('agree_terms', { ver: TERMS_VER, birthdate: S.consents.terms ? null : d.birthdate }));
+    if (needName) { S.me = ok(await sb.from('profiles').update({ family_name: d.family, given_name: d.given, country: d.country }).eq('id', S.uid).select().single()); S.people[S.uid] = S.me; }
     S.consents.terms = TERMS_VER;
     $('#terms-gate').close(); gateDone?.();
   },

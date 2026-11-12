@@ -30,6 +30,7 @@ import * as settings from './screens/settings.js';
 import * as autosync from './screens/autosync.js';
 import * as together from './screens/together.js';
 import * as push from './screens/push.js';
+import { PROVIDERS, signInWith } from './screens/oauth.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
 const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions, ...together.actions,
@@ -55,6 +56,9 @@ $('#terms-gate').addEventListener('cancel', e => e.preventDefault());
 document.addEventListener('click', e => { if (e.target.matches?.('dialog#rx-dlg, dialog#notif, dialog#sport-dlg, dialog#when-dlg, dialog#watch-dlg, dialog#tg-dlg')) e.target.close(); });  // Esc 로 닫고 넘어가지 못하게
 
 /* 로그인 */
+// 간편 로그인: 켠 것만 보임(oauth.js PROVIDERS)
+document.querySelectorAll('[data-oauth]').forEach(b => { b.hidden = !PROVIDERS.includes(b.dataset.oauth); b.onclick = () => signInWith(b.dataset.oauth).catch(fail); });
+$('#l-oauth').hidden = !PROVIDERS.length;
 const showLogin = () => { $('#app').hidden = true; $('#login').hidden = false; };
 $('#l-toggle').onclick = () => {
   S.loginMode = S.loginMode === 'in' ? 'up' : 'in';

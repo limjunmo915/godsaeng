@@ -27,6 +27,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- 간편 로그인(카카오·구글)을 브라우저에서 마치면 com.godsaeng.app://auth 로 앱에 돌아옴 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.godsaeng.app" android:host="auth" />
+            </intent-filter>
+
         </activity>
 
         <!-- Health Connect(갤럭시워치·삼성 헬스 운동 불러오기): 권한 설명 화면(안드로이드 13 이하 / 14 이상) -->

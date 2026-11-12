@@ -724,3 +724,11 @@ dialog.map-dlg { margin: auto; width: min(640px, 100%); max-height: 92vh; border
 .cm-like .ic { width: 16px; height: 16px; }
 .cm-like[aria-pressed="true"] { color: var(--down); }
 .cm-like[aria-pressed="true"] .ic { fill: currentColor; }
+
+/* 간편 로그인(카카오·구글) */
+.oauth { display: grid; gap: 8px; }
+.oauth-kakao { background: #FEE500; border-color: #FEE500; color: #191919; }
+.oauth-kakao:hover { background: #F5DC00; }
+.oauth-google { background: #fff; border-color: #DADCE0; color: #1F1F1F; }
+.or { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
