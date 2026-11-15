@@ -30,10 +30,11 @@ import * as settings from './screens/settings.js';
 import * as autosync from './screens/autosync.js';
 import * as together from './screens/together.js';
 import * as push from './screens/push.js';
+import * as photo from './screens/photo.js';
 import { PROVIDERS, signInWith } from './screens/oauth.js';
 import { initForm, resetForm, takeShared } from './screens/log.js';
 
-const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions, ...together.actions,
+const actions = { ...feed.actions, ...rank.actions, ...crew.actions, ...me.actions, ...body.actions, ...notif.actions, ...report.actions, ...consent.actions, ...friends.actions, ...profile.actions, ...search.actions, ...msg.actions, ...track.actions, ...sports.actions, ...when.actions, ...watch.actions, ...settings.actions, ...autosync.actions, ...together.actions, ...photo.actions,
   go: b => { if (b.dataset.tab === 'log') resetForm(); show(b.dataset.tab); },
   'intro-next': () => introAt < INTRO.length - 1 ? intro(introAt + 1) : $('#intro').close(),
   'intro-skip': () => $('#intro').close() };

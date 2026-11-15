@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>갓생살기 프로젝트</title>
 <meta name="description" content="운동 기록하고 친구들 약올리는 앱 — 질 수 없다!">
 <meta name="theme-color" content="#C6FF3D">
@@ -234,6 +234,10 @@
 </div></section>
 <section id="pp" class="pp" hidden aria-label="프로필"><div class="wrap" id="pp-body"></div></section>
 <section id="set" class="pp" hidden aria-label="설정"><div class="wrap" id="set-body"></div></section>
+<dialog id="img-view" class="img-view" aria-label="사진 크게 보기">
+  <button class="icbtn img-x" data-act="img-close" aria-label="닫기"><i data-ic="x"></i></button>
+  <img alt="">
+</dialog>
 <dialog id="photo-view" class="viewer" aria-label="프로필 사진 크게 보기"><img alt="프로필 사진">
   <div id="pv-default" class="pv-default" hidden><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="18"/><path d="M8 110c3-28 20-42 42-42s39 14 42 42z"/></svg><b></b></div>
 </dialog>
