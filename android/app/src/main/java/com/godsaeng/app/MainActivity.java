@@ -35,8 +35,10 @@ public class MainActivity extends BridgeActivity {
         WebView web = getBridge().getWebView();
         WebSettings ws = web.getSettings();
         ws.setTextZoom(100);
+        ws.setUseWideViewPort(true);        // index.html 의 viewport(width=device-width, 확대 금지)를 따르게
+        ws.setLoadWithOverviewMode(true);   // 시작할 때 화면 폭에 딱 맞춤(확대된 채로 시작하지 않게)
         ws.setSupportZoom(false);
-        ws.setBuiltInControls(false);
+        ws.setBuiltInZoomControls(false);
         ws.setDisplayZoomControls(false);
         web.setHorizontalScrollBarEnabled(false);
         web.setOnScrollChangeListener((v, x, y, ox, oy) -> { if (x != 0) v.scrollTo(0, y); });

@@ -74,6 +74,7 @@ export function renderSettings() {
     ${page('delete-account.html', 'trash', '계정·데이터 삭제 안내')}
     ${page('licenses.html', 'copy', '오픈소스 라이선스')}
 
+    <p class="hint">화면 ${innerWidth}×${innerHeight} · 배율 ${(window.visualViewport?.scale || 1).toFixed(2)}${window.visualViewport && Math.abs(visualViewport.scale - 1) > 0.01 ? ' (확대됨: 캡처해서 알려 주세요)' : ''}</p>
     <h3 class="set-h">계정</h3>
     <button class="btn wide danger" data-act="logout">${ic('logout')}로그아웃</button>
     <button class="linkbtn danger center" data-act="delete-me">탈퇴하기</button>`;
