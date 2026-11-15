@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,6 +28,18 @@ public class MainActivity extends BridgeActivity {
             v.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, ime.bottom));
             return WindowInsetsCompat.CONSUMED;
         });
+
+        // 화면 폭 고정: 폰의 '글자 크기' 설정이 웹 화면 글자를 키우면 몇 줄이 폭을 넘어 앱 전체가 살짝 확대된 채
+        // 좌우로 밀리고 오른쪽·아래가 잘렸음 → 글자는 앱 디자인 크기(100%)로, 확대 끄고, 옆으로 밀리면 바로 제자리
+        // (사진 크게 보기의 확대는 웹 안에서 따로 함, photo.js)
+        WebView web = getBridge().getWebView();
+        WebSettings ws = web.getSettings();
+        ws.setTextZoom(100);
+        ws.setSupportZoom(false);
+        ws.setBuiltInControls(false);
+        ws.setDisplayZoomControls(false);
+        web.setHorizontalScrollBarEnabled(false);
+        web.setOnScrollChangeListener((v, x, y, ox, oy) -> { if (x != 0) v.scrollTo(0, y); });
     }
 
     // '기록 올리기 성공' 알림을 누르고 들어오면 그 기록 id 를 앱(JS)이 AutoSync.take() 로 가져가 수정 화면을 엶
